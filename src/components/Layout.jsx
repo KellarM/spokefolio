@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Mic, FolderOpen, Briefcase, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Image } from '@/components/ui/image';
+import AccountMenu from '@/components/AccountMenu';
 
 const LOGO = 'https://media.base44.com/images/public/6ac71edebc00261f3487fa3e/9f96553a6_logo.png';
 
@@ -56,6 +57,7 @@ export default function Layout() {
           })}
         </nav>
         <div className="mt-auto p-4">
+          <AccountMenu className="mb-4 px-1" />
           <Link
             to="/new-application"
             className="flex items-center justify-between gap-2 rounded-xl bg-primary px-4 py-3 text-[13px] font-medium text-primary-foreground transition-opacity hover:opacity-90"
@@ -73,6 +75,7 @@ export default function Layout() {
         <div className="px-5 pt-4">
           <Brand />
         </div>
+        <AccountMenu className="mt-3 px-5" />
         <div className="flex gap-2 overflow-x-auto px-5 py-3">
           {NAV.map((item) => (
             <Link
