@@ -1,26 +1,24 @@
-// Give transcription one consistent format, regardless of the phone's recorder.
-export async function createDictationFile(blob) {
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  const OfflineAudioContext = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-  const context = new AudioContext();
-  let decoded;
-  try {
-    decoded = await context.decodeAudioData(await blob.arrayBuffer());
-  } finally {
-    await context.close();
+// Encode microphone samples directly: no WebM decoder or unfinished container.
+export function createDictationFile(chunks, sourceRate) {
+  const inputLength = chunks.reduce((length, chunk) => length + chunk.length, 0);
+  if (!inputLength || !Number.isFinite(sourceRate) || sourceRate <= 0) {
+    throw new Error('The microphone did not capture audio. Check your microphone and record again.');
   }
+  const input = new Float32Array(inputLength);
+  let offset = 0;
+  let peak = 0;
+  for (const chunk of chunks) {
+    input.set(chunk, offset);
+    offset += chunk.length;
+    for (const sample of chunk) peak = Math.max(peak, Math.abs(sample));
+  }
+  if (peak < 0.0001) throw new Error('Your microphone recorded silence. Check that the correct microphone is selected and not muted.');
   const sampleRate = 16000;
-  const length = Math.ceil(Math.min(decoded.duration, 300) * sampleRate);
-  if (!length) throw new Error('No audio was captured. Please record again.');
-  const offline = new OfflineAudioContext(1, length, sampleRate);
-  const source = offline.createBufferSource();
-  source.buffer = decoded;
-  source.connect(offline.destination);
-  source.start();
-  const samples = (await offline.startRendering()).getChannelData(0);
-  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const length = Math.floor(Math.min(inputLength / sourceRate, 300) * sampleRate);
+  if (!length) throw new Error('That recording was too short. Please speak before stopping.');
+  const buffer = new ArrayBuffer(44 + length * 2);
   const view = new DataView(buffer);
-  const text = (offset, value) => [...value].forEach((char, index) => view.setUint8(offset + index, char.charCodeAt(0)));
+  const text = (start, value) => [...value].forEach((char, index) => view.setUint8(start + index, char.charCodeAt(0)));
   text(0, 'RIFF');
   view.setUint32(4, buffer.byteLength - 8, true);
   text(8, 'WAVE');
@@ -33,10 +31,15 @@ export async function createDictationFile(blob) {
   view.setUint16(32, 2, true);
   view.setUint16(34, 16, true);
   text(36, 'data');
-  view.setUint32(40, samples.length * 2, true);
-  samples.forEach((sample, index) => {
-    const value = Math.max(-1, Math.min(1, sample));
-    view.setInt16(44 + index * 2, value * (value < 0 ? 32768 : 32767), true);
-  });
+  view.setUint32(40, length * 2, true);
+  const ratio = sourceRate / sampleRate;
+  for (let index = 0; index < length; index++) {
+    const start = Math.floor(index * ratio);
+    const end = Math.min(inputLength, Math.max(start + 1, Math.floor((index + 1) * ratio)));
+    let sum = 0;
+    for (let frame = start; frame < end; frame++) sum += input[frame];
+    const sample = Math.max(-1, Math.min(1, sum / (end - start)));
+    view.setInt16(44 + index * 2, Math.round(sample * (sample < 0 ? 32768 : 32767)), true);
+  }
   return new File([buffer], 'dictation.wav', { type: 'audio/wav' });
 }
