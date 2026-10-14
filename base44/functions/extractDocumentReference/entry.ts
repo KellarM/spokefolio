@@ -33,6 +33,16 @@ export default async function (req) {
       return Response.json({ error: 'A saved document id and file are required.' }, { status: 400 });
     }
 
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Please sign in.' }, { status: 401 });
+
+    // Only the person who saved this document may catalogue it.
+    const owned = await base44.entities.SupportingDocument.filter(
+      { id: documentId, created_by_id: user.id },
+      { limit: 1 }
+    );
+    if (!owned.items[0]) return Response.json({ error: 'This document is not available.' }, { status: 403 });
+
     const save = async (patch) => {
       await base44.asServiceRole.entities.SupportingDocument.update(documentId, patch);
     };
