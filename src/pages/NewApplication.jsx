@@ -10,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import useProfile from '@/hooks/useProfile';
 import TemplatePicker from '@/components/resume/TemplatePicker';
 import { DEFAULT_TEMPLATE_ID, resolveTemplateId } from '@/lib/resumeTemplates';
+import DictateButton from '@/components/common/DictateButton';
+import { appendLine } from '@/hooks/useDictation';
 
 const STEPS = [
   'Reading the job posting',
@@ -162,6 +164,12 @@ export default function NewApplication() {
                 onChange={(event) => setForm({ ...form, job_description: event.target.value })}
                 placeholder="Paste the whole posting here — responsibilities, requirements, the things the company cares about."
                 className="mt-2 text-[14px] leading-relaxed"
+              />
+              <DictateButton
+                className="mt-2"
+                onText={(transcript) =>
+                  setForm({ ...form, job_description: appendLine(form.job_description, transcript) })
+                }
               />
               <p className="mt-2 text-[12px] text-muted-foreground">
                 The more of the posting you paste, the sharper the match.

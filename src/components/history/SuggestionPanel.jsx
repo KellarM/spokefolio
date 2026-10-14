@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Check, ChevronRight, Loader2, MessageSquarePlus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import DictateButton from '@/components/common/DictateButton';
+import { appendLine } from '@/hooks/useDictation';
 
 export default function SuggestionPanel({ entry, busy, onSubmit, onFinish }) {
   const suggestions = entry.suggestions || [];
@@ -76,6 +78,7 @@ export default function SuggestionPanel({ entry, busy, onSubmit, onFinish }) {
             placeholder="Add the detail — numbers, tools, scope, who it helped…"
             className="text-[14px]"
           />
+          <DictateButton onText={(transcript) => setComment(appendLine(comment, transcript))} />
           <div className="flex gap-2">
             <Button
               className="flex-1 rounded-full"

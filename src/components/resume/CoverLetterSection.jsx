@@ -3,6 +3,8 @@ import { Download, Loader2, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import DictateButton from '@/components/common/DictateButton';
+import { appendLine } from '@/hooks/useDictation';
 
 export default function CoverLetterSection({ value, onChange, company, onDownload, downloading, onGenerate, generating }) {
   const hasLetter = Boolean((value || '').trim());
@@ -39,6 +41,7 @@ export default function CoverLetterSection({ value, onChange, company, onDownloa
         placeholder="Your cover letter will appear here."
         className="mt-4 text-[14px] leading-relaxed"
       />
+      <DictateButton className="mt-2" onText={(transcript) => onChange(appendLine(value, transcript))} />
     </section>
   );
 }

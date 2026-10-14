@@ -15,6 +15,8 @@ import BulletListEditor from '@/components/editors/BulletListEditor';
 import TagInput from '@/components/editors/TagInput';
 import SuggestionPanel from '@/components/history/SuggestionPanel';
 import DutyTimelineEditor from '@/components/history/review/DutyTimelineEditor';
+import DictateButton from '@/components/common/DictateButton';
+import { appendLine } from '@/hooks/useDictation';
 
 const TYPES = [
   { value: 'work', label: 'Work experience' },
@@ -111,7 +113,10 @@ export default function DraftEntryEditor({ entry, busy, onChange, onAnswer, onSa
           )}
 
           <Field label="Summary">
-            <Textarea rows={2} value={entry.summary || ''} onChange={(e) => set({ summary: e.target.value })} />
+            <div className="space-y-2">
+              <Textarea rows={2} value={entry.summary || ''} onChange={(e) => set({ summary: e.target.value })} />
+              <DictateButton onText={(transcript) => set({ summary: appendLine(entry.summary, transcript) })} />
+            </div>
           </Field>
 
           {!!entry.duty_timeline?.length && <DutyTimelineEditor value={entry.duty_timeline} onChange={(duty_timeline) => set({ duty_timeline })} />}

@@ -17,6 +17,8 @@ import CoverLetterSection from '@/components/resume/CoverLetterSection';
 import { downloadDocxFile } from '@/lib/downloadDocx';
 import TemplatePicker from '@/components/resume/TemplatePicker';
 import { getTemplate, resolveTemplateId } from '@/lib/resumeTemplates';
+import DictateButton from '@/components/common/DictateButton';
+import { appendLine } from '@/hooks/useDictation';
 
 const STATUSES = [
   { value: 'draft', label: 'Draft' },
@@ -438,6 +440,7 @@ export default function ApplicationDetail() {
             placeholder="Who referred you, what they asked in the first call, when you followed up…"
             className="mt-3 text-[14px]"
           />
+          <DictateButton className="mt-3" onText={(transcript) => setNotes(appendLine(notes, transcript))} />
         </div>
 
         <div className="flex flex-col gap-2.5 rounded-2xl border border-border/70 bg-card p-5">

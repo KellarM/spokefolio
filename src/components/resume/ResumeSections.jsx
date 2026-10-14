@@ -1,5 +1,7 @@
 import React from 'react';
 import { Textarea } from '@/components/ui/textarea';
+import DictateButton from '@/components/common/DictateButton';
+import { appendLine } from '@/hooks/useDictation';
 import TagInput from '@/components/editors/TagInput';
 import DocumentSection from '@/components/resume/DocumentSection';
 import RolesEditor from '@/components/resume/RolesEditor';
@@ -13,12 +15,15 @@ export default function ResumeSections({ resume, style, sections, onChange, onSe
 
   const content = {
     summary: (
-      <Textarea
-        rows={5}
-        value={resume.summary || ''}
-        onChange={(event) => set({ summary: event.target.value })}
-        className={`resize-y border-transparent bg-transparent px-0 hover:border-border/70 focus-visible:ring-0 ${style.body}`}
-      />
+      <div className="space-y-1">
+        <Textarea
+          rows={5}
+          value={resume.summary || ''}
+          onChange={(event) => set({ summary: event.target.value })}
+          className={`resize-y border-transparent bg-transparent px-0 hover:border-border/70 focus-visible:ring-0 ${style.body}`}
+        />
+        <DictateButton onText={(transcript) => set({ summary: appendLine(resume.summary, transcript) })} />
+      </div>
     ),
     skills: (
       <TagInput tags={resume.skills || []} onChange={(skills) => set({ skills })} placeholder="Add a skill and press Enter" />

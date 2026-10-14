@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import DictateButton from '@/components/common/DictateButton';
+import { appendLine } from '@/hooks/useDictation';
 
 export default function BulletListEditor({ items = [], onChange, placeholder = 'Add a bullet' }) {
   const [draft, setDraft] = useState('');
@@ -55,6 +57,7 @@ export default function BulletListEditor({ items = [], onChange, placeholder = '
           placeholder={placeholder}
           className="h-9 text-sm"
         />
+        <DictateButton label={null} onText={(transcript) => setDraft(appendLine(draft, transcript))} />
         <Button type="button" size="sm" variant="secondary" onClick={add} className="shrink-0">
           <Plus className="h-3.5 w-3.5" />
         </Button>
