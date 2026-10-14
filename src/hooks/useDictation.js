@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
+import { createDictationFile } from '@/lib/dictationAudio';
 
 // A single dictation clip is capped at five minutes.
 const MAX_SECONDS = 300;
@@ -27,18 +28,15 @@ const pickMimeType = () => {
   return supported || '';
 };
 
-const extensionFor = (mime) => {
-  if (mime.includes('mp4')) return 'm4a';
-  if (mime.includes('ogg')) return 'ogg';
-  return 'webm';
-};
-
 // Records one clip, has it transcribed by the app, and hands the words back.
 export default function useDictation(onTranscript) {
   const { toast } = useToast();
   const [recording, setRecording] = useState(false);
   const [busy, setBusy] = useState(false);
   const [seconds, setSeconds] = useState(0);
+  const [error, setError] = useState('');
+  const clipRef = useRef(null);
+  const startingRef = useRef(false);
   const recorderRef = useRef(null);
   const chunksRef = useRef([]);
   const streamRef = useRef(null);
@@ -65,30 +63,40 @@ export default function useDictation(onTranscript) {
     []
   );
 
-  const transcribe = async (blob, mime) => {
+  const reportFailure = (message) => {
+    setError(message);
+    toast({ title: 'Could not write down your recording', description: message, variant: 'destructive' });
+  };
+
+  const transcribe = async (clip) => {
     setBusy(true);
+    setError('');
     try {
-      const file = new File([blob], `dictation.${extensionFor(mime)}`, { type: mime || 'audio/webm' });
-      const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
-      const response = await base44.functions.invoke('transcribeDictation', { file_uri });
+      // Preserve the clip and its upload so a failed request can be retried.
+      clip.file ||= await createDictationFile(clip.blob);
+      if (!clip.file_uri) {
+        const uploaded = await base44.integrations.Core.UploadPrivateFile({ file: clip.file });
+        clip.file_uri = uploaded.file_uri;
+      }
+      const response = await base44.functions.invoke('transcribeDictation', { file_uri: clip.file_uri });
       const transcript = (response.data?.transcript || '').trim();
       if (!transcript) {
-        toast({ title: 'Nothing was picked up', description: 'Try again, speaking a little closer to the phone.', variant: 'destructive' });
+        reportFailure('No speech was picked up. Please record again, speaking closer to your microphone.');
       } else {
         handlerRef.current?.(transcript);
+        clipRef.current = null;
         toast({ title: 'Words added', description: 'Check them over in the field.' });
       }
-    } catch (error) {
-      toast({
-        title: 'Voice capture failed',
-        description: error?.response?.data?.error || error.message,
-        variant: 'destructive'
-      });
+    } catch {
+      reportFailure('Your recording is kept here. Tap Retry writing to try again, or record another take.');
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
   };
 
   const start = async () => {
+    if (recording || busy || startingRef.current) return;
+    setError('');
     if (typeof MediaRecorder === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
       toast({
         title: 'This browser cannot record audio',
@@ -97,8 +105,10 @@ export default function useDictation(onTranscript) {
       });
       return;
     }
+    startingRef.current = true;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
       const mime = pickMimeType();
       const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
 
@@ -112,12 +122,29 @@ export default function useDictation(onTranscript) {
         chunksRef.current = [];
         releaseStream();
         setRecording(false);
-        if (blob.size) transcribe(blob, type);
+        if (blob.size) {
+          const clip = { blob };
+          clipRef.current = clip;
+          transcribe(clip);
+        } else {
+          setBusy(false);
+          reportFailure('No audio was captured. Please record again and check your microphone.');
+        }
+      };
+      recorder.onerror = () => {
+        recorder.onstop = null;
+        if (recorder.state !== 'inactive') recorder.stop();
+        releaseStream();
+        setRecording(false);
+        setBusy(false);
+        reportFailure('The recording was interrupted. Please record another take.');
       };
 
       recorderRef.current = recorder;
       streamRef.current = stream;
-      recorder.start();
+      // Collect audio throughout the take, not only when the phone stops.
+      recorder.start(1000);
+      clipRef.current = null;
       setRecording(true);
       setSeconds(0);
 
@@ -136,12 +163,21 @@ export default function useDictation(onTranscript) {
         description: 'Allow microphone access for this site, then tap the microphone again.',
         variant: 'destructive'
       });
+    } finally {
+      startingRef.current = false;
     }
   };
 
   const stop = () => {
-    if (recorderRef.current && recorderRef.current.state === 'recording') recorderRef.current.stop();
+    if (recorderRef.current && recorderRef.current.state === 'recording') {
+      setBusy(true);
+      recorderRef.current.stop();
+    }
   };
 
-  return { recording, busy, seconds, start, stop };
+  const retry = () => {
+    if (!busy && !recording && clipRef.current) transcribe(clipRef.current);
+  };
+
+  return { recording, busy, seconds, error, canRetry: !!clipRef.current, start, stop, retry };
 }
