@@ -34,7 +34,7 @@ export default async function (req) {
         !['files', 'videos', 'images'].some(kind => url.pathname === `/${kind}/${storagePath}`) || !url.searchParams.get('token')) {
       return Response.json({ error: 'A signed link to your private recording is required.' }, { status: 400 });
     }
-    const audio = await fetch(audioUrl, { method: 'HEAD', redirect: 'error', signal: AbortSignal.timeout(15000) });
+    const audio = await fetch(audioUrl, { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(15000) });
     if (!audio.ok) return Response.json({ error: 'Your recording link expired or could not be opened. Please retry.' }, { status: 400 });
     const size = Number(audio.headers.get('content-length'));
     if (!size || size > MAX_AUDIO_BYTES) return Response.json({ error: 'Please record a clip of no more than five minutes.' }, { status: 400 });
@@ -47,7 +47,11 @@ export default async function (req) {
     if (error.status === 401 || error.response?.status === 401) {
       return Response.json({ error: 'Please sign in again before dictating.' }, { status: 401 });
     }
-    console.error('Dictation transcription failed', { status: error.status || error.response?.status || 500, name: error.name });
+    console.error('Dictation transcription failed', {
+      status: error.status || error.response?.status || 500,
+      name: error.name,
+      message: String(error.message || '').replace(/https?:\/\/[^\s'"<>]+/g, '[recording link]')
+    });
     return Response.json({ error: 'That recording could not be transcribed. Please retry writing.' }, { status: 500 });
   }
 }
