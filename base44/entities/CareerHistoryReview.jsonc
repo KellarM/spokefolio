@@ -1,0 +1,67 @@
+{
+  "name": "CareerHistoryReview",
+  "type": "object",
+  "properties": {
+    "anchor_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "drafts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "answers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "applying",
+        "applied",
+        "restoring",
+        "restored"
+      ],
+      "default": "draft"
+    },
+    "result_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "result_versions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": [
+    "anchor_id",
+    "sources",
+    "status"
+  ]
+}

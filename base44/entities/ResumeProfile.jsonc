@@ -1,0 +1,63 @@
+{
+  "name": "ResumeProfile",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "linkedin": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "headline": {
+      "type": "string"
+    },
+    "photo_uri": {
+      "type": "string"
+    },
+    "resume_template": {
+      "type": "string",
+      "default": "editorial"
+    },
+    "experience_order": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "history_complete": {
+      "type": "boolean",
+      "default": false
+    },
+    "master_summary": {
+      "type": "string"
+    },
+    "core_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "target_titles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "required": []
+}

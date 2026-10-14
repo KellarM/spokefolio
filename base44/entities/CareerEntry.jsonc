@@ -1,0 +1,153 @@
+{
+  "name": "CareerEntry",
+  "type": "object",
+  "properties": {
+    "entry_type": {
+      "type": "string",
+      "enum": [
+        "work",
+        "project",
+        "education",
+        "certification",
+        "skill",
+        "testimonial",
+        "achievement",
+        "other"
+      ],
+      "default": "work"
+    },
+    "title": {
+      "type": "string"
+    },
+    "organization": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string"
+    },
+    "end_date": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "raw_text": {
+      "type": "string"
+    },
+    "accomplishments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "grouped": {
+      "type": "boolean",
+      "default": false
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "dates": {
+            "type": "string"
+          },
+          "accomplishments": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "default": []
+    },
+    "duty_timeline": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "duties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "default": []
+    },
+    "review_record_key": {
+      "type": "string"
+    },
+    "suggestions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "suggestion_index": {
+      "type": "integer",
+      "default": 0
+    },
+    "answers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "confirmed"
+      ],
+      "default": "draft"
+    }
+  },
+  "required": [
+    "title"
+  ]
+}

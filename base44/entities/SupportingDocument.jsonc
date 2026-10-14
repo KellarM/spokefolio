@@ -1,0 +1,42 @@
+{
+  "name": "SupportingDocument",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "doc_type": {
+      "type": "string",
+      "enum": [
+        "previous_resume",
+        "project",
+        "testimonial",
+        "certification",
+        "other"
+      ],
+      "default": "previous_resume"
+    },
+    "file_uri": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "extracted_summary": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "processing",
+        "ready",
+        "unreadable"
+      ],
+      "default": "processing"
+    }
+  },
+  "required": [
+    "name",
+    "file_uri"
+  ]
+}

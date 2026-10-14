@@ -1,0 +1,245 @@
+{
+  "name": "JobApplication",
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "string"
+    },
+    "job_title": {
+      "type": "string"
+    },
+    "job_description": {
+      "type": "string"
+    },
+    "work_address": {
+      "type": "string"
+    },
+    "drive_distance_km": {
+      "type": "number"
+    },
+    "drive_minutes": {
+      "type": "number"
+    },
+    "location_checked": {
+      "type": "boolean",
+      "default": false
+    },
+    "cover_letter": {
+      "type": "string"
+    },
+    "match_summary": {
+      "type": "string"
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "ready",
+        "not_applied",
+        "applied",
+        "interviewing",
+        "offer",
+        "not_hired",
+        "rejected"
+      ],
+      "default": "ready"
+    },
+    "resume_template": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "company_researched_at": {
+      "type": "string"
+    },
+    "company_research": {
+      "type": "object",
+      "properties": {
+        "overview": {
+          "type": "string"
+        },
+        "founded": {
+          "type": "string"
+        },
+        "years_active": {
+          "type": "string"
+        },
+        "headquarters": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "ownership": {
+          "type": "string"
+        },
+        "what_they_do": {
+          "type": "string"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "management": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          },
+          "default": []
+        },
+        "labour_reputation": {
+          "type": "string"
+        },
+        "employee_themes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "labour_notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "recent_news": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "hiring_notes": {
+          "type": "string"
+        },
+        "cautions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "confidence": {
+          "type": "string"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            }
+          },
+          "default": []
+        }
+      }
+    },
+    "resume": {
+      "type": "object",
+      "properties": {
+        "headline": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "experience": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "organization": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "dates": {
+                "type": "string"
+              },
+              "bullets": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "education": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "degree": {
+                "type": "string"
+              },
+              "institution": {
+                "type": "string"
+              },
+              "dates": {
+                "type": "string"
+              },
+              "detail": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "certifications": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "job_description"
+  ]
+}
