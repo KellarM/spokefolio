@@ -1,16 +1,24 @@
 import React from 'react';
 import { Check, Loader2, Mic, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import VoiceDictation from '@/components/history/VoiceDictation';
 
 export default function DictationBox({ value, onChange, onSubmit, busy }) {
+  const appendTranscript = (transcript) => {
+    const current = value.trim();
+    onChange(current ? `${current}\n${transcript}` : transcript);
+  };
+
   return (
     <div className="paper animate-rise rounded-2xl p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="eyebrow flex items-center gap-2">
           <Mic className="h-3.5 w-3.5" /> Dictate an entry
         </span>
-        <span className="text-[11.5px] text-muted-foreground">Turn on your voice-to-text and just talk</span>
+        <span className="text-[11.5px] text-muted-foreground">Talk it through, or type it in</span>
       </div>
+
+      <VoiceDictation onTranscript={appendTranscript} />
 
       <textarea
         value={value}
