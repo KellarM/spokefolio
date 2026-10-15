@@ -12,6 +12,7 @@ import HistoryReviewDialog from '@/components/history/review/HistoryReviewDialog
 import HistoryReviewPanel from '@/components/history/review/HistoryReviewPanel';
 import { buildCombinedEntry } from '@/lib/mergeEntries';
 import { sortEntriesByDate } from '@/lib/entryOrder';
+import retryOnTimeout from '@/lib/retryOnTimeout';
 
 const COMPLETE_PHRASE = /resume history is complete/i;
 const DICTATION_KEY = 'resumecraft.dictation';
@@ -126,7 +127,14 @@ export default function HistoryCapture() {
   const selectedEntries = entries.filter((entry) => selectedIds.includes(entry.id));
 
   const reportError = (title, error) => {
-    toast({ title, description: error?.response?.data?.error || error.message, variant: 'destructive' });
+    const raw = error?.response?.data?.error || error.message || '';
+    toast({
+      title,
+      description: /timed out|timeout/i.test(raw)
+        ? 'The save service took too long to answer. Nothing you wrote is lost — try that button once more.'
+        : raw,
+      variant: 'destructive'
+    });
   };
 
   const capture = async () => {
@@ -213,13 +221,13 @@ export default function HistoryCapture() {
     setBusy(true);
     try {
       if (decision === 'yes') {
-        const response = await base44.functions.invoke('applySuggestionAnswer', {
+        const response = await retryOnTimeout(() => base44.functions.invoke('applySuggestionAnswer', {
           suggestion,
           comment: comment || '',
           entry: editableFields(draft)
-        });
+        }));
         const merged = response.data || {};
-        await persistDraft(draft, {
+        await retryOnTimeout(() => persistDraft(draft, {
           accomplishments: merged.accomplishments || draft.accomplishments || [],
           skills: merged.skills || draft.skills || [],
           metrics: merged.metrics || draft.metrics || [],
@@ -227,13 +235,13 @@ export default function HistoryCapture() {
           summary: merged.summary || draft.summary,
           answers: [...(draft.answers || []), `${suggestion} → yes: ${comment}`],
           suggestion_index: nextIndex
-        });
+        }));
         if (merged.change_note) toast({ title: merged.change_note });
       } else {
-        await persistDraft(draft, {
+        await retryOnTimeout(() => persistDraft(draft, {
           answers: [...(draft.answers || []), `${suggestion} → ${decision === 'no' ? 'no' : 'passed'}`],
           suggestion_index: nextIndex
-        });
+        }));
       }
     } catch (error) {
       reportError('That answer could not be merged in', error);
