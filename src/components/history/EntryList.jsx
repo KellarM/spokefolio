@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Clock, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -58,7 +58,7 @@ export default function EntryList({ entries = [], activeId, selectedIds = [], on
                 )}
                 {entry.status === 'draft' && (
                   <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10.5px] uppercase tracking-[0.1em] text-amber-800">
-                    Draft
+                    In progress
                   </span>
                 )}
               </div>
@@ -67,7 +67,18 @@ export default function EntryList({ entries = [], activeId, selectedIds = [], on
                 {[entry.organization, entry.location, dates].filter(Boolean).join(' · ')}
               </p>
               {bullets[0] && <p className="mt-2 line-clamp-1 text-[13px] text-muted-foreground/90">• {bullets[0]}</p>}
-              {onReview && <Button variant="secondary" size="sm" className="mt-3 rounded-full" onClick={() => onReview(entry)}>Review & organize</Button>}
+              <div className="mt-3 flex flex-wrap gap-2">
+                {entry.status === 'draft' && (
+                  <Button variant="secondary" size="sm" className="rounded-full" onClick={() => onEdit(entry)}>
+                    <Clock className="mr-1.5 h-3.5 w-3.5" /> Continue this entry
+                  </Button>
+                )}
+                {onReview && (
+                  <Button variant="secondary" size="sm" className="rounded-full" onClick={() => onReview(entry)}>
+                    Review & organize
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="flex shrink-0 items-center gap-1">
               <span className="mr-1 hidden text-[11.5px] text-muted-foreground sm:inline">

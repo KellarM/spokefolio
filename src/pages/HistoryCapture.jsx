@@ -44,12 +44,27 @@ const editableFields = (entry) => ({
   start_date: entry.start_date,
   end_date: entry.end_date,
   summary: entry.summary,
+  raw_text: entry.raw_text || '',
   accomplishments: entry.accomplishments || [],
   skills: entry.skills || [],
   metrics: entry.metrics || [],
   keywords: entry.keywords || [],
   duty_timeline: entry.duty_timeline || []
 });
+
+// Adds only what is genuinely new, so nothing already captured is written over.
+const mergedList = (current, incoming) =>
+  (incoming || []).reduce((list, item) => {
+    const text = String(item || '').trim();
+    if (!text || list.some((existing) => String(existing).trim().toLowerCase() === text.toLowerCase())) return list;
+    return [...list, text];
+  }, [...(current || [])]);
+
+// Prompts already answered stay answered when the words are read again.
+const unansweredPrompts = (prompts, answers) => {
+  const asked = new Set((answers || []).map((answer) => String(answer).split(' → ')[0]));
+  return (prompts || []).filter((prompt) => !asked.has(prompt));
+};
 
 export default function HistoryCapture() {
   const { toast } = useToast();
@@ -106,6 +121,7 @@ export default function HistoryCapture() {
   }, [draft, busy]);
 
   const confirmed = entries.filter((entry) => entry.status === 'confirmed');
+  const openDrafts = entries.filter((entry) => entry.status !== 'confirmed');
   const historyComplete = !!profile.history_complete;
   const selectedEntries = entries.filter((entry) => selectedIds.includes(entry.id));
 
@@ -139,6 +155,53 @@ export default function HistoryCapture() {
     setDraft(updated);
     await loadEntries();
     return updated;
+  };
+
+  // Save the entry without confirming it, so it waits in the list to be finished later.
+  const pauseDraft = async () => {
+    if (!draft) return;
+    setBusy(true);
+    try {
+      await persistDraft(draft, { status: 'draft' });
+      setDraft(null);
+      toast({ title: 'Saved for later', description: 'Find it in your master history and continue whenever you like.' });
+    } catch (error) {
+      reportError('That entry could not be saved', error);
+    }
+    setBusy(false);
+  };
+
+  // Read the original words again after more were added, and fold the new detail into the entry.
+  const refreshFromWords = async () => {
+    if (!draft) return;
+    setBusy(true);
+    try {
+      const response = await base44.functions.invoke('parseCareerEntry', { raw_text: draft.raw_text || '' });
+      const parsed = response.data || {};
+      const patch = {
+        entry_type: parsed.entry_type || draft.entry_type,
+        title: parsed.title || draft.title,
+        organization: parsed.organization || draft.organization,
+        location: parsed.location || draft.location,
+        start_date: parsed.start_date || draft.start_date,
+        end_date: parsed.end_date || draft.end_date,
+        summary: parsed.summary || draft.summary,
+        accomplishments: mergedList(draft.accomplishments, parsed.accomplishments),
+        skills: mergedList(draft.skills, parsed.skills),
+        metrics: mergedList(draft.metrics, parsed.metrics),
+        keywords: mergedList(draft.keywords, parsed.keywords)
+      };
+      const prompts = unansweredPrompts(parsed.suggestions, draft.answers);
+      if (prompts.length) {
+        patch.suggestions = prompts;
+        patch.suggestion_index = 0;
+      }
+      await persistDraft(draft, patch);
+      toast({ title: 'Entry updated from your words' });
+    } catch (error) {
+      reportError('Those words could not be added to the entry', error);
+    }
+    setBusy(false);
   };
 
   const answerSuggestion = async ({ decision, comment }) => {
@@ -339,6 +402,8 @@ export default function HistoryCapture() {
             onChange={(patch) => setDraft((prev) => ({ ...prev, ...patch }))}
             onAnswer={answerSuggestion}
             onSave={saveEntry}
+            onPause={pauseDraft}
+            onRefresh={refreshFromWords}
             onDiscard={discardDraft}
           />
         </div>
@@ -357,6 +422,12 @@ export default function HistoryCapture() {
         {!loading && entries.length > 1 && (
           <p className="mt-2 text-[13px] text-muted-foreground">
             Tick the positions that overlap in time to combine them into one employer block.
+          </p>
+        )}
+        {!loading && openDrafts.length > 0 && (
+          <p className="mt-2 text-[13px] text-muted-foreground">
+            {openDrafts.length === 1 ? 'One entry is still in progress' : `${openDrafts.length} entries are still in progress`}
+            {' — open it and carry on where you left off.'}
           </p>
         )}
         {selectedEntries.length > 0 && (

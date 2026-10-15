@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Loader2, Trash2 } from 'lucide-react';
+import { Check, Clock, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,7 @@ import TagInput from '@/components/editors/TagInput';
 import SuggestionPanel from '@/components/history/SuggestionPanel';
 import DutyTimelineEditor from '@/components/history/review/DutyTimelineEditor';
 import DictateButton from '@/components/common/DictateButton';
+import OriginalCapture from '@/components/history/OriginalCapture';
 import { appendLine } from '@/hooks/useDictation';
 
 const TYPES = [
@@ -38,7 +39,7 @@ function Field({ label, children }) {
   );
 }
 
-export default function DraftEntryEditor({ entry, busy, onChange, onAnswer, onSave, onDiscard }) {
+export default function DraftEntryEditor({ entry, busy, onChange, onAnswer, onSave, onPause, onRefresh, onDiscard }) {
   const set = (patch) => onChange(patch);
   const note = entry.status === 'confirmed' ? 'Saved entry' : 'Entry in progress';
 
@@ -56,6 +57,13 @@ export default function DraftEntryEditor({ entry, busy, onChange, onAnswer, onSa
         </div>
 
         <div className="mt-6 space-y-5">
+          <OriginalCapture
+            value={entry.raw_text}
+            onChange={(raw_text) => set({ raw_text })}
+            onRefresh={onRefresh}
+            busy={busy}
+          />
+
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Type">
               <Select value={entry.entry_type || 'work'} onValueChange={(value) => set({ entry_type: value })}>
@@ -160,8 +168,12 @@ export default function DraftEntryEditor({ entry, busy, onChange, onAnswer, onSa
               {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
               Save entry
             </Button>
+            <Button variant="secondary" onClick={onPause} disabled={busy} className="rounded-full">
+              <Clock className="mr-2 h-4 w-4" /> Save and finish later
+            </Button>
             <p className="self-center text-[12px] text-muted-foreground">
-              Edits save automatically; saving confirms this entry in your master history.
+              Edits save automatically. Save entry confirms it in your master history; save and finish later keeps it in
+              your list as an entry in progress.
             </p>
           </div>
         </div>
