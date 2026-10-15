@@ -116,7 +116,7 @@ export default function HistoryCapture() {
     localStorage.setItem(DRAFT_KEY, draft.id);
     if (busy) return undefined;
     const timer = setTimeout(() => {
-      base44.entities.CareerEntry.update(draft.id, editableFields(draft)).catch(() => {});
+      retryOnTimeout(() => base44.entities.CareerEntry.update(draft.id, editableFields(draft))).catch(() => {});
     }, 1200);
     return () => clearTimeout(timer);
   }, [draft, busy]);
@@ -158,10 +158,27 @@ export default function HistoryCapture() {
     setBusy(false);
   };
 
+  // Confirms the entry on the server actually holds what we tried to save, so a lost reply is
+  // never reported as a lost entry.
+  const serverHas = (record, payload) =>
+    !!record &&
+    Object.entries(payload).every(([key, value]) =>
+      JSON.stringify(record[key] ?? null) === JSON.stringify(value ?? null)
+    );
+
   const persistDraft = async (values, extra = {}) => {
-    const updated = await base44.entities.CareerEntry.update(values.id, { ...editableFields(values), ...extra });
+    const payload = { ...editableFields(values), ...extra };
+    let updated;
+    try {
+      updated = await retryOnTimeout(() => base44.entities.CareerEntry.update(values.id, payload));
+    } catch (error) {
+      const saved = await base44.entities.CareerEntry.get(values.id).catch(() => null);
+      if (!serverHas(saved, payload)) throw error;
+      updated = saved;
+    }
     setDraft(updated);
-    await loadEntries();
+    // A slow list refresh must not report a save that already landed as a failure.
+    await loadEntries().catch(() => {});
     return updated;
   };
 
@@ -227,7 +244,7 @@ export default function HistoryCapture() {
           entry: editableFields(draft)
         }));
         const merged = response.data || {};
-        await retryOnTimeout(() => persistDraft(draft, {
+        await persistDraft(draft, {
           accomplishments: merged.accomplishments || draft.accomplishments || [],
           skills: merged.skills || draft.skills || [],
           metrics: merged.metrics || draft.metrics || [],
@@ -235,13 +252,13 @@ export default function HistoryCapture() {
           summary: merged.summary || draft.summary,
           answers: [...(draft.answers || []), `${suggestion} → yes: ${comment}`],
           suggestion_index: nextIndex
-        }));
+        });
         if (merged.change_note) toast({ title: merged.change_note });
       } else {
-        await retryOnTimeout(() => persistDraft(draft, {
+        await persistDraft(draft, {
           answers: [...(draft.answers || []), `${suggestion} → ${decision === 'no' ? 'no' : 'passed'}`],
           suggestion_index: nextIndex
-        }));
+        });
       }
     } catch (error) {
       reportError('That answer could not be merged in', error);
