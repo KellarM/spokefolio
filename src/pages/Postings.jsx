@@ -14,6 +14,7 @@ export default function Postings() {
   const navigate = useNavigate();
   const [postings, setPostings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [locating, setLocating] = useState(false);
   const [search, setSearch] = useState(null);
   const [savingKey, setSavingKey] = useState('');
 
@@ -21,20 +22,44 @@ export default function Postings() {
     const records = await base44.entities.JobPosting.list('-created_date', 100);
     setPostings(records || []);
     setLoading(false);
+    return records || [];
   }, []);
 
   useEffect(() => {
-    load();
+    let cancelled = false;
+    (async () => {
+      let records = await load();
+      try {
+        for (let pass = 0; pass < 4 && !cancelled; pass += 1) {
+          if (!records.some((item) => !item.location_checked)) break;
+          setLocating(true);
+          const response = await base44.functions.invoke('locateApplications', { target: 'postings' });
+          const { remaining } = response.data || {};
+          records = await load();
+          if (!remaining) break;
+        }
+      } catch (error) {
+        // The list works without it, and the lookup can run again on the next visit.
+      }
+      if (!cancelled) setLocating(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [load]);
 
   const add = async (imported) => {
     try {
+      const hasCommute = imported.drive_distance_km != null || imported.drive_minutes != null;
       const created = await base44.entities.JobPosting.create({
         job_title: imported.job_title,
         company: imported.company,
         job_description: imported.job_description,
         source_url: imported.source_url,
         work_address: imported.work_address,
+        drive_distance_km: imported.drive_distance_km ?? undefined,
+        drive_minutes: imported.drive_minutes ?? undefined,
+        location_checked: hasCommute,
         imported_from: imported.source_url ? 'link' : 'text',
         status: 'saved'
       });
@@ -103,24 +128,35 @@ export default function Postings() {
       let description = result.job_description || result.summary || result.job_title;
       let fullText = Boolean(result.job_description && result.job_description.length >= 120);
 
+      let workAddress = result.work_address || '';
+      let distanceKm = result.drive_distance_km ?? null;
+      let driveMinutes = result.drive_minutes ?? null;
+
       if (!fullText && result.source_url) {
         try {
           const read = await base44.functions.invoke('importJobPosting', { url: result.source_url });
           if (read.data?.status === 'ok' && read.data.job_description) {
             description = read.data.job_description;
             fullText = true;
+            if (read.data.work_address) workAddress = read.data.work_address;
+            if (read.data.drive_distance_km != null) distanceKm = read.data.drive_distance_km;
+            if (read.data.drive_minutes != null) driveMinutes = read.data.drive_minutes;
           }
         } catch (error) {
           // The summary found in the search is still enough to keep it; the text can be pasted in later.
         }
       }
 
+      const hasCommute = distanceKm != null || driveMinutes != null;
       const created = await base44.entities.JobPosting.create({
         job_title: result.job_title,
         company: result.company,
         job_description: description,
         source_url: result.source_url || '',
-        work_address: result.work_address || '',
+        work_address: workAddress,
+        drive_distance_km: distanceKm ?? undefined,
+        drive_minutes: driveMinutes ?? undefined,
+        location_checked: hasCommute,
         imported_from: 'search',
         status: 'saved'
       });
@@ -182,6 +218,12 @@ export default function Postings() {
           hint="Give it the link and it reads the employer, the role, the location and the posting itself — or paste the text for sites that block reading."
         />
       </div>
+
+      {locating && (
+        <p className="mt-6 flex items-center gap-2 text-[13px] text-muted-foreground">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Finding work-site addresses and travel distances from home…
+        </p>
+      )}
 
       {loading ? (
         <div className="mt-8 flex items-center gap-3 text-sm text-muted-foreground">

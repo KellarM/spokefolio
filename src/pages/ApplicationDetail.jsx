@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import useProfile from '@/hooks/useProfile';
 import StatusBadge from '@/components/applications/StatusBadge';
+import JobLocation from '@/components/applications/JobLocation';
 import JobPostingPanel from '@/components/applications/JobPostingPanel';
 import CompanyBrief from '@/components/applications/CompanyBrief';
 import ResumeDocument from '@/components/resume/ResumeDocument';
@@ -309,6 +310,11 @@ export default function ApplicationDetail() {
             {application.company || 'Company not named'}
             {application.created_date ? ` · ${new Date(application.created_date).toLocaleDateString()}` : ''}
           </p>
+          <JobLocation
+            address={application.work_address}
+            distanceKm={application.drive_distance_km}
+            minutes={application.drive_minutes}
+          />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

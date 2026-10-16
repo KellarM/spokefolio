@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { cleanText } from '../../shared/career.ts';
 import { inspectJobBankPosting } from '../../shared/jobBank.ts';
+import { estimateCommutes } from '../../shared/commute.ts';
 
 const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
@@ -131,11 +132,24 @@ export default async function (req) {
 
     const pasted = cleanText(body?.text, 20000);
     const rawUrl = cleanText(body?.url, 1200);
+    const homeLocation = cleanText(body?.homeLocation, 160);
+
+    const attachCommute = async (item) => {
+      const commutes = await estimateCommutes(base44, [{ ...item, id: '0' }], homeLocation);
+      const comm = commutes.get('0');
+      if (!comm) return item;
+      return {
+        ...item,
+        work_address: comm.work_address || item.work_address || '',
+        drive_distance_km: comm.drive_distance_km ?? null,
+        drive_minutes: comm.drive_minutes ?? null
+      };
+    };
 
     // Pasted text is used exactly as given: only the employer and role are read out of it.
     if (pasted.length >= MIN_PASTED_TEXT) {
       const details = await readDetails(base44, '', pasted, false);
-      return Response.json({
+      const enriched = await attachCommute({
         status: 'ok',
         source_url: '',
         company: details.company,
@@ -143,6 +157,7 @@ export default async function (req) {
         work_address: details.work_address,
         job_description: pasted
       });
+      return Response.json(enriched);
     }
 
     if (!rawUrl) {
@@ -163,7 +178,7 @@ export default async function (req) {
       if (jb && jb.fullDescription && jb.fullDescription.length >= MIN_PASTED_TEXT) {
         const primaryUrl = jb.externalUrl || jb.jobBankUrl;
         const details = await readDetails(base44, primaryUrl, jb.fullDescription, false);
-        return Response.json({
+        const enriched = await attachCommute({
           status: 'ok',
           source_url: primaryUrl,
           company: jb.company || details.company,
@@ -171,6 +186,7 @@ export default async function (req) {
           work_address: jb.work_address || details.work_address,
           job_description: details.job_description || jb.fullDescription
         });
+        return Response.json(enriched);
       }
     }
 
@@ -201,7 +217,7 @@ export default async function (req) {
     }
 
     const details = await readDetails(base44, url.toString(), page, true);
-    return Response.json({
+    const enriched = await attachCommute({
       status: 'ok',
       source_url: url.toString(),
       company: details.company,
@@ -209,6 +225,7 @@ export default async function (req) {
       work_address: details.work_address,
       job_description: details.job_description
     });
+    return Response.json(enriched);
   } catch (error) {
     return Response.json({ error: error.message || 'That posting could not be read.' }, { status: 500 });
   }

@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { cleanText } from '../../shared/career.ts';
 import { matchesLocationFilter, searchJobBank } from '../../shared/jobBank.ts';
+import { estimateCommutes } from '../../shared/commute.ts';
 
 const MAX_RESULTS = 8;
 const MAX_HISTORY = 10;
@@ -311,6 +312,22 @@ export default async function (req) {
         searchOnce(base44, category, location, homeLocation, distanceKm, limits)
       ]);
       results = [...bank, ...found.results].slice(0, MAX_RESULTS);
+    }
+
+    // Calculate driving distance and drive time from Home to each workplace so every search result shows it immediately.
+    if (results.length > 0) {
+      const keyed = results.map((item, index) => ({ ...item, id: String(index) }));
+      const commutes = await estimateCommutes(base44, keyed, homeLocation || location);
+      results = results.map((item, index) => {
+        const comm = commutes.get(String(index));
+        if (!comm) return item;
+        return {
+          ...item,
+          work_address: comm.work_address || item.work_address || '',
+          drive_distance_km: comm.drive_distance_km ?? item.drive_distance_km ?? null,
+          drive_minutes: comm.drive_minutes ?? item.drive_minutes ?? null
+        };
+      });
     }
 
     const where = location ? ` around ${location}` : '';

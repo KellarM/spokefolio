@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Sparkles, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import JobLocation from '@/components/applications/JobLocation';
 
 const hostOf = (url) => {
   try {
@@ -33,12 +34,16 @@ export default function PostingCard({ posting, onDelete }) {
           <p className="mt-1 text-[13px] text-muted-foreground">
             {[
               posting.company,
-              posting.work_address,
               posting.created_date ? new Date(posting.created_date).toLocaleDateString() : ''
             ]
               .filter(Boolean)
               .join(' · ')}
           </p>
+          <JobLocation
+            address={posting.work_address}
+            distanceKm={posting.drive_distance_km}
+            minutes={posting.drive_minutes}
+          />
           <p className="mt-1.5 text-[12px] text-muted-foreground">
             {words} words · {source}
           </p>

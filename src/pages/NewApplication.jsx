@@ -26,7 +26,14 @@ export default function NewApplication() {
   const { profile, loadingProfile, save } = useProfile();
   const [searchParams] = useSearchParams();
   const postingParam = searchParams.get('posting') || '';
-  const [form, setForm] = useState({ company: '', job_title: '', job_description: '', work_address: '' });
+  const [form, setForm] = useState({
+    company: '',
+    job_title: '',
+    job_description: '',
+    work_address: '',
+    drive_distance_km: null,
+    drive_minutes: null
+  });
   const [entries, setEntries] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +75,9 @@ export default function NewApplication() {
             company: posting.company || '',
             job_title: posting.job_title || '',
             job_description: posting.job_description || '',
-            work_address: posting.work_address || ''
+            work_address: posting.work_address || '',
+            drive_distance_km: posting.drive_distance_km ?? null,
+            drive_minutes: posting.drive_minutes ?? null
           });
         }
       } catch (error) {
@@ -90,7 +99,9 @@ export default function NewApplication() {
       company: imported.company || '',
       job_title: imported.job_title || '',
       job_description: imported.job_description || '',
-      work_address: imported.work_address || ''
+      work_address: imported.work_address || '',
+      drive_distance_km: imported.drive_distance_km ?? null,
+      drive_minutes: imported.drive_minutes ?? null
     });
   };
 
@@ -124,6 +135,7 @@ export default function NewApplication() {
         education: data.education || [],
         certifications: data.certifications || []
       };
+      const hasCommute = form.drive_distance_km != null || form.drive_minutes != null;
       const created = await base44.entities.JobApplication.create({
         company: form.company,
         job_title: form.job_title,
@@ -131,6 +143,9 @@ export default function NewApplication() {
         source_url: sourceUrl,
         posting_id: postingId,
         work_address: form.work_address,
+        drive_distance_km: form.drive_distance_km ?? undefined,
+        drive_minutes: form.drive_minutes ?? undefined,
+        location_checked: hasCommute,
         match_summary: data.match_summary || '',
         gaps: data.gaps || [],
         resume,

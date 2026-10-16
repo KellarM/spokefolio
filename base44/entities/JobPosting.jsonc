@@ -17,6 +17,16 @@
     "work_address": {
       "type": "string"
     },
+    "drive_distance_km": {
+      "type": "number"
+    },
+    "drive_minutes": {
+      "type": "number"
+    },
+    "location_checked": {
+      "type": "boolean",
+      "default": false
+    },
     "imported_from": {
       "type": "string",
       "enum": [

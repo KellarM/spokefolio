@@ -1,6 +1,7 @@
 import React from 'react';
 import { ExternalLink, Loader2, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import JobLocation from '@/components/applications/JobLocation';
 
 const hostOf = (url) => {
   try {
@@ -32,11 +33,15 @@ export default function JobResultCard({ result, busy, onKeep, onTailor, onDismis
       </div>
       <p className="mt-1 text-[12.5px] text-muted-foreground">
         {result.company}
-        {result.work_address ? ` · ${result.work_address}` : ''}
         {result.pay ? ` · ${result.pay}` : ''}
         {result.posted ? ` · ${result.posted}` : ''}
         {host ? ` · ${host}` : ''}
       </p>
+      <JobLocation
+        address={result.work_address}
+        distanceKm={result.drive_distance_km}
+        minutes={result.drive_minutes}
+      />
       {result.summary && (
         <p className="mt-3 text-[13.5px] leading-relaxed text-foreground/90">{result.summary}</p>
       )}
