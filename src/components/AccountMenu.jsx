@@ -1,12 +1,14 @@
-import React from 'react';
-import { LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { KeyRound, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import PasswordHelpDialog from '@/components/PasswordHelpDialog';
 
-// Shows whose career studio this is and signs them out so another account can log in.
+// Shows whose career studio this is, helps them get onto another device, and signs them out.
 export default function AccountMenu({ className }) {
   const { user, logout } = useAuth();
+  const [passwordHelp, setPasswordHelp] = useState(false);
   const name = user?.full_name || user?.email || 'Your account';
   const initial = name.trim().charAt(0).toUpperCase();
 
@@ -25,6 +27,17 @@ export default function AccountMenu({ className }) {
         type="button"
         variant="ghost"
         size="icon"
+        onClick={() => setPasswordHelp(true)}
+        aria-label="Sign in on another device"
+        title="Sign in on another device"
+        className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+      >
+        <KeyRound className="h-4 w-4" strokeWidth={1.75} />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
         onClick={() => logout(false)}
         aria-label="Log out"
         title="Log out"
@@ -32,6 +45,7 @@ export default function AccountMenu({ className }) {
       >
         <LogOut className="h-4 w-4" strokeWidth={1.75} />
       </Button>
+      <PasswordHelpDialog open={passwordHelp} onOpenChange={setPasswordHelp} />
     </div>
   );
 }
