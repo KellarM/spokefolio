@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import StatusBadge from '@/components/applications/StatusBadge';
 import SalaryPill from '@/components/applications/SalaryPill';
 import JobLocation from '@/components/applications/JobLocation';
+import DeleteApplicationButton from '@/components/applications/DeleteApplicationButton';
 
 const FILTERS = [
   { value: 'all', label: 'All' },
@@ -56,6 +57,8 @@ export default function Applications() {
   }, [load]);
 
   const visible = filter === 'all' ? applications : applications.filter((application) => application.status === filter);
+
+  const handleDeleted = (id) => setApplications((current) => current.filter((application) => application.id !== id));
 
   return (
     <div className="animate-rise">
@@ -116,10 +119,13 @@ export default function Applications() {
       ) : (
         <ul className="mt-6 space-y-3">
           {visible.map((application) => (
-            <li key={application.id}>
+            <li
+              key={application.id}
+              className="group flex items-stretch gap-3 rounded-2xl border border-border/70 bg-card px-5 py-4 transition-all hover:border-accent/40 hover:shadow-[0_18px_40px_-32px_rgba(16,24,40,0.5)]"
+            >
               <Link
                 to={`/application/${application.id}`}
-                className="group flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-border/70 bg-card px-5 py-4 transition-all hover:border-accent/40 hover:shadow-[0_18px_40px_-32px_rgba(16,24,40,0.5)]"
+                className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-4"
               >
                 <div className="min-w-0">
                   <p className="font-heading text-[18px]">{application.job_title || 'Tailored résumé'}</p>
@@ -147,6 +153,7 @@ export default function Applications() {
                   <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </div>
               </Link>
+              <DeleteApplicationButton application={application} onDeleted={handleDeleted} />
             </li>
           ))}
         </ul>
