@@ -10,7 +10,7 @@ export default function StudioHero({ draftCount = 0 }) {
       <div className="pointer-events-none absolute -left-24 bottom-[-3rem] h-52 w-52 rounded-full bg-accent/10 blur-3xl" />
 
       <div className="relative">
-        <p className="eyebrow">Personal résumé studio</p>
+        <p className="eyebrow">Spokefolio Personal Resume Studio</p>
         <h1 className="mt-3 max-w-2xl font-heading text-[30px] leading-[1.12] tracking-tight sm:text-[40px]">
           Turn your real work history into a résumé written for the job you want.
         </h1>

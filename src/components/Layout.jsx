@@ -18,10 +18,10 @@ const NAV = [
 function Brand() {
   return (
     <div className="flex items-center gap-3">
-      <Image src={LOGO} alt="Spokefolio" className="h-9 w-9 rounded-[8px]" />
+      <Image src={LOGO} alt="Spokefolio Personal Resume Studio" className="h-9 w-9 rounded-[8px]" />
       <div>
         <p className="font-heading text-[17px] leading-none">Spokefolio</p>
-        <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Personal studio</p>
+        <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Personal Resume Studio</p>
       </div>
     </div>
   );

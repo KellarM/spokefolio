@@ -9,7 +9,7 @@ export default function WelcomeHero() {
       <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/15 blur-3xl" />
       <div className="pointer-events-none absolute -left-28 top-24 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
       <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:py-28">
-        <p className="eyebrow animate-rise">Personal resume assistant</p>
+        <p className="eyebrow animate-rise">Spokefolio Personal Resume Studio</p>
         <h1 className="animate-rise mt-5 font-heading text-4xl leading-[1.08] tracking-tight sm:text-6xl">
           Your career, told once — tailored to every job.
         </h1>
