@@ -5,7 +5,7 @@ const steps = [
   {
     icon: Mic,
     title: 'Tell your story once',
-    body: 'Dictate or type your roles, projects and results. Resume Craft tidies your words into a career history you review and refine.',
+    body: 'Dictate or type your roles, projects and results. Spokefolio tidies your words into a career history you review and refine.',
   },
   {
     icon: Sparkles,

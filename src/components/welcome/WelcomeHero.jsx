@@ -14,7 +14,7 @@ export default function WelcomeHero() {
           Your career, told once — tailored to every job.
         </h1>
         <p className="animate-rise mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-          Resume Craft captures your work history by voice, keeps it as one reusable master story, then
+          Spokefolio captures your work history by voice, keeps it as one reusable master story, then
           shapes it into a resume and cover letter for each role you apply to.
         </p>
         <div className="animate-rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">

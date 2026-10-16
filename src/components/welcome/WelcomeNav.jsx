@@ -14,7 +14,7 @@ export default function WelcomeNav() {
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <FileText className="h-4 w-4" aria-hidden="true" />
           </span>
-          <span className="font-heading text-lg tracking-tight">Resume Craft</span>
+          <span className="font-heading text-lg tracking-tight">Spokefolio</span>
         </Link>
 
         {isAuthenticated ? (

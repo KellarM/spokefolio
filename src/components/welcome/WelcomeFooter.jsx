@@ -6,7 +6,7 @@ export default function WelcomeFooter() {
     <footer className="border-t border-border/60 bg-secondary/40">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-8 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="font-heading text-base tracking-tight">Resume Craft</p>
+          <p className="font-heading text-base tracking-tight">Spokefolio</p>
           <p className="mt-1 text-xs text-muted-foreground">
             One career history, tailored documents for every role you go after.
           </p>
