@@ -33,6 +33,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-background">
       <aside className="fixed inset-y-0 left-0 hidden w-[268px] flex-col border-r border-border/70 bg-card lg:flex">
+        <div className="h-1.5 w-full bg-gradient-to-r from-primary via-resume-brass to-accent" aria-hidden="true" />
         <div className="px-6 pt-8">
           <Brand />
         </div>
@@ -46,8 +47,8 @@ export default function Layout() {
                 className={cn(
                   'flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] transition-colors',
                   isActive(item.to)
-                    ? 'bg-secondary font-medium text-foreground'
-                    : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
+                    ? 'bg-primary/10 font-medium text-primary'
+                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
@@ -72,6 +73,7 @@ export default function Layout() {
       </aside>
 
       <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur lg:hidden">
+        <div className="h-1 w-full bg-gradient-to-r from-primary via-resume-brass to-accent" aria-hidden="true" />
         <div className="px-5 pt-4">
           <Brand />
         </div>
@@ -84,8 +86,8 @@ export default function Layout() {
               className={cn(
                 'whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] transition-colors',
                 isActive(item.to)
-                  ? 'border-transparent bg-secondary font-medium text-foreground'
-                  : 'border-border/70 text-muted-foreground'
+                  ? 'border-primary/30 bg-primary/10 font-medium text-primary'
+                  : 'border-border/70 text-muted-foreground hover:text-foreground'
               )}
             >
               {item.label}

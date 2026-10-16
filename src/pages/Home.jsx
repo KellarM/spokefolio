@@ -3,6 +3,7 @@ import { Loader2, Quote } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import useProfile from '@/hooks/useProfile';
+import StudioHero from '@/components/home/StudioHero';
 import ContactForm from '@/components/home/ContactForm';
 import ProgressCard from '@/components/home/ProgressCard';
 import TemplateCard from '@/components/home/TemplateCard';
@@ -34,6 +35,7 @@ export default function Home() {
 
   const historyComplete = !!profile.history_complete;
   const confirmed = entries.filter((entry) => entry.status === 'confirmed');
+  const draftCount = entries.filter((entry) => entry.status === 'draft').length;
   const busy = loading || loadingProfile;
 
   const unlock = async () => {
@@ -43,16 +45,7 @@ export default function Home() {
 
   return (
     <div className="animate-rise">
-      <header className="max-w-2xl">
-        <p className="eyebrow">Personal résumé studio</p>
-        <h1 className="mt-3 font-heading text-[34px] leading-[1.1] tracking-tight sm:text-[44px]">
-          Turn your real work history into a résumé written for the job you want.
-        </h1>
-        <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
-          Capture your career by voice, one entry at a time. Then paste any job posting and get a résumé shaped around it,
-          ready to download as a Word document.
-        </p>
-      </header>
+      <StudioHero draftCount={loading ? 0 : draftCount} />
 
       {busy ? (
         <div className="mt-12 flex items-center gap-3 text-sm text-muted-foreground">

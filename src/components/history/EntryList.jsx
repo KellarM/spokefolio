@@ -56,9 +56,13 @@ export default function EntryList({ entries = [], activeId, selectedIds = [], on
                     {(entry.roles || []).length} roles inside
                   </span>
                 )}
-                {entry.status === 'draft' && (
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10.5px] uppercase tracking-[0.1em] text-amber-800">
+                {entry.status === 'draft' ? (
+                  <span className="rounded-full bg-primary/12 px-2 py-0.5 text-[10.5px] uppercase tracking-[0.1em] text-primary">
                     In progress
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-accent/12 px-2 py-0.5 text-[10.5px] uppercase tracking-[0.1em] text-accent">
+                    Confirmed
                   </span>
                 )}
               </div>

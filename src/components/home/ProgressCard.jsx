@@ -1,13 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Check, Lock, Mic, Sparkles } from 'lucide-react';
+import { Check, FolderOpen, List, Lock, Mic, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-function Stat({ value, label }) {
+function Stat({ value, label, icon: Icon, tone }) {
   return (
-    <div className="rounded-xl border border-border/70 bg-background/60 px-3 py-2.5">
-      <p className="font-heading text-xl leading-none">{value}</p>
-      <p className="mt-1 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">{label}</p>
+    <div className={cn('rounded-xl border px-3 py-2.5', tone)}>
+      <div className="flex items-center gap-2">
+        <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
+        <p className="font-heading text-xl leading-none">{value}</p>
+      </div>
+      <p className="mt-1.5 text-[11px] uppercase tracking-[0.12em] opacity-80">{label}</p>
     </div>
   );
 }
@@ -22,7 +26,12 @@ export default function ProgressCard({ historyComplete, entryCount, confirmedCou
             {historyComplete ? 'Career history locked in' : 'Build your career history'}
           </h3>
         </div>
-        <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary">
+        <span
+          className={cn(
+            'mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
+            historyComplete ? 'bg-accent/12 text-accent' : 'bg-primary/12 text-primary'
+          )}
+        >
           {historyComplete ? <Lock className="h-4 w-4" strokeWidth={1.75} /> : <Mic className="h-4 w-4" strokeWidth={1.75} />}
         </span>
       </div>
@@ -34,10 +43,20 @@ export default function ProgressCard({ historyComplete, entryCount, confirmedCou
       </p>
 
       <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-        <Stat value={entryCount} label="Entries" />
-        <Stat value={confirmedCount} label="Confirmed" />
-        <Stat value={documentCount} label="Files" />
-        <Stat value={applicationCount} label="Résumés" />
+        <Stat value={entryCount} label="Entries" icon={List} tone="border-primary/30 bg-primary/10 text-primary" />
+        <Stat value={confirmedCount} label="Confirmed" icon={Check} tone="border-accent/30 bg-accent/10 text-accent" />
+        <Stat
+          value={documentCount}
+          label="Files"
+          icon={FolderOpen}
+          tone="border-resume-brass/40 bg-resume-brass/10 text-resume-brass"
+        />
+        <Stat
+          value={applicationCount}
+          label="Résumés"
+          icon={Sparkles}
+          tone="border-foreground/15 bg-foreground/5 text-foreground"
+        />
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">

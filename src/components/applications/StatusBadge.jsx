@@ -2,12 +2,12 @@ import React from 'react';
 
 const STYLES = {
   draft: 'bg-secondary text-secondary-foreground',
-  ready: 'bg-accent/10 text-accent',
+  ready: 'bg-primary/12 text-primary',
   not_applied: 'bg-secondary text-secondary-foreground',
-  applied: 'bg-amber-100 text-amber-800',
-  interviewing: 'bg-blue-100 text-blue-800',
-  offer: 'bg-emerald-100 text-emerald-800',
-  not_hired: 'bg-slate-200 text-slate-700',
+  applied: 'bg-resume-brass/15 text-resume-brass',
+  interviewing: 'bg-amber-100 text-amber-800',
+  offer: 'bg-accent text-accent-foreground',
+  not_hired: 'bg-muted text-muted-foreground',
   rejected: 'bg-rose-100 text-rose-700'
 };
 
