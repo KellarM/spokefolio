@@ -32,8 +32,8 @@ export default function PasswordHelpDialog({ open, onOpenChange }) {
         </DialogHeader>
 
         <p className="text-[14px] leading-relaxed text-muted-foreground">
-          Your password is stored scrambled, so no screen can show it, here or anywhere else. Choose a new one you will
-          know and it will work on every device.
+          Your password is stored scrambled, so no screen can show it and no email can send it, here or anywhere else. It
+          cannot be recovered, only replaced. Choose a new one you will know and it will work on every device.
         </p>
 
         <ol className="mt-4 space-y-2 text-[13.5px] leading-relaxed text-foreground/90">
