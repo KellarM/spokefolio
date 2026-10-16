@@ -75,6 +75,13 @@ export default function ApplicationDetail() {
     toast({ title, description: error?.response?.data?.error || error.message, variant: 'destructive' });
   };
 
+  const handleResumeChange = (nextResume) => {
+    setResume(nextResume);
+    if (application?.id) {
+      base44.entities.JobApplication.update(application.id, { resume: nextResume }).catch(() => {});
+    }
+  };
+
   const persist = async (patch = {}) => {
     const updated = await base44.entities.JobApplication.update(application.id, {
       resume,
@@ -415,7 +422,7 @@ export default function ApplicationDetail() {
           <ResumeDocument
             profile={profile}
             resume={resume}
-            onChange={setResume}
+            onChange={handleResumeChange}
             template={template}
             onSetDefaultOrder={makeDefaultOrder}
             onSuggestBullets={suggestBullets}

@@ -26,7 +26,12 @@ export default function ResumeSections({ resume, style, sections, onChange, onSe
       </div>
     ),
     skills: (
-      <TagInput tags={resume.skills || []} onChange={(skills) => set({ skills })} placeholder="Add a skill and press Enter" />
+      <TagInput
+        tags={resume.skills || []}
+        onChange={(skills) => set({ skills })}
+        placeholder="Add a core skill and press Enter or click Add"
+        addLabel="Add skill"
+      />
     ),
     experience: (
       <RolesEditor
@@ -50,14 +55,17 @@ export default function ResumeSections({ resume, style, sections, onChange, onSe
       <TagInput
         tags={resume.certifications || []}
         onChange={(certifications) => set({ certifications })}
-        placeholder="Add a certification and press Enter"
+        placeholder="Add a certification and press Enter or click Add"
+        addLabel="Add certification"
+        splitOnComma={false}
       />
     ),
     keywords: (
       <TagInput
         tags={resume.keywords || []}
         onChange={(keywords) => set({ keywords })}
-        placeholder="Add a keyword and press Enter"
+        placeholder="Add a screening keyword and press Enter or click Add"
+        addLabel="Add keyword"
       />
     )
   };
