@@ -70,6 +70,51 @@
     --resume-navy: 203 45% 72%;
     --resume-brass: 35 45% 62%;
   }
+
+  /* Warm rustic skin, used only by the public cover page. */
+  .rustic {
+    --background: 36 44% 94%;
+    --foreground: 25 32% 15%;
+    --card: 40 55% 98%;
+    --card-foreground: 25 32% 15%;
+    --popover: 40 55% 98%;
+    --popover-foreground: 25 32% 15%;
+    --primary: 17 56% 33%;
+    --primary-foreground: 40 55% 97%;
+    --secondary: 34 40% 88%;
+    --secondary-foreground: 25 32% 18%;
+    --muted: 34 34% 89%;
+    --muted-foreground: 28 20% 36%;
+    --accent: 148 26% 27%;
+    --accent-foreground: 40 55% 97%;
+    --border: 30 28% 80%;
+    --input: 30 28% 78%;
+    --ring: 17 56% 33%;
+    --resume-navy: 25 34% 20%;
+    --resume-brass: 32 58% 46%;
+  }
+
+  .dark .rustic {
+    --background: 26 26% 11%;
+    --foreground: 38 40% 92%;
+    --card: 26 24% 14%;
+    --card-foreground: 38 40% 92%;
+    --popover: 26 24% 14%;
+    --popover-foreground: 38 40% 92%;
+    --primary: 22 52% 46%;
+    --primary-foreground: 26 30% 10%;
+    --secondary: 26 20% 20%;
+    --secondary-foreground: 38 40% 92%;
+    --muted: 26 20% 20%;
+    --muted-foreground: 34 16% 66%;
+    --accent: 145 22% 52%;
+    --accent-foreground: 26 30% 10%;
+    --border: 26 18% 24%;
+    --input: 26 18% 26%;
+    --ring: 22 52% 50%;
+    --resume-navy: 30 40% 70%;
+    --resume-brass: 34 55% 58%;
+  }
 }
 
 @layer base {

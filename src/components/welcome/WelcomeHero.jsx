@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 
 export default function WelcomeHero() {
   return (
-    <section className="relative overflow-hidden border-b border-border/60">
-      <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
+    <section className="relative overflow-hidden border-b border-border/60 bg-gradient-to-b from-secondary/80 via-background to-background">
+      <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/15 blur-3xl" />
+      <div className="pointer-events-none absolute -left-28 top-24 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
       <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:py-28">
         <p className="eyebrow animate-rise">Personal resume assistant</p>
         <h1 className="animate-rise mt-5 font-heading text-4xl leading-[1.08] tracking-tight sm:text-6xl">
