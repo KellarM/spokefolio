@@ -28,8 +28,8 @@ export default function ForgotPassword() {
   return (
     <AuthLayout
       icon={Mail}
-      title="Reset password"
-      subtitle="We'll send you a link to reset it"
+      title="Recover your password"
+      subtitle="We'll email you a link to choose a new password"
       footer={
         <Link to="/login" className="text-primary font-medium hover:underline">
           <ArrowLeft className="w-3 h-3 inline mr-1" />Back to log in
@@ -37,9 +37,16 @@ export default function ForgotPassword() {
       }
     >
       {sent ? (
-        <p className="text-sm text-foreground text-center">
-          If an account exists with that email, you'll receive a password reset link shortly.
-        </p>
+        <div className="space-y-3 text-center">
+          <p className="text-sm text-foreground">
+            If an account exists with that email, a link is on its way. Nothing changes until you open it. The link asks
+            you to choose a new password, and your current password keeps working until you do.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Created your account with Google? Then you need no password at all. Use "Continue with Google" on the sign-in
+            page on any computer.
+          </p>
+        </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -66,7 +73,7 @@ export default function ForgotPassword() {
                 Sending...
               </>
             ) : (
-              "Send reset link"
+              "Email me the link"
             )}
           </Button>
         </form>
