@@ -5,6 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import useProfile from '@/hooks/useProfile';
 import DictationBox from '@/components/history/DictationBox';
+import KeywordDetailBuilder from '@/components/history/KeywordDetailBuilder';
 import DraftEntryEditor from '@/components/history/DraftEntryEditor';
 import EntryList from '@/components/history/EntryList';
 import CombineDialog from '@/components/history/CombineDialog';
@@ -379,6 +380,98 @@ export default function HistoryCapture() {
     toast({ title: 'History unlocked', description: 'Add more entries whenever you like.' });
   };
 
+  const addDetailToDraft = (item) => {
+    if (!draft || !item?.text) return;
+    const text = item.text.trim();
+    setDraft((prev) => {
+      if (!prev) return prev;
+      const nextAccomplishments = mergedList(prev.accomplishments, [text]);
+      const nextSkills =
+        item.category === 'equipment' || item.category === 'certification'
+          ? mergedList(prev.skills, [text])
+          : prev.skills || [];
+      const nextKeywords =
+        text.split(/\s+/).length <= 6 ? mergedList(prev.keywords, [text]) : prev.keywords || [];
+      return {
+        ...prev,
+        accomplishments: nextAccomplishments,
+        skills: nextSkills,
+        keywords: nextKeywords
+      };
+    });
+    toast({ title: `Added “${text}” to ${draft.title || 'open entry'}` });
+  };
+
+  const createEntryFromTray = async ({ title, organization, start_date, items, confirmImmediately }) => {
+    const texts = (items || []).map((i) => String(i.text || '').trim()).filter(Boolean);
+    if (!texts.length) return;
+    const skills = (items || [])
+      .filter((i) => i.category === 'equipment' || i.category === 'certification')
+      .map((i) => i.text);
+    const keywords = texts.filter((t) => t.split(/\s+/).length <= 6);
+
+    setBusy(true);
+    try {
+      const created = await base44.entities.CareerEntry.create({
+        entry_type: 'work',
+        title: title || 'Career Experience',
+        organization: organization || '',
+        location: '',
+        start_date: start_date || '',
+        end_date: '',
+        summary: `${title || 'Hands-on experience'} covering ${texts.slice(0, 4).join(', ')}.`,
+        raw_text: texts.join('\n'),
+        accomplishments: texts,
+        skills,
+        metrics: [],
+        keywords,
+        suggestions: [],
+        suggestion_index: 0,
+        answers: [],
+        status: confirmImmediately ? 'confirmed' : 'draft'
+      });
+      await loadEntries();
+      if (!confirmImmediately) {
+        setDraft(created);
+        toast({ title: 'Opened in editor', description: 'Add any extra details or dates and save when ready.' });
+      } else {
+        toast({ title: 'Saved to your career history', description: `Added “${created.title}” with ${texts.length} details.` });
+      }
+    } catch (error) {
+      reportError('Could not save those details', error);
+    }
+    setBusy(false);
+  };
+
+  const appendToExistingEntry = async (entryId, items) => {
+    const target = entries.find((e) => e.id === entryId);
+    if (!target) return;
+    const texts = (items || []).map((i) => String(i.text || '').trim()).filter(Boolean);
+    const newSkills = (items || [])
+      .filter((i) => i.category === 'equipment' || i.category === 'certification')
+      .map((i) => i.text);
+    const newKeywords = texts.filter((t) => t.split(/\s+/).length <= 6);
+
+    setBusy(true);
+    try {
+      const updated = await base44.entities.CareerEntry.update(target.id, {
+        accomplishments: mergedList(target.accomplishments, texts),
+        skills: mergedList(target.skills, newSkills),
+        keywords: mergedList(target.keywords, newKeywords)
+      });
+      if (draft && draft.id === target.id) {
+        setDraft(updated);
+      }
+      await loadEntries();
+      toast({
+        title: `Added ${texts.length} ${texts.length === 1 ? 'detail' : 'details'} to “${target.title}”`
+      });
+    } catch (error) {
+      reportError('Could not add details to that entry', error);
+    }
+    setBusy(false);
+  };
+
   return (
     <div className="animate-rise">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -416,6 +509,19 @@ export default function HistoryCapture() {
       {!historyComplete && !loadingProfile && (
         <div className="mt-6">
           <DictationBox value={dictation} onChange={setDictation} onSubmit={capture} busy={busy} />
+        </div>
+      )}
+
+      {!loadingProfile && (
+        <div className="mt-6">
+          <KeywordDetailBuilder
+            activeDraft={draft}
+            entries={entries}
+            busy={busy}
+            onAddToDraft={addDetailToDraft}
+            onCreateEntryFromTray={createEntryFromTray}
+            onAppendToExistingEntry={appendToExistingEntry}
+          />
         </div>
       )}
 
