@@ -3,6 +3,7 @@ import { AlertCircle, Loader2, Search, Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import JobSearchFilters, { pillClass } from '@/components/postings/JobSearchFilters';
 import useProfile from '@/hooks/useProfile';
 
 const MODES = [
@@ -10,12 +11,15 @@ const MODES = [
   { value: 'profile', label: 'Jobs that fit me', icon: Sparkles }
 ];
 
-// Finds postings on the job sites: either by category and location, or from the person's own history.
+// Finds postings on the job sites: by category and location, or from the person's own history.
 export default function JobSearchPanel({ onResults }) {
   const { profile, loadingProfile } = useProfile();
   const [mode, setMode] = useState('criteria');
   const [category, setCategory] = useState('');
   const [location, setLocation] = useState('');
+  const [distance, setDistance] = useState(0);
+  const [pay, setPay] = useState('');
+  const [period, setPeriod] = useState('year');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,7 +30,8 @@ export default function JobSearchPanel({ onResults }) {
     setBusy(true);
     setError('');
     try {
-      const payload = { mode, category: category.trim(), location: place.trim() };
+      const minPay = pay ? Number(pay) : 0;
+      const payload = { mode, category: category.trim(), location: place.trim(), distanceKm: distance, minPay, payPeriod: period };
 
       if (mode === 'profile') {
         const records = await base44.entities.CareerEntry.list('-created_date', 50);
@@ -49,6 +54,10 @@ export default function JobSearchPanel({ onResults }) {
         mode,
         category: category.trim(),
         location: place.trim(),
+        titles: data.titles || [],
+        distance,
+        minPay,
+        payPeriod: period,
         results: data.results || [],
         note: data.note || ''
       });
@@ -65,7 +74,7 @@ export default function JobSearchPanel({ onResults }) {
           <p className="eyebrow">Find postings</p>
           <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">
             {mode === 'criteria'
-              ? 'Search the job sites by category and location.'
+              ? 'Search the job sites by category, place, distance and pay.'
               : 'Your career history, experience and location are read to find the roles that fit you.'}
           </p>
         </div>
@@ -80,11 +89,7 @@ export default function JobSearchPanel({ onResults }) {
                   setMode(item.value);
                   setError('');
                 }}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12.5px] transition-colors ${
-                  mode === item.value
-                    ? 'border-primary/30 bg-primary/10 font-medium text-primary'
-                    : 'border-border/70 text-muted-foreground hover:text-foreground'
-                }`}
+                className={pillClass(mode === item.value)}
               >
                 <Icon className="h-3.5 w-3.5" /> {item.label}
               </button>
@@ -114,6 +119,18 @@ export default function JobSearchPanel({ onResults }) {
           {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
           {busy ? 'Searching' : 'Search jobs'}
         </Button>
+      </div>
+
+      <div className="mt-4">
+        <JobSearchFilters
+          distance={distance}
+          onDistance={setDistance}
+          pay={pay}
+          onPay={setPay}
+          period={period}
+          onPeriod={setPeriod}
+          disabled={busy}
+        />
       </div>
 
       {error && (

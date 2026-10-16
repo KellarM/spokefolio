@@ -3,6 +3,7 @@ import { cleanText } from '../../shared/career.ts';
 
 const MAX_RESULTS = 8;
 const MAX_HISTORY = 10;
+const MAX_TITLES = 2;
 
 const asList = (values, max, width) =>
   (Array.isArray(values) ? values : [])
@@ -43,12 +44,17 @@ const RULES = [
   'Rules you must follow:',
   '- Only postings you actually found in search results. Never invent a company, a role, a location, a summary or a link.',
   '- Every source_url must be the direct link to one specific posting, exactly as it appeared in a result. Never return a search results page, a job board category page, or an employer careers index.',
+  '- A link that ends in a city or a job category rather than the posting itself (like /jobs/edmonton/accountant) is a list, not a posting: leave it out.',
+  '- Look for postings whose link points straight at the posting itself: an employer careers page, a government job bank posting, Indeed, ZipRecruiter, Glassdoor, Randstad, or a company hiring system.',
+  '- Run more than one search if that is what it takes, then keep only the postings that hold up.',
+  '- When a board only shows you a search page, do not stop: open the posting on its own page, or on the employer careers page, and use that link. Links ending in q-anything-jobs.html, or containing /jobsearch, /search or a plain city or category name, are search pages and are thrown away.',
   '- Never return the same posting twice.',
   '- summary: two or three plain sentences on what the role is and what it asks for, taken only from that posting. No advice, no opinion, no comment on the person.',
   '- work_address: the location exactly as the posting states it, or "Remote". Empty string when it does not say.',
   '- posted: roughly when it was posted, or an empty string.',
+  '- pay: the pay the posting states, in the posting\'s own words (like "$62,000 a year" or "$31.50 an hour"). "Pay not stated" when the posting does not say.',
   `- At most ${MAX_RESULTS} postings. Fewer is fine. None is fine: then return an empty list and say why in note.`,
-  '- note: one short, plain line to the person about this search.'
+  '- note: one short, plain line about this search, describing only the postings in your results. Never say how many you found and use no numbers or figures.'
 ].join('\n');
 
 // Search result listings, category pages and careers indexes are not postings: only a link to one job is usable.
@@ -66,6 +72,16 @@ const isListingPage = (url) => {
   }
 };
 
+// A link to one posting carries that posting's own reference; a board page carries only a place or a category.
+const hasPostingId = (url) => {
+  if (!url) return false;
+  if (/\d{5,}/.test(url)) return true;
+  const tokens = url.match(/[A-Za-z0-9_-]{12,}/g) || [];
+  return tokens.some((token) => /\d/.test(token));
+};
+
+const isUsablePosting = (url) => Boolean(url) && !isListingPage(url) && hasPostingId(url);
+
 const SEARCH_SCHEMA = {
   type: 'object',
   properties: {
@@ -79,7 +95,8 @@ const SEARCH_SCHEMA = {
           work_address: { type: 'string' },
           summary: { type: 'string' },
           source_url: { type: 'string' },
-          posted: { type: 'string' }
+          posted: { type: 'string' },
+          pay: { type: 'string' }
         },
         required: ['job_title', 'company', 'summary']
       }
@@ -89,22 +106,20 @@ const SEARCH_SCHEMA = {
   required: ['results']
 };
 
-function buildPrompt(mode, category, location, brief) {
-  if (mode === 'profile') {
-    return [
-      'Search the live web - job boards and employer career pages (Indeed, LinkedIn, company career sites, government job banks and similar) - for current postings this person is genuinely suited to.',
-      '',
-      'About the person. This is their real history: use nothing that is not in it.',
-      brief,
-      '',
-      location
-        ? `Search around: ${location}. Include that area and remote roles it allows.`
-        : 'Their location is not given: search broadly and include remote roles.',
-      '',
-      'First work out which role titles their history actually supports, from their own titles, skills and accomplishments. Never suggest a role, a field or a level of seniority their history does not show. Then search for those titles.'
-    ].join('\n');
-  }
+const TITLES_SCHEMA = {
+  type: 'object',
+  properties: { titles: { type: 'array', items: { type: 'string' } } },
+  required: ['titles']
+};
 
+function payLine(minPay, payPeriod) {
+  const amount = `$${minPay.toLocaleString()}`;
+  return payPeriod === 'hour'
+    ? `Pay: at least ${amount} an hour, or the same rate worked out for a year.`
+    : `Pay: at least ${amount} a year, or the same rate worked out for an hour.`;
+}
+
+function buildPrompt(category, location, limits) {
   return [
     'Search the live web - job boards and employer career pages (Indeed, LinkedIn, company career sites, government job banks and similar) - for current postings matching this search.',
     '',
@@ -112,9 +127,56 @@ function buildPrompt(mode, category, location, brief) {
     location
       ? `Location: ${location}. Include that area and remote roles it allows.`
       : 'Location: not given: search broadly and include remote roles.',
+    ...(limits.length ? ['', ...limits] : []),
     '',
     'Return only postings whose title and content are for this kind of work. Leave out postings for other kinds of work.'
   ].join('\n');
+}
+
+function buildTitlesPrompt(brief) {
+  return [
+    'You are given one person\'s real career history. Name the job titles they could credibly apply for today, so that postings can be searched for.',
+    '',
+    brief,
+    '',
+    `Return at most ${MAX_TITLES} titles.`,
+    'Rules:',
+    '- Each title must be one an employer would actually advertise for, worded the way a posting would word it.',
+    '- Only titles their own history supports: no promotion, no field they have not worked in, no seniority they have not held.',
+    '- Most recent and most senior work first.',
+    `- ${MAX_TITLES} titles is the limit, not a target. One is the right answer when only one is supported.`
+  ].join('\n');
+}
+
+const normalise = (item) => {
+  const url = cleanText(item?.source_url, 1000);
+  return {
+    job_title: cleanText(item?.job_title, 160),
+    company: cleanText(item?.company, 160),
+    work_address: cleanText(item?.work_address, 200),
+    summary: cleanText(item?.summary, 900),
+    source_url: /^https?:\/\//i.test(url) ? url : '',
+    posted: cleanText(item?.posted, 60),
+    pay: cleanText(item?.pay, 120)
+  };
+};
+
+const keyOf = (item) => item.source_url || `${item.job_title}|${item.company}`;
+
+// One search of the live web for one category, with the limits applied.
+async function searchOnce(base44, category, location, limits) {
+  const found = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    prompt: [buildPrompt(category, location, limits), '', RULES].join('\n'),
+    add_context_from_internet: true,
+    response_json_schema: SEARCH_SCHEMA
+  });
+
+  const results = (Array.isArray(found?.results) ? found.results : [])
+    .map(normalise)
+    .filter((item) => item.job_title && item.company && isUsablePosting(item.source_url))
+    .slice(0, MAX_RESULTS);
+
+  return { results, note: cleanText(found?.note, 300) };
 }
 
 export default async function (req) {
@@ -134,6 +196,12 @@ export default async function (req) {
     const category = cleanText(body?.category, 120);
     const location = cleanText(body?.location, 120);
 
+    const wantedDistance = Number(body?.distanceKm);
+    const distanceKm = Number.isFinite(wantedDistance) ? Math.min(500, Math.max(0, Math.round(wantedDistance))) : 0;
+    const wantedPay = Number(body?.minPay);
+    const minPay = Number.isFinite(wantedPay) ? Math.min(10000000, Math.max(0, Math.round(wantedPay))) : 0;
+    const payPeriod = body?.payPeriod === 'hour' ? 'hour' : 'year';
+
     if (mode === 'profile' && !body?.profile && !Array.isArray(body?.entries)) {
       return Response.json(
         { error: 'There is no career history to search from yet. Capture some history first, or search by category.' },
@@ -144,44 +212,74 @@ export default async function (req) {
       return Response.json({ error: 'Enter a job category or role title to search for.' }, { status: 400 });
     }
 
-    const brief = mode === 'profile' ? candidateBrief(body?.profile, body?.entries) : '';
+    const limits = [];
+    if (distanceKm && location) {
+      limits.push(
+        `Distance: only postings whose own stated location is within ${distanceKm} km of ${location}. Leave out anything clearly further away. Remote roles are fine.`
+      );
+    }
+    if (minPay) {
+      limits.push(payLine(minPay, payPeriod));
+      limits.push(
+        'Leave out any posting whose stated pay is clearly below that. Where a posting does not state pay at all it may still be returned: put "Pay not stated" in the pay field.'
+      );
+    }
 
-    const found = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: [buildPrompt(mode, category, location, brief), '', RULES].join('\n'),
-      add_context_from_internet: true,
-      response_json_schema: SEARCH_SCHEMA
-    });
+    let results = [];
+    let note = '';
+    let titles = [];
 
-    const results = (Array.isArray(found?.results) ? found.results : [])
-      .map((item) => {
-        const url = cleanText(item?.source_url, 1000);
-        return {
-          job_title: cleanText(item?.job_title, 160),
-          company: cleanText(item?.company, 160),
-          work_address: cleanText(item?.work_address, 200),
-          summary: cleanText(item?.summary, 900),
-          source_url: /^https?:\/\//i.test(url) ? url : '',
-          posted: cleanText(item?.posted, 60)
-        };
-      })
-      .filter((item) => item.job_title && item.company && !isListingPage(item.source_url))
-      .slice(0, MAX_RESULTS);
+    if (mode === 'profile') {
+      // First the history says which roles it supports; then each of those is searched for like any category.
+      const brief = candidateBrief(body?.profile, body?.entries);
+      const derived = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt: buildTitlesPrompt(brief),
+        response_json_schema: TITLES_SCHEMA
+      });
 
-    // The line to the person always matches the list they are looking at.
+      titles = (Array.isArray(derived?.titles) ? derived.titles : [])
+        .map((title) => cleanText(title, 80))
+        .filter(Boolean)
+        .slice(0, MAX_TITLES);
+
+      const attempts = await Promise.allSettled(
+        titles.map((title) => searchOnce(base44, title, location, limits))
+      );
+
+      attempts.forEach((attempt) => {
+        if (attempt.status !== 'fulfilled') return;
+        if (!note && attempt.value.results.length) note = attempt.value.note;
+        attempt.value.results.forEach((item) => {
+          if (results.length >= MAX_RESULTS) return;
+          if (results.some((kept) => keyOf(kept) === keyOf(item))) return;
+          results.push(item);
+        });
+      });
+    } else {
+      const found = await searchOnce(base44, category, location, limits);
+      results = found.results;
+      note = found.note;
+    }
+
+    const where = location ? ` around ${location}` : '';
     const searched =
       mode === 'profile'
-        ? `roles that fit your history${location ? ` around ${location}` : ''}`
-        : `"${category}"${location ? ` around ${location}` : ''}`;
+        ? `roles that fit your history (${titles.length ? titles.join(', ') : 'no titles could be drawn from it yet'})${where}`
+        : `"${category}"${where}`;
 
     return Response.json({
       status: 'ok',
       mode,
       category,
       location,
+      titles,
       results,
+      // The line to the person never claims more than the list they are looking at.
       note: results.length
-        ? cleanText(found?.note, 300)
-        : `No single posting came back for ${searched}. Some job sites will only show a search page to an automatic search. Try a broader category, or a nearby city or region.`
+        ? /\d/.test(note)
+          ? ''
+          : note
+        : `No single posting came back for ${searched}. Some job sites will only show a search page to an automatic search. Try a broader category, a wider distance, or a nearby city or region.`
     });
   } catch (error) {
     return Response.json({ error: error.message || 'The job search did not go through.' }, { status: 500 });

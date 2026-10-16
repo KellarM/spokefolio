@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExternalLink, Loader2, Sparkles } from 'lucide-react';
+import { ExternalLink, Loader2, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const hostOf = (url) => {
@@ -10,8 +10,8 @@ const hostOf = (url) => {
   }
 };
 
-// One posting the search turned up, with the two ways forward: keep it, or write a résumé for it now.
-export default function JobResultCard({ result, busy, onKeep, onTailor }) {
+// One posting the search turned up, with the ways forward: keep it, write a résumé for it, or drop it.
+export default function JobResultCard({ result, busy, onKeep, onTailor, onDismiss }) {
   const host = hostOf(result.source_url);
 
   return (
@@ -20,6 +20,7 @@ export default function JobResultCard({ result, busy, onKeep, onTailor }) {
       <p className="mt-1 text-[12.5px] text-muted-foreground">
         {result.company}
         {result.work_address ? ` · ${result.work_address}` : ''}
+        {result.pay ? ` · ${result.pay}` : ''}
         {result.posted ? ` · ${result.posted}` : ''}
         {host ? ` · ${host}` : ''}
       </p>
@@ -46,6 +47,14 @@ export default function JobResultCard({ result, busy, onKeep, onTailor }) {
             </a>
           </Button>
         )}
+        <Button
+          size="sm"
+          variant="ghost"
+          className="ml-auto rounded-full text-muted-foreground hover:text-destructive"
+          onClick={onDismiss}
+        >
+          <X className="h-3.5 w-3.5" /> Dismiss
+        </Button>
       </div>
     </li>
   );

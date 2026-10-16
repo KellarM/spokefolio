@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import PostingCard from '@/components/postings/PostingCard';
 import PostingImportForm from '@/components/postings/PostingImportForm';
@@ -60,6 +61,36 @@ export default function Postings() {
         variant: 'destructive'
       });
     }
+  };
+
+  const clearAll = async () => {
+    if (!postings.length) return;
+    if (!window.confirm(`Remove all ${postings.length} saved postings?`)) return;
+    try {
+      await base44.entities.JobPosting.deleteMany({ id: { $in: postings.map((posting) => posting.id) } });
+      setPostings([]);
+      toast({ title: 'Saved postings cleared', description: 'Your applications are not affected.' });
+    } catch (error) {
+      toast({
+        title: 'Those postings could not be cleared',
+        description: error?.response?.data?.error || error.message,
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const dismissResult = (result) => {
+    const key = `${result.source_url || result.job_title}-${result.company}`;
+    setSearch((prev) =>
+      prev
+        ? {
+            ...prev,
+            results: prev.results.filter(
+              (item) => `${item.source_url || item.job_title}-${item.company}` !== key
+            )
+          }
+        : prev
+    );
   };
 
   // Keeping a search result makes it a posting like any other, with the employer's own page read for the full text.
@@ -141,6 +172,8 @@ export default function Postings() {
             savingKey={savingKey}
             onKeep={keepResult}
             onTailor={tailorResult}
+            onDismiss={dismissResult}
+            onClear={() => setSearch(null)}
           />
         )}
 
@@ -164,11 +197,21 @@ export default function Postings() {
         </div>
       ) : (
         <>
-          <div className="mt-8 flex flex-wrap items-baseline justify-between gap-2">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-2">
             <p className="eyebrow">Kept postings</p>
-            <p className="text-[12.5px] text-muted-foreground">
-              {postings.length} saved{tailored ? ` · ${tailored} with a résumé written` : ''}
-            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-[12.5px] text-muted-foreground">
+                {postings.length} saved{tailored ? ` · ${tailored} with a résumé written` : ''}
+              </p>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="rounded-full text-muted-foreground hover:text-destructive"
+                onClick={clearAll}
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Clear all
+              </Button>
+            </div>
           </div>
           <ul className="mt-3 space-y-3">
             {postings.map((posting) => (
