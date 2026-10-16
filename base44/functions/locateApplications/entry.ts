@@ -82,7 +82,8 @@ export default async function (req) {
       const address = typeof row.address === 'string' ? row.address.trim() : '';
       const distance = Number(row.distance_km);
       const minutes = Number(row.drive_minutes);
-      const patch = { id: item.id, work_address: address, location_checked: true };
+      // A posting that came in with its own address keeps it when the lookup cannot place the site.
+      const patch = { id: item.id, work_address: address || item.work_address || '', location_checked: true };
       if (Number.isFinite(distance) && distance > 0) patch.drive_distance_km = Math.round(distance * 10) / 10;
       if (Number.isFinite(minutes) && minutes > 0) patch.drive_minutes = Math.round(minutes);
       return patch;

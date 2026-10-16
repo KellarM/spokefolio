@@ -1,0 +1,54 @@
+{
+  "name": "JobPosting",
+  "type": "object",
+  "properties": {
+    "job_title": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "job_description": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "work_address": {
+      "type": "string"
+    },
+    "imported_from": {
+      "type": "string",
+      "enum": [
+        "link",
+        "text"
+      ],
+      "default": "text"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "saved",
+        "tailored"
+      ],
+      "default": "saved"
+    },
+    "application_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "job_description"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

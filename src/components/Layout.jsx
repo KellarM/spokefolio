@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Mic, FolderOpen, Briefcase, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Mic, FolderOpen, Briefcase, Sparkles, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Image } from '@/components/ui/image';
 import AccountMenu from '@/components/AccountMenu';
@@ -10,6 +10,7 @@ const LOGO = 'https://media.base44.com/images/public/6ac71edebc00261f3487fa3e/9f
 const NAV = [
   { label: 'Overview', to: '/', icon: LayoutDashboard },
   { label: 'Career history', to: '/history', icon: Mic },
+  { label: 'Job postings', to: '/postings', icon: FileText },
   { label: 'Reference files', to: '/documents', icon: FolderOpen },
   { label: 'Applications', to: '/applications', icon: Briefcase }
 ];

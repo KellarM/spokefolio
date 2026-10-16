@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Layout from '@/components/Layout';
 import Home from '@/pages/Home';
 import HistoryCapture from '@/pages/HistoryCapture';
+import Postings from '@/pages/Postings';
 import Documents from '@/pages/Documents';
 import Applications from '@/pages/Applications';
 import NewApplication from '@/pages/NewApplication';
@@ -56,6 +57,7 @@ const AuthenticatedApp = () => {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/history" element={<HistoryCapture />} />
+          <Route path="/postings" element={<Postings />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/applications" element={<Applications />} />
           <Route path="/new-application" element={<NewApplication />} />

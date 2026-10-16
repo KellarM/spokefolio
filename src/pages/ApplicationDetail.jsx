@@ -337,7 +337,7 @@ export default function ApplicationDetail() {
         </div>
       </header>
 
-      <JobPostingPanel description={application.job_description} />
+      <JobPostingPanel description={application.job_description} sourceUrl={application.source_url} />
 
       <CompanyBrief
         application={application}

@@ -11,6 +11,12 @@
     "job_description": {
       "type": "string"
     },
+    "source_url": {
+      "type": "string"
+    },
+    "posting_id": {
+      "type": "string"
+    },
     "work_address": {
       "type": "string"
     },
