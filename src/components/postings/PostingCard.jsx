@@ -16,6 +16,14 @@ export default function PostingCard({ posting, onDelete }) {
   const words = (posting.job_description || '').trim().split(/\s+/).filter(Boolean).length;
   const host = hostOf(posting.source_url);
   const tailored = posting.status === 'tailored' && posting.application_id;
+  const source =
+    posting.imported_from === 'search'
+      ? 'found in a job search'
+      : host
+        ? `read from ${host}`
+        : posting.imported_from === 'link'
+          ? 'link kept'
+          : 'pasted text';
 
   return (
     <li className="rounded-2xl border border-border/70 bg-card p-5 transition-all hover:border-accent/40">
@@ -32,7 +40,7 @@ export default function PostingCard({ posting, onDelete }) {
               .join(' · ')}
           </p>
           <p className="mt-1.5 text-[12px] text-muted-foreground">
-            {words} words{host ? ` · read from ${host}` : ' · pasted text'}
+            {words} words · {source}
           </p>
         </div>
         <span

@@ -21,7 +21,8 @@
       "type": "string",
       "enum": [
         "link",
-        "text"
+        "text",
+        "search"
       ],
       "default": "text"
     },

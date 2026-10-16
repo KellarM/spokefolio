@@ -1,14 +1,20 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import PostingCard from '@/components/postings/PostingCard';
 import PostingImportForm from '@/components/postings/PostingImportForm';
+import JobSearchPanel from '@/components/postings/JobSearchPanel';
+import JobSearchResults from '@/components/postings/JobSearchResults';
 
 export default function Postings() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [postings, setPostings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState(null);
+  const [savingKey, setSavingKey] = useState('');
 
   const load = useCallback(async () => {
     const records = await base44.entities.JobPosting.list('-created_date', 100);
@@ -56,6 +62,62 @@ export default function Postings() {
     }
   };
 
+  // Keeping a search result makes it a posting like any other, with the employer's own page read for the full text.
+  const keepResult = async (result) => {
+    const already = postings.find((item) => item.source_url && item.source_url === result.source_url);
+    if (already) return already;
+
+    setSavingKey(result.source_url || result.job_title);
+    try {
+      let description = result.summary || result.job_title;
+      let fullText = false;
+
+      if (result.source_url) {
+        try {
+          const read = await base44.functions.invoke('importJobPosting', { url: result.source_url });
+          if (read.data?.status === 'ok' && read.data.job_description) {
+            description = read.data.job_description;
+            fullText = true;
+          }
+        } catch (error) {
+          // The summary found in the search is still enough to keep it; the text can be pasted in later.
+        }
+      }
+
+      const created = await base44.entities.JobPosting.create({
+        job_title: result.job_title,
+        company: result.company,
+        job_description: description,
+        source_url: result.source_url || '',
+        work_address: result.work_address || '',
+        imported_from: 'search',
+        status: 'saved'
+      });
+      setPostings((prev) => [created, ...prev]);
+      toast({
+        title: 'Posting kept',
+        description: fullText
+          ? 'The whole posting was read from the employer page.'
+          : 'Only the search summary could be read. Paste the full text on the posting for a sharper résumé.'
+      });
+      return created;
+    } catch (error) {
+      toast({
+        title: 'That posting could not be kept',
+        description: error?.response?.data?.error || error.message,
+        variant: 'destructive'
+      });
+      return null;
+    } finally {
+      setSavingKey('');
+    }
+  };
+
+  const tailorResult = async (result) => {
+    const kept = await keepResult(result);
+    if (kept) navigate(`/new-application?posting=${kept.id}`);
+  };
+
   const tailored = postings.filter((posting) => posting.status === 'tailored').length;
 
   return (
@@ -64,12 +126,24 @@ export default function Postings() {
         <p className="eyebrow">Your search</p>
         <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">Job postings</h1>
         <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
-          Keep the postings you are interested in here. Bring one in from a link or paste its text, then tailor a résumé
-          to it without pasting a word twice.
+          Search the job sites by category and location, or let it read your history and find the roles that fit you.
+          Anything you like can be kept here — brought in from a link, pasted, or found by a search — and tailored into a
+          résumé without pasting a word twice.
         </p>
       </header>
 
-      <div className="mt-7">
+      <div className="mt-7 space-y-6">
+        <JobSearchPanel onResults={setSearch} />
+
+        {search && (
+          <JobSearchResults
+            search={search}
+            savingKey={savingKey}
+            onKeep={keepResult}
+            onTailor={tailorResult}
+          />
+        )}
+
         <PostingImportForm
           onExtracted={add}
           hint="Give it the link and it reads the employer, the role, the location and the posting itself — or paste the text for sites that block reading."
