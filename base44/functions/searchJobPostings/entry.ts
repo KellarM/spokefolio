@@ -176,7 +176,7 @@ async function searchOnce(base44, category, location, limits) {
     .filter((item) => item.job_title && item.company && isUsablePosting(item.source_url))
     .slice(0, MAX_RESULTS);
 
-  return { results, note: cleanText(found?.note, 300) };
+  return { results };
 }
 
 export default async function (req) {
@@ -226,7 +226,6 @@ export default async function (req) {
     }
 
     let results = [];
-    let note = '';
     let titles = [];
 
     if (mode === 'profile') {
@@ -248,7 +247,6 @@ export default async function (req) {
 
       attempts.forEach((attempt) => {
         if (attempt.status !== 'fulfilled') return;
-        if (!note && attempt.value.results.length) note = attempt.value.note;
         attempt.value.results.forEach((item) => {
           if (results.length >= MAX_RESULTS) return;
           if (results.some((kept) => keyOf(kept) === keyOf(item))) return;
@@ -258,7 +256,6 @@ export default async function (req) {
     } else {
       const found = await searchOnce(base44, category, location, limits);
       results = found.results;
-      note = found.note;
     }
 
     const where = location ? ` around ${location}` : '';
@@ -274,11 +271,9 @@ export default async function (req) {
       location,
       titles,
       results,
-      // The line to the person never claims more than the list they are looking at.
+      // A line is shown only when there is something to explain: an empty list, and what to try instead.
       note: results.length
-        ? /\d/.test(note)
-          ? ''
-          : note
+        ? ''
         : `No single posting came back for ${searched}. Some job sites will only show a search page to an automatic search. Try a broader category, a wider distance, or a nearby city or region.`
     });
   } catch (error) {
