@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { cleanText } from '../../shared/career.ts';
-import { searchJobBank } from '../../shared/jobBank.ts';
+import { matchesLocationFilter, searchJobBank } from '../../shared/jobBank.ts';
 
 const MAX_RESULTS = 8;
 const MAX_HISTORY = 10;
@@ -121,14 +121,19 @@ function payLine(minPay, payPeriod) {
     : `Pay: at least ${amount} a year, or the same rate worked out for an hour.`;
 }
 
-function buildPrompt(category, location, limits) {
+function buildPrompt(category, location, distanceKm, homeLocation, limits) {
+  const origin = homeLocation || location;
+  const locationLine = location
+    ? distanceKm > 0
+      ? `Location: within ${distanceKm} km of ${origin} (around ${location}). Include postings in cities/towns within ${distanceKm} km of ${origin}, plus remote roles.`
+      : `Location: strictly in ${location} only. Do NOT return postings from other cities in the same province or country (for example, if searching Edmonton, never return Calgary, Red Deer, or other cities).`
+    : 'Location: not given: search broadly and include remote roles.';
+
   return [
     'Search the live web - job boards and employer career pages (Indeed, LinkedIn, company career sites, government job banks and similar) - for current postings matching this search.',
     '',
     `Category or role: ${category}`,
-    location
-      ? `Location: ${location}. Include that area and remote roles it allows.`
-      : 'Location: not given: search broadly and include remote roles.',
+    locationLine,
     ...(limits.length ? ['', ...limits] : []),
     '',
     'Return only postings whose title and content are for this kind of work. Leave out postings for other kinds of work.'
@@ -166,19 +171,34 @@ const normalise = (item) => {
 const keyOf = (item) => item.source_url || `${item.job_title}|${item.company}`;
 
 // One search of the live web for one category, with the limits applied.
-async function searchOnce(base44, category, location, limits) {
+async function searchOnce(base44, category, location, homeLocation, distanceKm, limits) {
   const found = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt: [buildPrompt(category, location, limits), '', RULES].join('\n'),
+    prompt: [buildPrompt(category, location, distanceKm, homeLocation, limits), '', RULES].join('\n'),
     add_context_from_internet: true,
     response_json_schema: SEARCH_SCHEMA
   });
 
-  const results = (Array.isArray(found?.results) ? found.results : [])
+  const candidates = (Array.isArray(found?.results) ? found.results : [])
     .map(normalise)
-    .filter((item) => item.job_title && item.company && isUsablePosting(item.source_url))
-    .slice(0, MAX_RESULTS);
+    .filter((item) => item.job_title && item.company && isUsablePosting(item.source_url));
 
-  return { results };
+  const filtered = [];
+  for (const item of candidates) {
+    if (filtered.length >= MAX_RESULTS) break;
+    if (location || homeLocation) {
+      const ok = await matchesLocationFilter({
+        itemPlace: item.work_address || '',
+        itemMode: item.work_address || '',
+        targetLocation: location,
+        homeLocation,
+        distanceKm
+      });
+      if (!ok) continue;
+    }
+    filtered.push(item);
+  }
+
+  return { results: filtered };
 }
 
 export default async function (req) {
@@ -196,7 +216,8 @@ export default async function (req) {
 
     const mode = body?.mode === 'profile' ? 'profile' : 'criteria';
     const category = cleanText(body?.category, 120);
-    const location = cleanText(body?.location, 120);
+    const homeLocation = cleanText(body?.homeLocation || body?.profile?.location, 160);
+    const location = cleanText(body?.location, 120) || homeLocation;
 
     const wantedDistance = Number(body?.distanceKm);
     const distanceKm = Number.isFinite(wantedDistance) ? Math.min(500, Math.max(0, Math.round(wantedDistance))) : 0;
@@ -215,9 +236,14 @@ export default async function (req) {
     }
 
     const limits = [];
-    if (distanceKm && location) {
+    if (distanceKm && (homeLocation || location)) {
+      const origin = homeLocation || location;
       limits.push(
-        `Distance: only postings whose own stated location is within ${distanceKm} km of ${location}. Leave out anything clearly further away. Remote roles are fine.`
+        `Distance: only postings whose stated location is within ${distanceKm} km of the applicant's home (${origin}). Leave out anything further away.`
+      );
+    } else if (location) {
+      limits.push(
+        `Strict city match: only postings located in ${location}. Leave out postings in any other city.`
       );
     }
     if (minPay) {
@@ -247,10 +273,16 @@ export default async function (req) {
       const attempts = await Promise.allSettled(
         titles.map((title) =>
           Promise.all([
-            searchJobBank({ keywords: title, location, distanceKm, minPay, payPeriod, limit: BANK_PER_TERM }).catch(
-              () => []
-            ),
-            searchOnce(base44, title, location, limits)
+            searchJobBank({
+              keywords: title,
+              location,
+              homeLocation,
+              distanceKm,
+              minPay,
+              payPeriod,
+              limit: BANK_PER_TERM
+            }).catch(() => []),
+            searchOnce(base44, title, location, homeLocation, distanceKm, limits)
           ])
         )
       );
@@ -267,10 +299,16 @@ export default async function (req) {
     } else {
       // The national board and the wider web search run together, Job Bank postings first.
       const [bank, found] = await Promise.all([
-        searchJobBank({ keywords: category, location, distanceKm, minPay, payPeriod, limit: BANK_PER_TERM }).catch(
-          () => []
-        ),
-        searchOnce(base44, category, location, limits)
+        searchJobBank({
+          keywords: category,
+          location,
+          homeLocation,
+          distanceKm,
+          minPay,
+          payPeriod,
+          limit: BANK_PER_TERM
+        }).catch(() => []),
+        searchOnce(base44, category, location, homeLocation, distanceKm, limits)
       ]);
       results = [...bank, ...found.results].slice(0, MAX_RESULTS);
     }

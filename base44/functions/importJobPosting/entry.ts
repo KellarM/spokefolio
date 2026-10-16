@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { cleanText } from '../../shared/career.ts';
+import { inspectJobBankPosting } from '../../shared/jobBank.ts';
 
 const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
@@ -154,6 +155,23 @@ export default async function (req) {
         { error: 'That does not look like a web link to a posting. Paste the link to the posting, or paste its text instead.' },
         { status: 400 }
       );
+    }
+
+    // When a Job Bank link is imported, inspect it directly so we use the original partner link and full embedded description.
+    if (/jobbank\.gc\.ca\/jobsearch\/jobposting\/\d+/i.test(url.toString())) {
+      const jb = await inspectJobBankPosting(url.toString());
+      if (jb && jb.fullDescription && jb.fullDescription.length >= MIN_PASTED_TEXT) {
+        const primaryUrl = jb.externalUrl || jb.jobBankUrl;
+        const details = await readDetails(base44, primaryUrl, jb.fullDescription, false);
+        return Response.json({
+          status: 'ok',
+          source_url: primaryUrl,
+          company: jb.company || details.company,
+          job_title: jb.job_title || details.job_title,
+          work_address: jb.work_address || details.work_address,
+          job_description: details.job_description || jb.fullDescription
+        });
+      }
     }
 
     let page = '';

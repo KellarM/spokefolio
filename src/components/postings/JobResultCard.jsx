@@ -13,14 +13,20 @@ const hostOf = (url) => {
 // One posting the search turned up, with the ways forward: keep it, write a résumé for it, or drop it.
 export default function JobResultCard({ result, busy, onKeep, onTailor, onDismiss }) {
   const host = hostOf(result.source_url);
+  const badge =
+    result.origin === 'partner' && result.partner_source
+      ? `${result.partner_source.replace(/^www\./i, '')} · via Job Bank`
+      : result.origin === 'jobbank'
+        ? 'Job Bank'
+        : '';
 
   return (
     <li className="rounded-2xl border border-border/70 bg-card p-5 transition-all hover:border-accent/40">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <p className="font-heading text-[17px] leading-snug">{result.job_title}</p>
-        {result.origin === 'jobbank' && (
+        {badge && (
           <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[10.5px] font-medium uppercase tracking-[0.12em] text-accent">
-            Job Bank
+            {badge}
           </span>
         )}
       </div>

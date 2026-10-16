@@ -100,10 +100,10 @@ export default function Postings() {
 
     setSavingKey(result.source_url || result.job_title);
     try {
-      let description = result.summary || result.job_title;
-      let fullText = false;
+      let description = result.job_description || result.summary || result.job_title;
+      let fullText = Boolean(result.job_description && result.job_description.length >= 120);
 
-      if (result.source_url) {
+      if (!fullText && result.source_url) {
         try {
           const read = await base44.functions.invoke('importJobPosting', { url: result.source_url });
           if (read.data?.status === 'ok' && read.data.job_description) {

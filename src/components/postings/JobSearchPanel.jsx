@@ -31,7 +31,15 @@ export default function JobSearchPanel({ onResults }) {
     setError('');
     try {
       const minPay = pay ? Number(pay) : 0;
-      const payload = { mode, category: category.trim(), location: place.trim(), distanceKm: distance, minPay, payPeriod: period };
+      const payload = {
+        mode,
+        category: category.trim(),
+        location: place.trim(),
+        homeLocation: (profile.location || place || '').trim(),
+        distanceKm: distance,
+        minPay,
+        payPeriod: period
+      };
 
       if (mode === 'profile') {
         const records = await base44.entities.CareerEntry.list('-created_date', 50);
