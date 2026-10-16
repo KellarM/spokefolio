@@ -117,19 +117,21 @@ export default function Applications() {
           </Button>
         </div>
       ) : (
-        <ul className="mt-6 space-y-3">
+        <ul className="mt-6 space-y-4 font-body">
           {visible.map((application) => (
             <li
               key={application.id}
-              className="group flex items-stretch gap-3 rounded-2xl border border-border/70 bg-card px-5 py-4 transition-all hover:border-accent/40 hover:shadow-[0_18px_40px_-32px_rgba(16,24,40,0.5)]"
+              className="group flex items-stretch gap-3 rounded-2xl border border-border/70 bg-card px-6 py-5 transition-all hover:border-accent/40 hover:shadow-[0_18px_40px_-32px_rgba(16,24,40,0.5)]"
             >
               <Link
                 to={`/application/${application.id}`}
                 className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-4"
               >
-                <div className="min-w-0">
-                  <p className="font-heading text-[18px]">{application.job_title || 'Tailored résumé'}</p>
-                  <p className="mt-1 flex flex-wrap items-center gap-2 text-[13px] text-muted-foreground">
+                <div className="min-w-0 flex-1">
+                  <p className="font-body text-[21px] font-semibold tracking-tight text-foreground sm:text-[22px]">
+                    {application.job_title || 'Tailored résumé'}
+                  </p>
+                  <p className="mt-1.5 flex flex-wrap items-center gap-2.5 text-[15px] font-medium text-foreground/85">
                     <span>
                       {[application.company, application.created_date ? new Date(application.created_date).toLocaleDateString() : '']
                         .filter(Boolean)
@@ -143,7 +145,7 @@ export default function Applications() {
                     minutes={application.drive_minutes}
                   />
                   {application.match_summary && (
-                    <p className="mt-2 line-clamp-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground/90">
+                    <p className="mt-3 line-clamp-3 max-w-3xl text-[15.5px] leading-relaxed text-foreground/90">
                       {application.match_summary}
                     </p>
                   )}

@@ -25,7 +25,7 @@ const LABELS = {
 export default function StatusBadge({ status }) {
   const key = STYLES[status] ? status : 'ready';
   return (
-    <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${STYLES[key]}`}>
+    <span className={`shrink-0 rounded-full px-3 py-1 font-body text-[12.5px] font-semibold ${STYLES[key]}`}>
       {LABELS[key]}
     </span>
   );
