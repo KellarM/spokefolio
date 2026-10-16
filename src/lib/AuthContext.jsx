@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
+import { clearSessionToken, getSessionToken } from '@/lib/sessionToken';
 
 const AuthContext = createContext();
 
@@ -21,13 +22,19 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
+
+      // A session-only login (remember me off) is handed to the SDK in memory, never saved here.
+      const sessionToken = getSessionToken();
+      if (sessionToken && !appParams.token) {
+        base44.auth.setToken(sessionToken, false);
+      }
       
       try {
         const publicSettings = await base44.app.getPublicSettings();
         setAppPublicSettings(publicSettings);
         
         // If we got the app public settings successfully, check if user is authenticated
-        if (appParams.token) {
+        if (appParams.token || sessionToken) {
           await checkUserAuth();
         } else {
           setIsLoadingAuth(false);
@@ -103,6 +110,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = (shouldRedirect = true) => {
+    clearSessionToken();
     setUser(null);
     setIsAuthenticated(false);
     

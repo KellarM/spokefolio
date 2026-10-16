@@ -7,11 +7,14 @@ import { Label } from "@/components/ui/label";
 import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import { Checkbox } from "@/components/ui/checkbox";
 import { safeReturnTo } from "@/lib/authReturnTo";
+import { clearSessionToken, setSessionToken } from "@/lib/sessionToken";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   // Post-login destination (e.g. the MCP OAuth consent page sends users here
@@ -23,7 +26,15 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await base44.auth.loginViaEmailPassword(email, password);
+      const { access_token } = await base44.auth.loginViaEmailPassword(email, password);
+      if (remember) {
+        clearSessionToken();
+      } else {
+        // Keep this visit alive without leaving a saved session behind on the device.
+        setSessionToken(access_token);
+        window.localStorage.removeItem("base44_access_token");
+        window.localStorage.removeItem("token");
+      }
       window.location.href = returnTo;
     } catch (err) {
       setError(err.message || "Invalid email or password");
@@ -114,6 +125,22 @@ export default function Login() {
               className="pl-10 h-12"
               required
             />
+          </div>
+        </div>
+        <div className="flex items-start gap-2.5 pt-1">
+          <Checkbox
+            id="remember"
+            checked={remember}
+            onCheckedChange={(checked) => setRemember(checked === true)}
+            className="mt-0.5"
+          />
+          <div className="space-y-0.5">
+            <Label htmlFor="remember" className="cursor-pointer text-sm font-normal leading-none">
+              Remember me on this device
+            </Label>
+            <p className="text-[11px] text-muted-foreground">
+              Unchecked, you'll be signed out when you close your browser.
+            </p>
           </div>
         </div>
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
