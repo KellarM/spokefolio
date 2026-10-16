@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Loader2, Quote } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import useProfile from '@/hooks/useProfile';
@@ -18,14 +17,18 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const [entryRecords, documentRecords, applicationRecords] = await Promise.all([
-      base44.entities.CareerEntry.list('-created_date', 200),
-      base44.entities.SupportingDocument.list('-created_date', 100),
-      base44.entities.JobApplication.list('-created_date', 20)
-    ]);
-    setEntries(entryRecords || []);
-    setDocuments(documentRecords || []);
-    setApplications(applicationRecords || []);
+    try {
+      const [entryRecords, documentRecords, applicationRecords] = await Promise.all([
+        base44.entities.CareerEntry.list('-created_date', 200),
+        base44.entities.SupportingDocument.list('-created_date', 100),
+        base44.entities.JobApplication.list('-created_date', 20)
+      ]);
+      setEntries(entryRecords || []);
+      setDocuments(documentRecords || []);
+      setApplications(applicationRecords || []);
+    } catch {
+      // Unauthenticated preview fallback
+    }
     setLoading(false);
   }, []);
 
@@ -44,17 +47,73 @@ export default function Home() {
   };
 
   return (
-    <div className="animate-rise">
+    <div>
       <StudioHero draftCount={loading ? 0 : draftCount} />
 
-      {busy ? (
-        <div className="mt-12 flex items-center gap-3 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Loading your studio…
+      <div className="mec-ticker">
+        <div className="mec-tk">
+          <b>{entries.length}</b>
+          <span>Entries</span>
         </div>
-      ) : (
-        <>
-          <div className="mt-10 grid gap-6 lg:grid-cols-[1.3fr_1fr]">
+        <div className="mec-tk">
+          <b>{confirmed.length}</b>
+          <span>Confirmed</span>
+        </div>
+        <div className="mec-tk">
+          <b>{documents.length}</b>
+          <span>Files</span>
+        </div>
+        <div className="mec-tk">
+          <b>{applications.length}</b>
+          <span>Résumés</span>
+        </div>
+      </div>
+
+      <div className="mec-work">
+        <RecentApplications applications={applications.slice(0, 4)} />
+
+        <div className="mec-deck">
+          <div className="mec-col">
             <ContactForm profile={profile} onSave={save} />
+
+            <section className="mec-panel">
+              <div className="mec-eyebrow">Master history</div>
+              {busy ? (
+                <div className="mec-load" style={{ marginTop: 12 }}>
+                  Loading your studio…
+                </div>
+              ) : historyComplete && profile.master_summary ? (
+                <div>
+                  <p className="mt-3 font-body text-[14.5px] leading-relaxed text-[#F9FAFB]/90">
+                    {profile.master_summary}
+                  </p>
+                  {Array.isArray(profile.core_skills) && profile.core_skills.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                      {profile.core_skills.slice(0, 14).map((skill) => (
+                        <span
+                          key={skill}
+                          className="rounded-full border border-[#D4AF37]/30 bg-[#0B0F17] px-2.5 py-1 font-body text-[12px] text-[#D4AF37]"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {Array.isArray(profile.target_titles) && profile.target_titles.length > 0 && (
+                    <p className="mt-4 font-body text-[13px] text-[#aab3c5]">
+                      Best fit roles: {profile.target_titles.join(' · ')}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="mec-load" style={{ marginTop: 12 }}>
+                  Complete and lock in your career history to generate your master summary.
+                </div>
+              )}
+            </section>
+          </div>
+
+          <div className="mec-col">
             <ProgressCard
               historyComplete={historyComplete}
               entryCount={entries.length}
@@ -63,39 +122,11 @@ export default function Home() {
               applicationCount={applications.length}
               onUnlock={unlock}
             />
+
+            <TemplateCard profile={profile} onSave={save} />
           </div>
-
-          {historyComplete && profile.master_summary && (
-            <section className="mt-6 paper rounded-2xl p-6">
-              <div className="flex items-start gap-3">
-                <Quote className="mt-1 h-4 w-4 shrink-0 text-accent/70" strokeWidth={1.75} />
-                <div>
-                  <p className="eyebrow">Master history</p>
-                  <p className="mt-3 text-[14.5px] leading-relaxed text-foreground/90">{profile.master_summary}</p>
-                  {Array.isArray(profile.core_skills) && profile.core_skills.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-1.5">
-                      {profile.core_skills.slice(0, 14).map((skill) => (
-                        <span key={skill} className="rounded-full bg-secondary px-2.5 py-1 text-[12px] text-secondary-foreground">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {Array.isArray(profile.target_titles) && profile.target_titles.length > 0 && (
-                    <p className="mt-4 text-[13px] text-muted-foreground">
-                      Best fit roles: {profile.target_titles.join(' · ')}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </section>
-          )}
-
-          <TemplateCard profile={profile} onSave={save} />
-
-          <RecentApplications applications={applications.slice(0, 4)} />
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 }

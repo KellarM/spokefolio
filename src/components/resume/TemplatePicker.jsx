@@ -21,7 +21,7 @@ function MiniStyle({ template, className = '' }) {
 }
 
 // The whole catalogue in one dropdown, so choosing a style costs a single line on the page.
-export default function TemplatePicker({ value, onChange, className = '' }) {
+export default function TemplatePicker({ value, onChange, variant = 'default', className = '' }) {
   const [open, setOpen] = useState(false);
   const selected = getTemplate(value);
 
@@ -33,19 +33,26 @@ export default function TemplatePicker({ value, onChange, className = '' }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
-          type="button"
-          className={`flex w-full items-center justify-between gap-3 rounded-lg border border-input bg-transparent px-2.5 py-2 text-left shadow-sm transition-colors hover:border-accent/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${className}`}
-        >
-          <span className="flex min-w-0 items-center gap-2.5">
-            <MiniStyle template={selected} className="h-7 w-6" />
-            <span className="min-w-0">
-              <span className="block truncate text-[13.5px] font-medium">{selected.name}</span>
-              <span className="block truncate text-[11.5px] text-muted-foreground">{selected.blurb}</span>
+        {variant === 'executive' ? (
+          <button type="button" className={`mec-style ${className}`}>
+            <p>{selected.name}</p>
+            <small>{selected.blurb}</small>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={`flex w-full items-center justify-between gap-3 rounded-lg border border-input bg-transparent px-2.5 py-2 text-left shadow-sm transition-colors hover:border-accent/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${className}`}
+          >
+            <span className="flex min-w-0 items-center gap-2.5">
+              <MiniStyle template={selected} className="h-7 w-6" />
+              <span className="min-w-0">
+                <span className="block truncate text-[13.5px] font-medium">{selected.name}</span>
+                <span className="block truncate text-[11.5px] text-muted-foreground">{selected.blurb}</span>
+              </span>
             </span>
-          </span>
-          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-        </button>
+            <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+          </button>
+        )}
       </PopoverTrigger>
 
       <PopoverContent align="start" className="w-[340px] max-w-[calc(100vw-2rem)] p-1.5">

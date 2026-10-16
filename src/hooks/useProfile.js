@@ -17,10 +17,14 @@ export default function useProfile() {
   const [loadingProfile, setLoadingProfile] = useState(true);
 
   const reload = useCallback(async () => {
-    const records = await base44.entities.ResumeProfile.list('-created_date', 1);
-    if (Array.isArray(records) && records.length) {
-      setProfileId(records[0].id);
-      setProfile(records[0]);
+    try {
+      const records = await base44.entities.ResumeProfile.list('-created_date', 1);
+      if (Array.isArray(records) && records.length) {
+        setProfileId(records[0].id);
+        setProfile(records[0]);
+      }
+    } catch {
+      // Unauthenticated preview fallback
     }
     setLoadingProfile(false);
   }, []);

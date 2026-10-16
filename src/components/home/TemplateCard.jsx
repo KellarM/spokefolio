@@ -1,5 +1,4 @@
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import TemplatePicker from '@/components/resume/TemplatePicker';
 import ProfilePhoto from '@/components/home/ProfilePhoto';
@@ -23,17 +22,13 @@ export default function TemplateCard({ profile, onSave }) {
   };
 
   return (
-    <Card className="mt-6 border-border/70 shadow-none">
-      <CardHeader>
-        <CardTitle className="font-heading text-lg font-medium">Your résumé style</CardTitle>
-        <CardDescription>
-          Every new résumé uses this style. You can still pick a different one for a single application.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <TemplatePicker value={value} onChange={choose} className="max-w-[420px]" />
-        <ProfilePhoto profile={profile} onSave={onSave} />
-      </CardContent>
-    </Card>
+    <div className="mec-panel">
+      <h3 className="mec-h3-top">Your résumé style</h3>
+      <p className="mec-lede">
+        Every new résumé uses this style. You can still pick a different one for a single application.
+      </p>
+      <TemplatePicker value={value} onChange={choose} variant="executive" />
+      <ProfilePhoto profile={profile} onSave={onSave} />
+    </div>
   );
 }

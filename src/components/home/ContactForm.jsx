@@ -1,9 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Loader2, Save } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 
 const FIELDS = [
@@ -30,50 +25,52 @@ export default function ContactForm({ profile, onSave }) {
       await onSave(form);
       toast({ title: 'Details saved' });
     } catch (error) {
-      toast({ title: 'Could not save your details', description: error?.response?.data?.error || error.message, variant: 'destructive' });
+      toast({
+        title: 'Could not save your details',
+        description: error?.response?.data?.error || error.message,
+        variant: 'destructive'
+      });
     }
     setSaving(false);
   };
 
   return (
-    <Card className="border-border/70 shadow-none">
-      <CardHeader>
-        <CardTitle className="font-heading text-lg font-medium">Your details</CardTitle>
-        <CardDescription>These sit at the top of every résumé you generate.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
-          {FIELDS.map((field) => (
-            <div key={field.key}>
-              <Label htmlFor={field.key} className="eyebrow">
-                {field.label}
-              </Label>
-              <Input
-                id={field.key}
-                value={form[field.key] || ''}
-                placeholder={field.placeholder}
-                onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
-                className="mt-2 h-10"
-              />
-            </div>
-          ))}
-        </div>
+    <div className="mec-panel">
+      <h3 className="mec-h3-top">Your details</h3>
+      <p className="mec-lede">These sit at the top of every résumé you generate.</p>
 
-        <div className="rounded-xl bg-secondary/60 px-4 py-3.5">
-          <Label className="eyebrow">Headline</Label>
-          <p className="mt-2 text-[14px] text-foreground/90">
-            {form.headline || 'Written for you when you tailor your first résumé'}
-          </p>
-          <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
-            Updates automatically with every résumé you tailor to a job.
-          </p>
-        </div>
+      <div className="mec-fields">
+        {FIELDS.map((field) => (
+          <div key={field.key} className="mec-f">
+            <label htmlFor={field.key}>{field.label}</label>
+            <input
+              id={field.key}
+              type="text"
+              value={form[field.key] || ''}
+              placeholder={field.placeholder}
+              onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+              className="mec-v"
+            />
+          </div>
+        ))}
+      </div>
 
-        <Button onClick={submit} disabled={saving} className="rounded-full">
-          {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-          Save details
-        </Button>
-      </CardContent>
-    </Card>
+      <div className="mec-hl">
+        <label className="mec-eyebrow">Headline</label>
+        <p>{form.headline || 'Written for you when you tailor your first résumé'}</p>
+        <small>Updates automatically with every résumé you tailor to a job.</small>
+      </div>
+
+      <div className="mec-save">
+        <button
+          type="button"
+          onClick={submit}
+          disabled={saving}
+          className="mec-btn mec-gold"
+        >
+          {saving ? 'Saving…' : 'Save details'}
+        </button>
+      </div>
+    </div>
   );
 }
