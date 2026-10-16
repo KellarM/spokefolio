@@ -1,9 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { cleanText } from '../../shared/career.ts';
+import { searchJobBank } from '../../shared/jobBank.ts';
 
 const MAX_RESULTS = 8;
 const MAX_HISTORY = 10;
 const MAX_TITLES = 2;
+const BANK_PER_TERM = 5;
 
 const asList = (values, max, width) =>
   (Array.isArray(values) ? values : [])
@@ -241,21 +243,36 @@ export default async function (req) {
         .filter(Boolean)
         .slice(0, MAX_TITLES);
 
+      // Both sources go out together for each title: Job Bank first, then the wider web search.
       const attempts = await Promise.allSettled(
-        titles.map((title) => searchOnce(base44, title, location, limits))
+        titles.map((title) =>
+          Promise.all([
+            searchJobBank({ keywords: title, location, distanceKm, minPay, payPeriod, limit: BANK_PER_TERM }).catch(
+              () => []
+            ),
+            searchOnce(base44, title, location, limits)
+          ])
+        )
       );
 
       attempts.forEach((attempt) => {
         if (attempt.status !== 'fulfilled') return;
-        attempt.value.results.forEach((item) => {
+        const [bank, web] = attempt.value;
+        [...bank, ...web.results].forEach((item) => {
           if (results.length >= MAX_RESULTS) return;
           if (results.some((kept) => keyOf(kept) === keyOf(item))) return;
           results.push(item);
         });
       });
     } else {
-      const found = await searchOnce(base44, category, location, limits);
-      results = found.results;
+      // The national board and the wider web search run together, Job Bank postings first.
+      const [bank, found] = await Promise.all([
+        searchJobBank({ keywords: category, location, distanceKm, minPay, payPeriod, limit: BANK_PER_TERM }).catch(
+          () => []
+        ),
+        searchOnce(base44, category, location, limits)
+      ]);
+      results = [...bank, ...found.results].slice(0, MAX_RESULTS);
     }
 
     const where = location ? ` around ${location}` : '';
@@ -274,7 +291,7 @@ export default async function (req) {
       // A line is shown only when there is something to explain: an empty list, and what to try instead.
       note: results.length
         ? ''
-        : `No single posting came back for ${searched}. Some job sites will only show a search page to an automatic search. Try a broader category, a wider distance, or a nearby city or region.`
+        : `No single posting came back from Canada's Job Bank or the job sites for ${searched}. Some job sites will only show a search page to an automatic search. Try a broader category, a wider distance, or a nearby city or region.`
     });
   } catch (error) {
     return Response.json({ error: error.message || 'The job search did not go through.' }, { status: 500 });

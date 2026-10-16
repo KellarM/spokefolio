@@ -157,9 +157,9 @@ export default function Postings() {
         <p className="eyebrow">Your search</p>
         <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">Job postings</h1>
         <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
-          Search the job sites by category and location, or let it read your history and find the roles that fit you.
-          Anything you like can be kept here — brought in from a link, pasted, or found by a search — and tailored into a
-          résumé without pasting a word twice.
+          Search by category and location — Canada's Job Bank and the job sites are both scanned — or let it read your
+          history and find the roles that fit you. Anything you like can be kept here — brought in from a link, pasted,
+          or found by a search — and tailored into a résumé without pasting a word twice.
         </p>
       </header>
 

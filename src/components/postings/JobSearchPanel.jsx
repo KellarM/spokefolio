@@ -74,7 +74,7 @@ export default function JobSearchPanel({ onResults }) {
           <p className="eyebrow">Find postings</p>
           <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">
             {mode === 'criteria'
-              ? 'Search the job sites by category, place, distance and pay.'
+              ? "Search Canada's Job Bank and the job sites by category, place, distance and pay."
               : 'Your career history, experience and location are read to find the roles that fit you.'}
           </p>
         </div>

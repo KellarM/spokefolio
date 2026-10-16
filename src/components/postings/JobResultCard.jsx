@@ -16,7 +16,14 @@ export default function JobResultCard({ result, busy, onKeep, onTailor, onDismis
 
   return (
     <li className="rounded-2xl border border-border/70 bg-card p-5 transition-all hover:border-accent/40">
-      <p className="font-heading text-[17px] leading-snug">{result.job_title}</p>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <p className="font-heading text-[17px] leading-snug">{result.job_title}</p>
+        {result.origin === 'jobbank' && (
+          <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[10.5px] font-medium uppercase tracking-[0.12em] text-accent">
+            Job Bank
+          </span>
+        )}
+      </div>
       <p className="mt-1 text-[12.5px] text-muted-foreground">
         {result.company}
         {result.work_address ? ` · ${result.work_address}` : ''}
