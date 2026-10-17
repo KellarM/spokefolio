@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, Database, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
+import { AlertTriangle, Database, Lock, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -21,9 +20,19 @@ const ENTITIES = [
   { name: 'SupportingDocument', label: 'Reference documents' },
 ];
 
+const UNLOCKED_KEY = 'sf_admin_unlocked';
+
 export default function AdminPanel() {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const roleAdmin = user?.role === 'admin';
+
+  const [unlocked, setUnlocked] = useState(
+    () => roleAdmin || sessionStorage.getItem(UNLOCKED_KEY) === '1'
+  );
+  const [password, setPassword] = useState('');
+  const [unlocking, setUnlocking] = useState(false);
+  const [unlockError, setUnlockError] = useState('');
+
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -32,25 +41,59 @@ export default function AdminPanel() {
   const [receipt, setReceipt] = useState(null);
   const [error, setError] = useState('');
 
-  const isAdmin = user?.role === 'admin';
+  const passwordAdmin = unlocked && !roleAdmin;
+  const canResetMine = roleAdmin; // password logins have no account of their own
+
+  const adminPassword = () =>
+    unlocked && !roleAdmin ? sessionStorage.getItem('sf_admin_pw') || '' : undefined;
 
   const loadStats = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const mine = await base44.functions.invoke('adminResetData', { mode: 'stats', scope: 'mine' });
-      const all = await base44.functions.invoke('adminResetData', { mode: 'stats', scope: 'all' });
-      setStats({ mine: mine.results, all: all.results, at: all.at });
+      const all = await base44.functions.invoke('adminResetData', {
+        mode: 'stats',
+        scope: 'all',
+        admin_password: adminPassword(),
+      });
+      let mine = null;
+      if (roleAdmin) {
+        const own = await base44.functions.invoke('adminResetData', {
+          mode: 'stats',
+          scope: 'mine',
+        });
+        mine = own.results;
+      }
+      setStats({ mine, all: all.results, at: all.at });
     } catch (e) {
       setError(e?.message || 'Could not load record counts.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [roleAdmin, unlocked]);
 
   useEffect(() => {
-    if (isAdmin) loadStats();
-  }, [isAdmin, loadStats]);
+    if (unlocked) loadStats();
+  }, [unlocked, loadStats]);
+
+  const unlock = async () => {
+    setUnlocking(true);
+    setUnlockError('');
+    try {
+      await base44.functions.invoke('adminResetData', {
+        mode: 'verify',
+        admin_password: password,
+      });
+      sessionStorage.setItem(UNLOCKED_KEY, '1');
+      sessionStorage.setItem('sf_admin_pw', password);
+      setUnlocked(true);
+      setPassword('');
+    } catch (e) {
+      setUnlockError(e?.message || 'Invalid admin password.');
+    } finally {
+      setUnlocking(false);
+    }
+  };
 
   const runReset = async () => {
     setResetting(true);
@@ -59,6 +102,7 @@ export default function AdminPanel() {
       const response = await base44.functions.invoke('adminResetData', {
         mode: 'reset',
         scope: confirmScope,
+        admin_password: adminPassword(),
       });
       setReceipt({ scope: confirmScope, results: response.results, at: response.at });
       setConfirmScope(null);
@@ -71,20 +115,39 @@ export default function AdminPanel() {
     }
   };
 
-  if (!isAdmin) {
+  // --- Password gate: no account needed ---
+  if (!unlocked) {
     return (
-      <div className="mx-auto max-w-md py-20 text-center">
-        <ShieldCheck className="mx-auto h-10 w-10 text-muted-foreground" />
-        <h1 className="mt-4 text-xl font-semibold">Admin access required</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Your account does not have the admin role for this studio.
-        </p>
+      <div className="mx-auto max-w-md py-16">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Lock className="h-4 w-4" /> Admin console
+            </CardTitle>
+            <CardDescription>
+              Enter the admin password. No account or email required.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && password) unlock(); }}
+              placeholder="Admin password"
+            />
+            {unlockError && <p className="text-sm text-destructive">{unlockError}</p>}
+            <Button className="w-full" onClick={unlock} disabled={!password || unlocking}>
+              {unlocking ? 'Checking...' : 'Unlock console'}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  const total = (scope) =>
-    Object.values(stats?.[scope] || {}).reduce((sum, n) => sum + (n || 0), 0);
+  const total = (rows) =>
+    Object.values(rows || {}).reduce((sum, n) => sum + (n || 0), 0);
 
   return (
     <div className="space-y-8">
@@ -93,6 +156,7 @@ export default function AdminPanel() {
         <p className="mt-1 text-sm text-muted-foreground">
           Reset the studio to a fresh state before a test run. User accounts are never
           deleted, only the data inside them.
+          {passwordAdmin && ' You are signed in with the shared admin password.'}
         </p>
       </div>
 
@@ -108,7 +172,9 @@ export default function AdminPanel() {
             <Database className="h-4 w-4" /> Record counts
           </CardTitle>
           <CardDescription>
-            Live counts per entity. Yours reflects your account; total covers every user.
+            {roleAdmin
+              ? 'Live counts per entity. Yours reflects your account; total covers every user.'
+              : 'Live counts per entity across every user.'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -119,7 +185,7 @@ export default function AdminPanel() {
               <thead>
                 <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
                   <th className="py-2 pr-4 font-medium">Entity</th>
-                  <th className="py-2 pr-4 text-right font-medium">Yours</th>
+                  {roleAdmin && <th className="py-2 pr-4 text-right font-medium">Yours</th>}
                   <th className="py-2 text-right font-medium">All users</th>
                 </tr>
               </thead>
@@ -127,18 +193,14 @@ export default function AdminPanel() {
                 {ENTITIES.map(({ name, label }) => (
                   <tr key={name} className="border-b last:border-0">
                     <td className="py-2 pr-4">{label}</td>
-                    <td className="py-2 pr-4 text-right font-mono">
-                      {stats.mine?.[name] ?? '–'}
-                    </td>
-                    <td className="py-2 text-right font-mono">
-                      {stats.all?.[name] ?? '–'}
-                    </td>
+                    {roleAdmin && <td className="py-2 pr-4 text-right font-mono">{stats.mine?.[name] ?? '–'}</td>}
+                    <td className="py-2 text-right font-mono">{stats.all?.[name] ?? '–'}</td>
                   </tr>
                 ))}
                 <tr>
                   <td className="py-2 pr-4 font-medium">Total</td>
-                  <td className="py-2 pr-4 text-right font-mono font-medium">{total('mine')}</td>
-                  <td className="py-2 text-right font-mono font-medium">{total('all')}</td>
+                  {roleAdmin && <td className="py-2 pr-4 text-right font-mono font-medium">{total(stats.mine)}</td>}
+                  <td className="py-2 text-right font-mono font-medium">{total(stats.all)}</td>
                 </tr>
               </tbody>
             </table>
@@ -156,20 +218,22 @@ export default function AdminPanel() {
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Reset my data</CardTitle>
-            <CardDescription>
-              Wipes every record in your own account across all six entities. Your
-              login stays; the studio starts blank.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="destructive" onClick={() => setConfirmScope('mine')} disabled={resetting}>
-              <Trash2 className="mr-2 h-4 w-4" /> Reset my data
-            </Button>
-          </CardContent>
-        </Card>
+        {canResetMine && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Reset my data</CardTitle>
+              <CardDescription>
+                Wipes every record in your own account across all six entities. Your
+                login stays; the studio starts blank.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="destructive" onClick={() => setConfirmScope('mine')} disabled={resetting}>
+                <Trash2 className="mr-2 h-4 w-4" /> Reset my data
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="border-destructive/40">
           <CardHeader>
@@ -251,6 +315,14 @@ export default function AdminPanel() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {!roleAdmin && (
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <ShieldCheck className="h-3.5 w-3.5" />
+          Password is checked server-side. Change it any time via the ADMIN_RESET_PASSWORD
+          secret in the Base44 editor.
+        </p>
+      )}
     </div>
   );
 }

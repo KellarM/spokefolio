@@ -54,6 +54,11 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/welcome" element={<Welcome />} />
+      {/* Admin console is reachable without any account: the page itself
+          gates on the shared admin password, verified server-side. */}
+      <Route element={<Layout />}>
+        <Route path="/admin" element={<AdminPanel />} />
+      </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/welcome" replace />} />}>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
@@ -63,7 +68,6 @@ const AuthenticatedApp = () => {
           <Route path="/applications" element={<Applications />} />
           <Route path="/new-application" element={<NewApplication />} />
           <Route path="/application/:id" element={<ApplicationDetail />} />
-          <Route path="/admin" element={<AdminPanel />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

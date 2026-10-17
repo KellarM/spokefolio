@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
+import { secrets } from 'base44:runtime';
 
 // Entities wiped by a reset. User accounts are never touched.
 const ENTITIES = [
@@ -13,15 +14,13 @@ const ENTITIES = [
 const PAGE_SIZE = 200;
 const MAX_PAGES = 50; // hard stop: 10,000 records per entity
 
+// Pre-launch testing password. Override it any time by setting the
+// ADMIN_RESET_PASSWORD secret in the Base44 editor; the secret wins.
+const DEFAULT_PASSWORD = 'SpokeAdmin-2026-Reset';
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
-
-    // Authoritative server-side check. The UI guard is convenience only.
-    const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Admin access required.' }, { status: 403 });
-    }
 
     let body = {};
     try {
@@ -30,8 +29,36 @@ export default async function (req) {
       body = {};
     }
 
-    const mode = body?.mode === 'reset' ? 'reset' : 'stats';
-    const scope = body?.scope === 'all' ? 'all' : 'mine';
+    const mode = ['reset', 'stats', 'verify'].includes(body?.mode) ? body.mode : 'stats';
+    const adminPassword = typeof body?.admin_password === 'string' ? body.admin_password : '';
+
+    // Two ways in: a logged-in user with the admin role, or the shared
+    // admin password. No account is needed for the password path.
+    let user = null;
+    try {
+      user = await base44.auth.me();
+    } catch (e) {
+      user = null;
+    }
+    const roleOk = !!user && user.role === 'admin';
+
+    const configured = secrets.get('ADMIN_RESET_PASSWORD') || DEFAULT_PASSWORD;
+    const passwordOk = adminPassword.length > 0 && adminPassword === configured;
+
+    if (mode === 'verify') {
+      if (passwordOk || roleOk) {
+        return Response.json({ ok: true, via: roleOk ? 'role' : 'password' });
+      }
+      return Response.json({ error: 'Invalid admin password.' }, { status: 403 });
+    }
+
+    if (!passwordOk && !roleOk) {
+      return Response.json({ error: 'Admin access required.' }, { status: 403 });
+    }
+
+    // Password logins have no account, so they work on the whole database.
+    // Logged-in admins can additionally choose to wipe only their own data.
+    const scope = roleOk ? (body?.scope === 'all' ? 'all' : 'mine') : 'all';
 
     const results = {};
 
@@ -42,13 +69,11 @@ export default async function (req) {
           : base44.entities[entity];
 
       if (mode === 'stats') {
-        // Count only. 'mine' stays user-scoped (RLS applies); 'all' uses
-        // service role so the admin sees the whole database.
         results[entity] = await scoped.count();
       } else {
         // Wipe. Delete by id, page by page, until an entity comes back short.
-        // The service-role client deletes records the admin cannot reach
-        // through the user-scoped client, so always delete through it.
+        // Deletion always goes through the service-role client so records
+        // beyond the caller's own access are removed.
         let count = 0;
         let page = 0;
         while (page < MAX_PAGES) {
