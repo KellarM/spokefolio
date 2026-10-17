@@ -71,7 +71,7 @@ export default function SendPackageDialog({
       const data = response?.data || {};
       toast({
         title: 'Package sent',
-        description: `Sent to ${data.sent_to || email}. Direct links last ${data.link_minutes || 60} minutes; the anytime links work whenever you are signed in.`
+        description: `Sent to ${data.sent_to || email}. The PDFs are attached to the email; the anytime links work whenever you are signed in.`
       });
       if (onSent) onSent(data);
       onOpenChange(false);
@@ -94,8 +94,8 @@ export default function SendPackageDialog({
             <Mail className="h-4 w-4" /> Send to my email
           </DialogTitle>
           <DialogDescription>
-            Your résumé and cover letter as PDFs, the job details, and interview talking points, delivered to the email on
-            your account.
+            Your résumé and cover letter, attached to the email as PDF files, plus the job details and interview talking
+            points, delivered to the email on your account.
           </DialogDescription>
         </DialogHeader>
 

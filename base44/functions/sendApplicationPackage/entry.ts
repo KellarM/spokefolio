@@ -2,9 +2,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { buildResumePdf, buildCoverLetterPdf } from '../../shared/pdf.ts';
 
 // Emails the account holder their finished application package for one job:
-// the tailored résumé and cover letter as PDFs (private, time-limited download links,
-// since the mailer carries plain text only), the job's details, and a set of interview
-// talking points built from the résumé against the posting.
+// the tailored résumé and cover letter as attached PDF files, the job's details, and a
+// set of interview talking points built from the résumé against the posting. The PDFs are
+// also kept on the record and reachable by a signed-in "anytime" link in the app.
 //
 // The recipient is always the signed-in user's own account email. Nothing here can be
 // pointed at anyone else.
@@ -152,20 +152,24 @@ function composeEmail(opts: {
 
   L.push('');
   L.push('YOUR DOCUMENTS');
-  L.push(`Direct links work for ${LINK_MINUTES} minutes. The "anytime" links open Spokefolio and download the same PDF whenever you are signed in.`);
+  if (resumeLink || letterLink) {
+    L.push('Your documents are attached to this email as PDF files. Open them on your phone or computer and they are ready to send to the employer.');
+  }
   if (resumeLink) {
     L.push('');
-    L.push('Resume (PDF)');
-    L.push('  Download now: ' + resumeLink);
-    L.push('  Anytime: ' + openUrl('resume'));
+    L.push('Resume (PDF) - attached');
   }
   if (letterLink) {
     L.push('');
-    L.push('Cover letter (PDF)');
-    L.push('  Download now: ' + letterLink);
-    L.push('  Anytime: ' + openUrl('letter'));
+    L.push('Cover letter (PDF) - attached');
   }
   if (!resumeLink && !letterLink) L.push('(No documents were included.)');
+  if (resumeLink || letterLink) {
+    L.push('');
+    L.push('Lost the attachment? The "anytime" links below open Spokefolio and download the same PDFs whenever you are signed in.');
+    if (resumeLink) L.push('  Resume: ' + openUrl('resume'));
+    if (letterLink) L.push('  Cover letter: ' + openUrl('letter'));
+  }
 
   L.push('');
   L.push('THE JOB');
@@ -282,6 +286,7 @@ export default async function (req: Request) {
     const profile = profiles?.[0] || { full_name: user.full_name, email: user.email };
 
     const included: string[] = [];
+    const attachments: { filename: string; file_url: string }[] = [];
     let resumeLink: string | null = null;
     let letterLink: string | null = null;
     let resumeUri: string | null = null;
@@ -296,6 +301,7 @@ export default async function (req: Request) {
       const stored = await uploadPrivatePdf(base44, pdf.bytes, pdf.filename);
       resumeLink = stored.signed_url;
       resumeUri = stored.file_uri;
+      attachments.push({ filename: pdf.filename, file_url: stored.signed_url });
       included.push('resume');
     }
 
@@ -314,6 +320,7 @@ export default async function (req: Request) {
         const stored = await uploadPrivatePdf(base44, pdf.bytes, pdf.filename);
         letterLink = stored.signed_url;
         letterUri = stored.file_uri;
+        attachments.push({ filename: pdf.filename, file_url: stored.signed_url });
         included.push('cover_letter');
       }
     }
@@ -338,7 +345,8 @@ export default async function (req: Request) {
       to: user.email,
       subject,
       body: emailBody,
-      from_name: 'Spokefolio'
+      from_name: 'Spokefolio',
+      attachments: attachments.length ? attachments : undefined
     });
 
     const sentAt = new Date().toISOString();
