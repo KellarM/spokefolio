@@ -149,6 +149,10 @@
   .quiet-field {
     @apply w-full rounded-none border-0 border-b border-transparent bg-transparent px-0 py-1 text-foreground placeholder:text-muted-foreground/60 focus:border-accent/50 focus:outline-none focus-visible:outline-none focus-visible:ring-0;
   }
+
+  .resume-export-buttons button {
+    @apply inline-flex h-8 items-center justify-center rounded-full border border-border/70 bg-secondary px-3.5 text-xs font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring;
+  }
 }
 
 @keyframes riseIn {

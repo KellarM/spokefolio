@@ -14,6 +14,7 @@ import JobPostingPanel from '@/components/applications/JobPostingPanel';
 import CompanyBrief from '@/components/applications/CompanyBrief';
 import ResumeDocument from '@/components/resume/ResumeDocument';
 import PreviewDocument from '@/components/resume/PreviewDocument';
+import ResumeExportButtons, { buildResumeData } from '@/components/resume/ResumeExport';
 import CoverLetterSection from '@/components/resume/CoverLetterSection';
 import { downloadDocxFile } from '@/lib/downloadDocx';
 import TemplatePicker from '@/components/resume/TemplatePicker';
@@ -40,6 +41,7 @@ export default function ApplicationDetail() {
   const { toast } = useToast();
   const { profile, loadingProfile, save: saveProfile } = useProfile();
   const [application, setApplication] = useState(null);
+  const [entries, setEntries] = useState([]);
   const [resume, setResume] = useState({});
   const [coverLetter, setCoverLetter] = useState('');
   const [notes, setNotes] = useState('');
@@ -57,9 +59,13 @@ export default function ApplicationDetail() {
     let cancelled = false;
     (async () => {
       try {
-        const record = await base44.entities.JobApplication.get(id);
+        const [record, entryRecords] = await Promise.all([
+          base44.entities.JobApplication.get(id),
+          base44.entities.CareerEntry.list('-created_date', 200).catch(() => [])
+        ]);
         if (cancelled) return;
         setApplication(record);
+        setEntries(entryRecords || []);
         setResume(record.resume || {});
         setCoverLetter(record.cover_letter || '');
         setNotes(record.notes || '');
@@ -399,23 +405,29 @@ export default function ApplicationDetail() {
       <div className="mt-7">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <p className="eyebrow">{previewMode ? 'Preview — the finished document' : 'Résumé — click any field to edit'}</p>
-          <div className="flex items-center gap-1.5">
-            <Button
-              size="sm"
-              variant={previewMode ? 'ghost' : 'secondary'}
-              className="rounded-full"
-              onClick={() => setPreviewMode(false)}
-            >
-              <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
-            </Button>
-            <Button
-              size="sm"
-              variant={previewMode ? 'secondary' : 'ghost'}
-              className="rounded-full"
-              onClick={() => setPreviewMode(true)}
-            >
-              <Eye className="mr-1.5 h-3.5 w-3.5" /> Preview
-            </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <ResumeExportButtons
+              resumeData={buildResumeData({ profile, entries, application })}
+              fileName={`${application?.company || 'Resume'}_${application?.job_title || ''}`}
+            />
+            <div className="flex items-center gap-1.5">
+              <Button
+                size="sm"
+                variant={previewMode ? 'ghost' : 'secondary'}
+                className="rounded-full"
+                onClick={() => setPreviewMode(false)}
+              >
+                <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
+              </Button>
+              <Button
+                size="sm"
+                variant={previewMode ? 'secondary' : 'ghost'}
+                className="rounded-full"
+                onClick={() => setPreviewMode(true)}
+              >
+                <Eye className="mr-1.5 h-3.5 w-3.5" /> Preview
+              </Button>
+            </div>
           </div>
         </div>
         {previewMode ? (
