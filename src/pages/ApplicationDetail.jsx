@@ -13,6 +13,7 @@ import JobLocation from '@/components/applications/JobLocation';
 import JobPostingPanel from '@/components/applications/JobPostingPanel';
 import CompanyBrief from '@/components/applications/CompanyBrief';
 import SendPackageDialog from '@/components/applications/SendPackageDialog';
+import InterviewPanel from '@/components/applications/InterviewPanel';
 import ResumeDocument from '@/components/resume/ResumeDocument';
 import PreviewDocument from '@/components/resume/PreviewDocument';
 import ResumeExportButtons, { buildResumeData } from '@/components/resume/ResumeExport';
@@ -507,6 +508,8 @@ export default function ApplicationDetail() {
         onGenerate={writeLetter}
         generating={writingLetter}
       />
+
+      <InterviewPanel application={application} onApplicationUpdate={(patch) => setApplication((prev) => ({ ...prev, ...patch }))} />
 
       <div className="mt-6 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <div className="rounded-2xl border border-border/70 bg-card p-5">

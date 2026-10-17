@@ -297,6 +297,47 @@
     },
     "cover_letter_pdf_uri": {
       "type": "string"
+    },
+    "mock_interviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "started_at": { "type": "string" },
+          "finished_at": { "type": "string" },
+          "status": { "type": "string", "enum": ["active", "finished"] },
+          "greeting": { "type": "string" },
+          "turns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": { "type": "string" },
+                "answer": { "type": "string" },
+                "feedback": {
+                  "type": "object",
+                  "properties": {
+                    "landed": { "type": "string" },
+                    "improve": { "type": "string" }
+                  }
+                },
+                "asked_at": { "type": "string" },
+                "answered_at": { "type": "string" }
+              }
+            }
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "readiness": { "type": "string" },
+              "strengths": { "type": "array", "items": { "type": "string" } },
+              "rehearse": { "type": "array", "items": { "type": "string" } },
+              "best_proof_points": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
     }
   },
   "required": [
