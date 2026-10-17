@@ -15,6 +15,7 @@ import CompanyBrief from '@/components/applications/CompanyBrief';
 import ResumeDocument from '@/components/resume/ResumeDocument';
 import PreviewDocument from '@/components/resume/PreviewDocument';
 import ResumeExportButtons, { buildResumeData } from '@/components/resume/ResumeExport';
+import ResumeTailoringPanel from '@/components/resume/ResumeTailoringPanel';
 import CoverLetterSection from '@/components/resume/CoverLetterSection';
 import { downloadDocxFile } from '@/lib/downloadDocx';
 import TemplatePicker from '@/components/resume/TemplatePicker';
@@ -237,6 +238,15 @@ export default function ApplicationDetail() {
     }
   };
 
+  const handleSelectionChange = async (selectedIds) => {
+    setApplication((prev) => (prev ? { ...prev, selected_entry_ids: selectedIds } : prev));
+    try {
+      await base44.entities.JobApplication.update(application.id, { selected_entry_ids: selectedIds });
+    } catch (error) {
+      reportError('Could not save role selection', error);
+    }
+  };
+
   // This application's own style wins, then the profile default, then the editorial style.
   const template = resolveTemplateId(pickedTemplate || application?.resume_template, profile?.resume_template);
 
@@ -403,11 +413,24 @@ export default function ApplicationDetail() {
       </section>
 
       <div className="mt-7">
+        <div className="mb-4 rounded-xl border border-border/70 bg-card p-5 text-slate-900">
+          <ResumeTailoringPanel
+            profile={profile}
+            entries={entries}
+            application={application}
+            onSelectionChange={handleSelectionChange}
+          />
+        </div>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <p className="eyebrow">{previewMode ? 'Preview — the finished document' : 'Résumé — click any field to edit'}</p>
           <div className="flex flex-wrap items-center gap-2">
             <ResumeExportButtons
-              resumeData={buildResumeData({ profile, entries, application })}
+              resumeData={buildResumeData({
+                profile,
+                entries,
+                application,
+                selectedIds: application.selected_entry_ids,
+              })}
               fileName={`${application?.company || 'Resume'}_${application?.job_title || ''}`}
             />
             <div className="flex items-center gap-1.5">

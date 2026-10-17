@@ -1,59 +1,35 @@
 import React from 'react';
 
-/*
- * Spokefolio — ATS-Safe Resume Export v1.0 (October 16, 2026)
- * ATS rules baked in: single column, Arial, no tables, no text boxes,
- * no images, standard section names. Zero dependencies.
- */
-
 export const buildAtsHtml = (resumeData) => {
   const {
-    name = '',
-    contactLine = '',
-    headline = '',
-    summary = '',
-    coreSkills = [],
-    experience = [],
-    education = [],
-    certifications = [],
-    additionalSections = [],
+    name = '', contactLine = '', headline = '', summary = '',
+    coreSkills = [], experience = [], education = [],
+    certifications = [], additionalSections = [],
   } = resumeData || {};
 
   const esc = (s) => String(s == null ? '' : s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const section = (title, inner) =>
     inner && String(inner).trim() ? `<h2>${esc(title)}</h2>${inner}` : '';
-
   const skillsHtml = Array.isArray(coreSkills) && coreSkills.length
-    ? `<p class="skills">${coreSkills.map(esc).join(' &bull; ')}</p>`
-    : '';
-
+    ? `<p class="skills">${coreSkills.map(esc).join(' &bull; ')}</p>` : '';
   const summaryHtml = summary ? `<p>${esc(summary)}</p>` : '';
-
   const expHtml = (experience || []).map((job) => `
     <div class="job">
       <p class="job-title">${esc(job.title || '')}${job.organization ? ` &mdash; ${esc(job.organization)}` : ''}${job.location ? `, ${esc(job.location)}` : ''}</p>
       ${job.dateRange ? `<p class="job-dates">${esc(job.dateRange)}</p>` : ''}
       ${(job.bullets || []).length ? `<ul>${job.bullets.map((b) => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}
     </div>`).join('');
-
   const eduHtml = (education || []).map((e) => `
     <div class="job">
       <p class="job-title">${esc(e.title || '')}${e.organization ? ` &mdash; ${esc(e.organization)}` : ''}</p>
       ${e.dateRange ? `<p class="job-dates">${esc(e.dateRange)}</p>` : ''}
     </div>`).join('');
-
   const certHtml = (certifications || []).length
-    ? `<ul>${certifications.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>`
-    : '';
-
+    ? `<ul>${certifications.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>` : '';
   const extraHtml = (additionalSections || []).map((s) =>
     section(s.title, `<ul>${(s.items || []).map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`)
   ).join('');
-
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -89,7 +65,84 @@ export const buildAtsHtml = (resumeData) => {
 </html>`;
 };
 
+// --- JD relevance scoring ---
+
+const tokenize = (text) => String(text || '')
+  .toLowerCase().replace(/[^a-z0-9\s]/g, ' ')
+  .split(/\s+/).filter((w) => w.length > 3);
+
+export const scoreEntryAgainstJd = (entry, jobDescription) => {
+  const jdTokens = new Set(tokenize(jobDescription));
+  const entryText = [
+    entry.title, entry.organization, entry.summary,
+    ...(Array.isArray(entry.skills) ? entry.skills : []),
+    ...(Array.isArray(entry.keywords) ? entry.keywords : []),
+    ...(Array.isArray(entry.accomplishments) ? entry.accomplishments : []),
+  ].join(' ');
+  const hits = new Set(tokenize(entryText).filter((t) => jdTokens.has(t)));
+  return hits.size;
+};
+
+export const rankEntries = (entries, jobDescription) => {
+  const scored = (entries || []).map((e) => ({
+    id: e.id, entry: e, score: scoreEntryAgainstJd(e, jobDescription),
+  }));
+  const max = Math.max(1, ...scored.map((s) => s.score));
+  return scored
+    .sort((a, b) => (b.score - a.score)
+      || String(b.entry.end_date || '').localeCompare(String(a.entry.end_date || '')))
+    .map((s) => ({
+      ...s,
+      tier: s.score >= Math.max(3, max * 0.5) ? 'Recommended'
+        : s.score > 0 ? 'Optional' : 'Low relevance',
+    }));
+};
+
+const reorderBullets = (bullets, jobDescription) => {
+  if (!jobDescription) return bullets || [];
+  const jdTokens = new Set(tokenize(jobDescription));
+  return (bullets || [])
+    .map((b, i) => ({
+      b, i,
+      score: tokenize(b).reduce((n, t) => n + (jdTokens.has(t) ? 1 : 0), 0),
+    }))
+    .sort((a, b) => (b.score - a.score) || (a.i - b.i))
+    .map((s) => s.b);
+};
+
+// --- 2-page budget estimation ---
+
+const estimateLines = (resumeData) => {
+  let lines = 4;
+  if (resumeData.headline) lines += 1;
+  if (resumeData.summary) lines += 1 + Math.ceil(String(resumeData.summary).length / 95);
+  if ((resumeData.coreSkills || []).length) lines += 1 + Math.ceil(resumeData.coreSkills.join(' • ').length / 95);
+  (resumeData.experience || []).forEach((job) => {
+    lines += 3;
+    (job.bullets || []).forEach((b) => { lines += Math.max(1, Math.ceil(b.length / 95)); });
+  });
+  (resumeData.education || []).forEach(() => { lines += 3; });
+  (resumeData.additionalSections || []).forEach(() => { lines += 3; });
+  return lines;
+};
+
+export const estimatePageCount = (resumeData) =>
+  Math.max(1, Math.ceil(estimateLines(resumeData) / 46));
+
+const confirmIfOverLimit = (resumeData) => {
+  const pages = estimatePageCount(resumeData);
+  if (pages > 2) {
+    return window.confirm(
+      `This resume is about ${pages} pages — over the 2-page target. Open the export anyway?`
+    );
+  }
+  return true;
+};
+
+// --- Exports (both gated by the 2-page check) ---
+
 export const exportResumeToPdf = (resumeData) => {
+  if (!confirmIfOverLimit(resumeData)) return;
   const html = buildAtsHtml(resumeData);
   const w = window.open('', '_blank', 'width=880,height=1020');
   if (!w) {
@@ -105,6 +158,7 @@ export const exportResumeToPdf = (resumeData) => {
 };
 
 export const exportResumeToWord = (resumeData, fileName) => {
+  if (!confirmIfOverLimit(resumeData)) return;
   const html = buildAtsHtml(resumeData).replace(
     '<html>',
     '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
@@ -124,22 +178,14 @@ export const exportResumeToWord = (resumeData, fileName) => {
 
 export const ResumeExportButtons = ({ resumeData, fileName, className = '' }) => (
   <div className={`resume-export-buttons ${className}`} style={{ display: 'flex', gap: '8px' }}>
-    <button
-      type="button"
-      onClick={() => exportResumeToPdf(resumeData)}
-      title="Opens the print dialog — choose Save as PDF"
-    >
-      Download PDF
-    </button>
-    <button
-      type="button"
-      onClick={() => exportResumeToWord(resumeData, fileName)}
-      title="Downloads a Word-openable document"
-    >
-      Download Word
-    </button>
+    <button type="button" onClick={() => exportResumeToPdf(resumeData)}
+      title="Opens the print dialog — choose Save as PDF">Download PDF</button>
+    <button type="button" onClick={() => exportResumeToWord(resumeData, fileName)}
+      title="Downloads a Word-openable document">Download Word</button>
   </div>
 );
+
+// --- Data adapter (v1.1: selection + bullet reordering) ---
 
 const asArray = (v) => {
   if (Array.isArray(v)) return v.filter(Boolean);
@@ -157,26 +203,27 @@ const dateRange = (start, end) => {
   return `${s} &mdash; ${e}`;
 };
 
-export const buildResumeData = ({ profile, entries = [], application = null }) => {
+export const buildResumeData = ({
+  profile, entries = [], application = null, selectedIds = null,
+}) => {
   const p = profile || {};
+  const jd = application && application.job_description;
 
-  const sorted = [...(entries || [])].sort((a, b) =>
-    String(b.end_date || '').localeCompare(String(a.end_date || ''))
-  );
+  let pool = [...(entries || [])];
+  if (Array.isArray(selectedIds)) {
+    pool = pool.filter((e) => selectedIds.includes(e.id));
+  }
+  pool.sort((a, b) => String(b.end_date || '').localeCompare(String(a.end_date || '')));
 
-  const educationEntries = sorted.filter((e) =>
-    String(e.entry_type || '').toLowerCase() === 'education'
-  );
-  const experienceEntries = sorted.filter((e) =>
-    String(e.entry_type || '').toLowerCase() !== 'education'
-  );
+  const educationEntries = pool.filter((e) => String(e.entry_type || '').toLowerCase() === 'education');
+  const experienceEntries = pool.filter((e) => String(e.entry_type || '').toLowerCase() !== 'education');
 
   const experience = experienceEntries.map((e) => ({
     title: e.title || '',
     organization: e.organization || '',
     location: e.location || '',
     dateRange: dateRange(e.start_date, e.end_date),
-    bullets: asArray(e.accomplishments),
+    bullets: reorderBullets(asArray(e.accomplishments), jd),
   }));
 
   const education = educationEntries.map((e) => ({
@@ -185,13 +232,8 @@ export const buildResumeData = ({ profile, entries = [], application = null }) =
     dateRange: dateRange(e.start_date, e.end_date),
   }));
 
-  const contactLine = [
-    p.location,
-    p.phone,
-    p.email,
-    p.linkedin,
-    p.website,
-  ].filter(Boolean).join(' | ');
+  const contactLine = [p.location, p.phone, p.email, p.linkedin, p.website]
+    .filter(Boolean).join(' | ');
 
   return {
     name: p.full_name || 'Your Name',
