@@ -21,6 +21,7 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Welcome from '@/pages/Welcome';
+import AdminPanel from '@/pages/AdminPanel';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -53,6 +54,11 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/welcome" element={<Welcome />} />
+      {/* Admin console is reachable without any account: the page itself
+          gates on the dedicated admin credentials, verified server-side. */}
+      <Route element={<Layout />}>
+        <Route path="/admin" element={<AdminPanel />} />
+      </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/welcome" replace />} />}>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
