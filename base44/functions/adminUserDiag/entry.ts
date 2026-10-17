@@ -53,7 +53,12 @@ export default async function (req) {
       }));
     }
 
-    return Response.json({ users: usersOut, ownership });
+    // One full record from CareerEntry to see every available field
+    const fullRecs = await base44.asServiceRole.entities.CareerEntry.list(
+      null, 1, 0, ['*']
+    );
+
+    return Response.json({ users: usersOut, ownership, sample: fullRecs[0] ?? null });
   } catch (e) {
     return Response.json({ error: e?.message || 'Diagnostic failed.' }, { status: 500 });
   }
