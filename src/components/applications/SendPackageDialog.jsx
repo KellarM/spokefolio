@@ -71,7 +71,7 @@ export default function SendPackageDialog({
       const data = response?.data || {};
       toast({
         title: 'Package sent',
-        description: `Sent to ${data.sent_to || email}. Download links stay live for ${data.link_days || 7} days.`
+        description: `Sent to ${data.sent_to || email}. Direct links last ${data.link_minutes || 60} minutes; the anytime links work whenever you are signed in.`
       });
       if (onSent) onSent(data);
       onOpenChange(false);

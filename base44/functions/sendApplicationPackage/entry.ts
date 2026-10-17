@@ -9,8 +9,12 @@ import { buildResumePdf, buildCoverLetterPdf } from '../../shared/pdf.ts';
 // The recipient is always the signed-in user's own account email. Nothing here can be
 // pointed at anyone else.
 
-const LINK_DAYS = 7;
-const LINK_SECONDS = LINK_DAYS * 24 * 60 * 60;
+// Signed links are capped at one hour by the platform. The email carries that direct link
+// for immediate download plus a permanent link into the app, which re-downloads the saved
+// PDF whenever the account holder is signed in. The PDFs themselves are kept on the record.
+const LINK_MINUTES = 60;
+const LINK_SECONDS = LINK_MINUTES * 60;
+const APP_URL = 'https://spokefolio.base44.app';
 
 const PREP_SCHEMA = {
   type: 'object',
@@ -134,6 +138,7 @@ function composeEmail(opts: {
   note: string;
 }) {
   const { user, application: a, resumeLink, letterLink, prep, note } = opts;
+  const openUrl = (file: string) => `${APP_URL}/application/${a.id}?download=${file}`;
   const firstName = text(user.full_name, 80).split(' ')[0] || 'there';
   const L: string[] = [];
 
@@ -147,9 +152,19 @@ function composeEmail(opts: {
 
   L.push('');
   L.push('YOUR DOCUMENTS');
-  L.push(`Links stay live for ${LINK_DAYS} days. Download and keep your copies.`);
-  if (resumeLink) L.push('Resume (PDF): ' + resumeLink);
-  if (letterLink) L.push('Cover letter (PDF): ' + letterLink);
+  L.push(`Direct links work for ${LINK_MINUTES} minutes. The "anytime" links open Spokefolio and download the same PDF whenever you are signed in.`);
+  if (resumeLink) {
+    L.push('');
+    L.push('Resume (PDF)');
+    L.push('  Download now: ' + resumeLink);
+    L.push('  Anytime: ' + openUrl('resume'));
+  }
+  if (letterLink) {
+    L.push('');
+    L.push('Cover letter (PDF)');
+    L.push('  Download now: ' + letterLink);
+    L.push('  Anytime: ' + openUrl('letter'));
+  }
   if (!resumeLink && !letterLink) L.push('(No documents were included.)');
 
   L.push('');
@@ -269,6 +284,8 @@ export default async function (req: Request) {
     const included: string[] = [];
     let resumeLink: string | null = null;
     let letterLink: string | null = null;
+    let resumeUri: string | null = null;
+    let letterUri: string | null = null;
 
     if (includeResume) {
       const hasContent = resume?.summary || (Array.isArray(resume?.experience) && resume.experience.length);
@@ -276,7 +293,9 @@ export default async function (req: Request) {
         return Response.json({ error: 'Build the résumé before sending it.' }, { status: 400 });
       }
       const pdf = await buildResumePdf({ profile, resume, template });
-      resumeLink = (await uploadPrivatePdf(base44, pdf.bytes, pdf.filename)).signed_url;
+      const stored = await uploadPrivatePdf(base44, pdf.bytes, pdf.filename);
+      resumeLink = stored.signed_url;
+      resumeUri = stored.file_uri;
       included.push('resume');
     }
 
@@ -292,7 +311,9 @@ export default async function (req: Request) {
           cover_letter: coverLetter,
           recipient: { company: application.company, job_title: application.job_title }
         });
-        letterLink = (await uploadPrivatePdf(base44, pdf.bytes, pdf.filename)).signed_url;
+        const stored = await uploadPrivatePdf(base44, pdf.bytes, pdf.filename);
+        letterLink = stored.signed_url;
+        letterUri = stored.file_uri;
         included.push('cover_letter');
       }
     }
@@ -323,6 +344,8 @@ export default async function (req: Request) {
     const sentAt = new Date().toISOString();
     const patch: any = { last_sent_to: user.email, last_sent_at: sentAt };
     if (includePrep && prep) patch.interview_prep = prep;
+    if (resumeUri) patch.resume_pdf_uri = resumeUri;
+    if (letterUri) patch.cover_letter_pdf_uri = letterUri;
     await base44.entities.JobApplication.update(applicationId, patch).catch(() => {});
 
     return Response.json({
@@ -330,7 +353,7 @@ export default async function (req: Request) {
       sent_to: user.email,
       sent_at: sentAt,
       included,
-      link_days: LINK_DAYS
+      link_minutes: LINK_MINUTES
     });
   } catch (error: any) {
     return Response.json({ error: error?.message || 'The package could not be sent.' }, { status: 500 });

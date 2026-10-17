@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Download, Eye, Loader2, Mail, Pencil, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
@@ -40,6 +40,7 @@ const STATUSES = [
 export default function ApplicationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { profile, loadingProfile, save: saveProfile } = useProfile();
   const [application, setApplication] = useState(null);
@@ -81,6 +82,29 @@ export default function ApplicationDetail() {
       cancelled = true;
     };
   }, [id]);
+
+  // An "anytime" link from the emailed package lands here with ?download=resume or
+  // ?download=letter. The saved PDF is re-signed for this signed-in session and opened,
+  // then the parameter is cleared so a refresh does not download it again.
+  useEffect(() => {
+    const which = searchParams.get('download');
+    if (!which || !application) return;
+    const uri = which === 'letter' ? application.cover_letter_pdf_uri : which === 'resume' ? application.resume_pdf_uri : null;
+    setSearchParams({}, { replace: true });
+    if (!uri) {
+      toast({
+        title: 'No saved PDF yet',
+        description: 'Use "Send to my email" to build the PDF for this application first.'
+      });
+      return;
+    }
+    base44.integrations.Core.CreateFileSignedUrl({ file_uri: uri, expires_in: 600 })
+      .then(({ signed_url }) => {
+        window.open(signed_url, '_blank');
+      })
+      .catch((error) => reportError('Could not open the saved PDF', error));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [application, searchParams]);
 
   const reportError = (title, error) => {
     toast({ title, description: error?.response?.data?.error || error.message, variant: 'destructive' });

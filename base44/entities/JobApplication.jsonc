@@ -291,6 +291,12 @@
     },
     "last_sent_at": {
       "type": "string"
+    },
+    "resume_pdf_uri": {
+      "type": "string"
+    },
+    "cover_letter_pdf_uri": {
+      "type": "string"
     }
   },
   "required": [
