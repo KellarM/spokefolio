@@ -53,6 +53,7 @@
         "contacted",
         "interviewing",
         "offer",
+        "declined",
         "not_hired",
         "rejected"
       ],

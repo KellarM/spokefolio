@@ -16,6 +16,7 @@ const FILTERS = [
   { value: 'contacted', label: 'Contacted' },
   { value: 'interviewing', label: 'Interviewing' },
   { value: 'offer', label: 'Offer' },
+  { value: 'declined', label: 'Declined' },
   { value: 'not_hired', label: 'Not Hired' },
   { value: 'rejected', label: 'Closed' }
 ];

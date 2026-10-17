@@ -9,6 +9,7 @@ const STATUS_LABELS = {
   contacted: 'Contacted',
   interviewing: 'Interviewing',
   offer: 'Offer',
+  declined: 'Declined',
   not_hired: 'Not hired',
   rejected: 'Closed'
 };

@@ -8,6 +8,7 @@ const STYLES = {
   contacted: 'bg-sky-500/20 text-sky-300',
   interviewing: 'bg-amber-100 text-amber-800',
   offer: 'bg-accent text-accent-foreground',
+  declined: 'bg-orange-500/20 text-orange-300',
   not_hired: 'bg-muted text-muted-foreground',
   rejected: 'bg-rose-100 text-rose-700'
 };
@@ -20,6 +21,7 @@ const LABELS = {
   contacted: 'Contacted',
   interviewing: 'Interviewing',
   offer: 'Offer',
+  declined: 'Declined',
   not_hired: 'Not Hired',
   rejected: 'Closed'
 };
