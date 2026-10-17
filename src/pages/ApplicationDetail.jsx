@@ -26,6 +26,7 @@ const STATUSES = [
   { value: 'ready', label: 'Ready to send' },
   { value: 'not_applied', label: 'Not Applied' },
   { value: 'applied', label: 'Applied' },
+  { value: 'contacted', label: 'Contacted' },
   { value: 'interviewing', label: 'Interviewing' },
   { value: 'offer', label: 'Offer' },
   { value: 'not_hired', label: 'Not Hired' },

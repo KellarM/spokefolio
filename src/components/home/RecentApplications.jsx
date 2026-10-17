@@ -6,6 +6,7 @@ const STATUS_LABELS = {
   ready: 'Ready to send',
   not_applied: 'Not yet sent',
   applied: 'Applied',
+  contacted: 'Contacted',
   interviewing: 'Interviewing',
   offer: 'Offer',
   not_hired: 'Not hired',

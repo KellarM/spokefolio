@@ -50,6 +50,7 @@
         "ready",
         "not_applied",
         "applied",
+        "contacted",
         "interviewing",
         "offer",
         "not_hired",
