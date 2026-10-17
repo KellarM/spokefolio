@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Download, Eye, Loader2, Pencil, RefreshCw, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, Eye, Loader2, Mail, Pencil, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import StatusBadge from '@/components/applications/StatusBadge';
 import JobLocation from '@/components/applications/JobLocation';
 import JobPostingPanel from '@/components/applications/JobPostingPanel';
 import CompanyBrief from '@/components/applications/CompanyBrief';
+import SendPackageDialog from '@/components/applications/SendPackageDialog';
 import ResumeDocument from '@/components/resume/ResumeDocument';
 import PreviewDocument from '@/components/resume/PreviewDocument';
 import ResumeExportButtons, { buildResumeData } from '@/components/resume/ResumeExport';
@@ -55,6 +56,7 @@ export default function ApplicationDetail() {
   const [rewriting, setRewriting] = useState(false);
   const [pickedTemplate, setPickedTemplate] = useState('');
   const [previewMode, setPreviewMode] = useState(false);
+  const [sendOpen, setSendOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -210,7 +212,8 @@ export default function ApplicationDetail() {
         resume: nextResume,
         match_summary: data.match_summary || '',
         gaps: data.gaps || [],
-        cover_letter: nextLetter
+        cover_letter: nextLetter,
+        interview_prep: null
       });
       setApplication(updated);
       setResume(updated.resume || nextResume);
@@ -365,6 +368,10 @@ export default function ApplicationDetail() {
             {downloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
             Download Word
           </Button>
+          <Button variant="secondary" className="rounded-full" onClick={() => setSendOpen(true)}>
+            <Mail className="mr-2 h-4 w-4" />
+            Send to my email
+          </Button>
         </div>
       </header>
 
@@ -501,11 +508,32 @@ export default function ApplicationDetail() {
           <Button variant="secondary" className="rounded-full" onClick={download} disabled={downloading}>
             <Download className="mr-2 h-4 w-4" /> Download as Word
           </Button>
+          <Button variant="secondary" className="rounded-full" onClick={() => setSendOpen(true)}>
+            <Mail className="mr-2 h-4 w-4" /> Send to my email
+          </Button>
+          {application.last_sent_at && (
+            <p className="text-center text-[12px] text-muted-foreground">
+              Last sent {new Date(application.last_sent_at).toLocaleString('en-CA', { dateStyle: 'medium', timeStyle: 'short' })}
+            </p>
+          )}
           <Button variant="ghost" className="rounded-full text-muted-foreground hover:text-destructive" onClick={remove}>
             <Trash2 className="mr-2 h-4 w-4" /> Delete application
           </Button>
         </div>
       </div>
+
+      <SendPackageDialog
+        open={sendOpen}
+        onOpenChange={setSendOpen}
+        application={application}
+        resume={resume}
+        coverLetter={coverLetter}
+        template={template}
+        onBeforeSend={persist}
+        onSent={(data) =>
+          setApplication((prev) => ({ ...prev, last_sent_to: data.sent_to, last_sent_at: data.sent_at }))
+        }
+      />
     </div>
   );
 }

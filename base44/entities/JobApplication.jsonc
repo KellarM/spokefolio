@@ -251,6 +251,46 @@
           }
         }
       }
+    },
+    "interview_prep": {
+      "type": "object",
+      "properties": {
+        "proof_points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "requirement": { "type": "string" },
+              "evidence": { "type": "string" }
+            }
+          }
+        },
+        "gap_responses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "gap": { "type": "string" },
+              "response": { "type": "string" }
+            }
+          }
+        },
+        "likely_questions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "questions_to_ask": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "generated_at": { "type": "string" }
+      }
+    },
+    "last_sent_to": {
+      "type": "string"
+    },
+    "last_sent_at": {
+      "type": "string"
     }
   },
   "required": [
