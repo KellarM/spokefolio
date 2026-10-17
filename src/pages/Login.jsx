@@ -25,6 +25,28 @@ export default function Login() {
     e.preventDefault();
     setError("");
     setLoading(true);
+
+    // Dedicated admin login: type Admin in the email field. No account or
+    // email exists behind it; the credential is checked server-side by the
+    // adminResetData function, then the console is unlocked for the session.
+    if (email.trim().toLowerCase() === "admin") {
+      try {
+        await base44.functions.invoke("adminResetData", {
+          mode: "verify",
+          admin_login: email.trim(),
+          admin_password: password,
+        });
+        sessionStorage.setItem("sf_admin_unlocked", "1");
+        sessionStorage.setItem("sf_admin_login", email.trim());
+        sessionStorage.setItem("sf_admin_pw", password);
+        window.location.href = "/admin";
+      } catch (err) {
+        setError(err?.message || "Invalid admin password.");
+        setLoading(false);
+      }
+      return;
+    }
+
     try {
       const { access_token } = await base44.auth.loginViaEmailPassword(email, password);
       if (remember) {
@@ -95,10 +117,10 @@ export default function Login() {
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
               id="email"
-              type="email"
-              autoComplete="email"
+              type="text"
+              autoComplete="username"
               autoFocus
-              placeholder="you@example.com"
+              placeholder="you@example.com or Admin"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="pl-10 h-12"

@@ -50,7 +50,7 @@ export default async function (req) {
     const credentialOk =
       adminLogin.length > 0 &&
       adminPassword.length > 0 &&
-      adminLogin === configuredLogin &&
+      adminLogin.toLowerCase() === configuredLogin.toLowerCase() &&
       adminPassword === configuredPassword;
 
     if (mode === 'verify') {
