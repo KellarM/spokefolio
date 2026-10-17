@@ -154,9 +154,6 @@
     @apply inline-flex h-8 items-center justify-center rounded-full border border-border/70 bg-secondary px-3.5 text-xs font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring;
   }
 
-  .resume-tailoring-panel > div:first-child > strong {
-    @apply text-foreground;
-  }
 }
 
 @keyframes riseIn {
