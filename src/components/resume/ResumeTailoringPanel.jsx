@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { rankEntries, estimatePageCount, buildResumeData } from './ResumeExport';
+import { rankEntries, estimateResumePages } from './ResumeExport';
 
 const TIER_STYLES = {
   Recommended: { background: '#e6f6e6', color: '#1e6b1e', border: '1px solid #1e6b1e' },
@@ -8,7 +8,7 @@ const TIER_STYLES = {
   'Low relevance': { background: '#f0f0f0', color: '#666', border: '1px solid #bbb' },
 };
 
-const ResumeTailoringPanel = ({ profile, entries = [], application, onSelectionChange }) => {
+const ResumeTailoringPanel = ({ entries = [], application, onSelectionChange }) => {
   const jd = application && application.job_description;
 
   const ranked = useMemo(() => rankEntries(entries, jd), [entries, jd]);
@@ -31,9 +31,8 @@ const ResumeTailoringPanel = ({ profile, entries = [], application, onSelectionC
     if (onSelectionChange) onSelectionChange(Array.from(next));
   };
 
-  const selectedEntries = entries.filter((e) => selected.has(e.id));
-  const resumeData = buildResumeData({ profile, entries: selectedEntries, application });
-  const pages = estimatePageCount(resumeData);
+  // The estimate describes the résumé this application exports, not the whole career history.
+  const pages = estimateResumePages(application && application.resume);
   const overLimit = pages > 2;
 
   return (

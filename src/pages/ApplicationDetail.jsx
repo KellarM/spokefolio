@@ -16,7 +16,7 @@ import SendPackageDialog from '@/components/applications/SendPackageDialog';
 import InterviewPanel from '@/components/applications/InterviewPanel';
 import ResumeDocument from '@/components/resume/ResumeDocument';
 import PreviewDocument from '@/components/resume/PreviewDocument';
-import ResumeExportButtons, { buildResumeData } from '@/components/resume/ResumeExport';
+import ResumeDownloadButtons from '@/components/resume/ResumeDownloadButtons';
 import ResumeTailoringPanel from '@/components/resume/ResumeTailoringPanel';
 import CoverLetterSection from '@/components/resume/CoverLetterSection';
 import { downloadDocxFile } from '@/lib/downloadDocx';
@@ -447,7 +447,6 @@ export default function ApplicationDetail() {
       <div className="mt-7">
         <div className="mb-4 rounded-xl border border-border/70 bg-card p-5 text-slate-900">
           <ResumeTailoringPanel
-            profile={profile}
             entries={entries}
             application={application}
             onSelectionChange={handleSelectionChange}
@@ -456,14 +455,11 @@ export default function ApplicationDetail() {
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <p className="eyebrow">{previewMode ? 'Preview — the finished document' : 'Résumé — click any field to edit'}</p>
           <div className="flex flex-wrap items-center gap-2">
-            <ResumeExportButtons
-              resumeData={buildResumeData({
-                profile,
-                entries,
-                application,
-                selectedIds: application.selected_entry_ids,
-              })}
-              fileName={`${application?.company || 'Resume'}_${application?.job_title || ''}`}
+            <ResumeDownloadButtons
+              profile={profile}
+              resume={resume}
+              template={template}
+              label={`${application?.company || 'Resume'}_${application?.job_title || ''}`}
             />
             <div className="flex items-center gap-1.5">
               <Button
