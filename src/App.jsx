@@ -21,6 +21,7 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Welcome from '@/pages/Welcome';
+import AdminPanel from '@/pages/AdminPanel';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -62,6 +63,7 @@ const AuthenticatedApp = () => {
           <Route path="/applications" element={<Applications />} />
           <Route path="/new-application" element={<NewApplication />} />
           <Route path="/application/:id" element={<ApplicationDetail />} />
+          <Route path="/admin" element={<AdminPanel />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
