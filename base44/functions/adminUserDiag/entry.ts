@@ -23,6 +23,32 @@ export default async function (req) {
 
     const base44 = createClientFromRequest(req);
 
+    // --- user management operations (same admin gate) ---
+    const action = typeof body?.action === 'string' ? body.action : 'diag';
+
+    const findByEmail = async (email) => {
+      const users = await base44.asServiceRole.entities.User.list(null, 200, 0, ['id', 'email']);
+      return users.find((u) => u.email === email) || null;
+    };
+
+    if (action === 'update-user') {
+      const target = await findByEmail(body.email);
+      if (!target) return Response.json({ error: 'User not found.' }, { status: 404 });
+      const patch = {};
+      for (const k of ['email', 'full_name', 'role']) {
+        if (typeof body?.patch?.[k] === 'string') patch[k] = body.patch[k];
+      }
+      const updated = await base44.asServiceRole.entities.User.update(target.id, patch);
+      return Response.json({ ok: true, user: { id: updated.id, email: updated.email } });
+    }
+
+    if (action === 'delete-user') {
+      const target = await findByEmail(body.email);
+      if (!target) return Response.json({ error: 'User not found.' }, { status: 404 });
+      await base44.asServiceRole.entities.User.delete(target.id);
+      return Response.json({ ok: true, deleted: body.email });
+    }
+
     // App users, safe fields only
     const users = await base44.asServiceRole.entities.User.list();
     const usersOut = users.map((u) => ({
