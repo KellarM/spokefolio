@@ -40,6 +40,11 @@ export default function Layout() {
               {item.label}
             </Link>
           ))}
+          {sessionStorage.getItem('sf_admin_unlocked') === '1' && (
+            <Link to="/admin" className={pathname.startsWith('/admin') ? 'on' : undefined}>
+              Testing
+            </Link>
+          )}
         </nav>
 
         <div className="mec-cta">

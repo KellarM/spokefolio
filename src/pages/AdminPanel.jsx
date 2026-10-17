@@ -43,7 +43,10 @@ export default function AdminPanel() {
   const [error, setError] = useState('');
 
   const passwordAdmin = unlocked && !roleAdmin;
-  const canResetMine = roleAdmin; // password logins have no account of their own
+  const hasUser = !!user;
+  // Any signed-in account can wipe its own records: the test client uses
+  // this to start over as a fresh client.
+  const canResetMine = hasUser;
 
   const adminCredentials = () =>
     unlocked && !roleAdmin
@@ -63,7 +66,7 @@ export default function AdminPanel() {
         ...adminCredentials(),
       });
       let mine = null;
-      if (roleAdmin) {
+      if (hasUser) {
         const own = await base44.functions.invoke('adminResetData', {
           mode: 'stats',
           scope: 'mine',
@@ -77,7 +80,7 @@ export default function AdminPanel() {
     } finally {
       setLoading(false);
     }
-  }, [roleAdmin, unlocked]);
+  }, [roleAdmin, unlocked, hasUser]);
 
   useEffect(() => {
     if (unlocked) loadStats();
@@ -171,9 +174,9 @@ export default function AdminPanel() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Testing console</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Reset the studio to a fresh state before a test run. User accounts are never
+          Reset this test client to a blank, first-time state — then go back into the
+          app and start over with a new name and identity. User accounts are never
           deleted, only the data inside them.
-          {passwordAdmin && ' You are signed in as Admin.'}
         </p>
       </div>
 
@@ -189,8 +192,8 @@ export default function AdminPanel() {
             <Database className="h-4 w-4" /> Record counts
           </CardTitle>
           <CardDescription>
-            {roleAdmin
-              ? 'Live counts per entity. Yours reflects your account; total covers every user.'
+            {hasUser
+              ? 'Live counts per entity. Yours reflects this account; total covers every user.'
               : 'Live counts per entity across every user.'}
           </CardDescription>
         </CardHeader>
@@ -202,7 +205,7 @@ export default function AdminPanel() {
               <thead>
                 <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
                   <th className="py-2 pr-4 font-medium">Entity</th>
-                  {roleAdmin && <th className="py-2 pr-4 text-right font-medium">Yours</th>}
+                  {hasUser && <th className="py-2 pr-4 text-right font-medium">Yours</th>}
                   <th className="py-2 text-right font-medium">All users</th>
                 </tr>
               </thead>
@@ -210,13 +213,13 @@ export default function AdminPanel() {
                 {ENTITIES.map(({ name, label }) => (
                   <tr key={name} className="border-b last:border-0">
                     <td className="py-2 pr-4">{label}</td>
-                    {roleAdmin && <td className="py-2 pr-4 text-right font-mono">{stats.mine?.[name] ?? '–'}</td>}
+                    {hasUser && <td className="py-2 pr-4 text-right font-mono">{stats.mine?.[name] ?? '–'}</td>}
                     <td className="py-2 text-right font-mono">{stats.all?.[name] ?? '–'}</td>
                   </tr>
                 ))}
                 <tr>
                   <td className="py-2 pr-4 font-medium">Total</td>
-                  {roleAdmin && <td className="py-2 pr-4 text-right font-mono font-medium">{total(stats.mine)}</td>}
+                  {hasUser && <td className="py-2 pr-4 text-right font-mono font-medium">{total(stats.mine)}</td>}
                   <td className="py-2 text-right font-mono font-medium">{total(stats.all)}</td>
                 </tr>
               </tbody>
@@ -238,10 +241,11 @@ export default function AdminPanel() {
         {canResetMine && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Reset my data</CardTitle>
+              <CardTitle className="text-base">Fresh start — reset my data</CardTitle>
               <CardDescription>
-                Wipes every record in your own account across all six entities. Your
-                login stays; the studio starts blank.
+                Wipes every record in this account across all six entities. Your
+                login stays; the studio goes back to a blank first-time client,
+                ready for a new name and a new identity to test with.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -295,6 +299,11 @@ export default function AdminPanel() {
                 );
               })}
             </ul>
+            {receipt.scope === 'mine' && (
+              <Button className="mt-4 w-full" onClick={() => { window.location.href = '/'; }}>
+                Start fresh in the app
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}

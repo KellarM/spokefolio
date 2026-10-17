@@ -11,6 +11,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { safeReturnTo } from "@/lib/authReturnTo";
 import { clearSessionToken, setSessionToken } from "@/lib/sessionToken";
 
+// Dedicated test-client account. Logging in with Admin / William on the
+// normal login form signs into this account, so the entire app can be
+// exercised exactly as a real client experiences it. Reset its data from
+// the testing console (/admin) to start over as a fresh client.
+const TEST_CLIENT_EMAIL = 'spokefoliotestclient1792257176@maxxspace.com';
+const TEST_CLIENT_PASSWORD = 'TestClient-2026!';
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,9 +33,10 @@ export default function Login() {
     setError("");
     setLoading(true);
 
-    // Dedicated admin login: type Admin in the email field. No account or
-    // email exists behind it; the credential is checked server-side by the
-    // adminResetData function, then the console is unlocked for the session.
+    // Test-client login: type Admin in the email field. The credential is
+    // checked server-side, then the session signs in as the dedicated test
+    // client account and lands in the app itself — a clean client to test
+    // with, resettable any time from the testing console.
     if (email.trim().toLowerCase() === "admin") {
       try {
         await base44.functions.invoke("adminResetData", {
@@ -36,12 +44,23 @@ export default function Login() {
           admin_login: email.trim(),
           admin_password: password,
         });
+        const { access_token } = await base44.auth.loginViaEmailPassword(
+          TEST_CLIENT_EMAIL,
+          TEST_CLIENT_PASSWORD
+        );
+        if (remember) {
+          clearSessionToken();
+        } else {
+          setSessionToken(access_token);
+          window.localStorage.removeItem("base44_access_token");
+          window.localStorage.removeItem("token");
+        }
         sessionStorage.setItem("sf_admin_unlocked", "1");
         sessionStorage.setItem("sf_admin_login", email.trim());
         sessionStorage.setItem("sf_admin_pw", password);
-        window.location.href = "/admin";
+        window.location.href = returnTo;
       } catch (err) {
-        setError(err?.message || "Invalid admin password.");
+        setError(err?.message || "Invalid admin login or password.");
         setLoading(false);
       }
       return;

@@ -60,13 +60,19 @@ export default async function (req) {
       return Response.json({ error: 'Invalid admin login or password.' }, { status: 403 });
     }
 
-    if (!credentialOk && !roleOk) {
+    // Scope rules:
+    // - Own-scope operations need only a logged-in account: every user may
+    //   wipe or count their own records (the test client uses this to start
+    //   over as a fresh client). No admin access needed for your own data.
+    // - Whole-database scope needs the admin credential or an admin account.
+    const scope = user ? (body?.scope === 'all' ? 'all' : 'mine') : 'all';
+
+    if (scope === 'all' && !credentialOk && !roleOk) {
       return Response.json({ error: 'Admin access required.' }, { status: 403 });
     }
-
-    // Password logins have no account, so they work on the whole database.
-    // Logged-in admins can additionally choose to wipe only their own data.
-    const scope = roleOk ? (body?.scope === 'all' ? 'all' : 'mine') : 'all';
+    if (scope === 'mine' && !user) {
+      return Response.json({ error: 'No account on this session.' }, { status: 403 });
+    }
 
     const results = {};
 
