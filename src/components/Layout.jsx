@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import AccountMenu from '@/components/AccountMenu';
-import { useAuth } from '@/lib/AuthContext';
 
 const LOGO = 'https://media.base44.com/images/public/6ac71edebc00261f3487fa3e/9f96553a6_logo.png';
 
@@ -15,7 +14,6 @@ const NAV = [
 
 export default function Layout() {
   const { pathname } = useLocation();
-  const { user } = useAuth();
   const isActive = (to) => (to === '/' ? pathname === '/' : pathname.startsWith(to));
   const isHome = pathname === '/';
 
@@ -42,11 +40,6 @@ export default function Layout() {
               {item.label}
             </Link>
           ))}
-          {(user?.role === 'admin' || sessionStorage.getItem('sf_admin_unlocked') === '1') && (
-            <Link to="/admin" className={pathname.startsWith('/admin') ? 'on' : undefined}>
-              Admin
-            </Link>
-          )}
         </nav>
 
         <div className="mec-cta">
