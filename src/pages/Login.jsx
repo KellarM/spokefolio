@@ -11,13 +11,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { safeReturnTo } from "@/lib/authReturnTo";
 import { clearSessionToken, setSessionToken } from "@/lib/sessionToken";
 
-// Dedicated test-client account. Logging in with Admin / William on the
-// normal login form signs into this account, so the entire app can be
-// exercised exactly as a real client experiences it. Reset its data from
-// the testing console (/admin) to start over as a fresh client.
-const TEST_CLIENT_EMAIL = 'spokefoliotestclient1792257176@maxxspace.com';
-const TEST_CLIENT_PASSWORD = 'TestClient-2026!';
-
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,40 +25,6 @@ export default function Login() {
     e.preventDefault();
     setError("");
     setLoading(true);
-
-    // Test-client login: type Admin in the email field. The credential is
-    // checked server-side, then the session signs in as the dedicated test
-    // client account and lands in the app itself — a clean client to test
-    // with, resettable any time from the testing console.
-    if (email.trim().toLowerCase() === "admin") {
-      try {
-        await base44.functions.invoke("adminResetData", {
-          mode: "verify",
-          admin_login: email.trim(),
-          admin_password: password,
-        });
-        const { access_token } = await base44.auth.loginViaEmailPassword(
-          TEST_CLIENT_EMAIL,
-          TEST_CLIENT_PASSWORD
-        );
-        if (remember) {
-          clearSessionToken();
-        } else {
-          setSessionToken(access_token);
-          window.localStorage.removeItem("base44_access_token");
-          window.localStorage.removeItem("token");
-        }
-        sessionStorage.setItem("sf_admin_unlocked", "1");
-        sessionStorage.setItem("sf_admin_login", email.trim());
-        sessionStorage.setItem("sf_admin_pw", password);
-        window.location.href = returnTo;
-      } catch (err) {
-        setError(err?.message || "Invalid admin login or password.");
-        setLoading(false);
-      }
-      return;
-    }
-
     try {
       const { access_token } = await base44.auth.loginViaEmailPassword(email, password);
       if (remember) {
@@ -136,10 +95,10 @@ export default function Login() {
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
               id="email"
-              type="text"
-              autoComplete="username"
+              type="email"
+              autoComplete="email"
               autoFocus
-              placeholder="you@example.com or Admin"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="pl-10 h-12"
