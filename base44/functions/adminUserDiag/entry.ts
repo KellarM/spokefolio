@@ -44,8 +44,13 @@ export default async function (req) {
       'SupportingDocument',
     ];
     for (const entity of entities) {
-      const recs = await base44.asServiceRole.entities[entity].list();
-      ownership[entity] = recs.map((r) => ({ id: r.id, created_by: r.created_by }));
+      const recs = await base44.asServiceRole.entities[entity].list(
+        null, 100, 0, ['id', 'created_by']
+      );
+      ownership[entity] = recs.map((r) => ({
+        id: r.id,
+        created_by: r.created_by ?? null,
+      }));
     }
 
     return Response.json({ users: usersOut, ownership });
