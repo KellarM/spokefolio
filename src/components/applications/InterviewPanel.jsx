@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import DictateButton from '@/components/common/DictateButton';
 import { appendLine } from '@/hooks/useDictation';
 import { useToast } from '@/components/ui/use-toast';
+import AnswerWorkshop from '@/components/applications/AnswerWorkshop';
 
 // The Interview section: the app plays the hiring company's HR interviewer for this
 // specific role. Answers can be typed or spoken with the dictate button. Every drill
@@ -15,17 +16,20 @@ import { useToast } from '@/components/ui/use-toast';
 export default function InterviewPanel({ application, onApplicationUpdate }) {
   const { toast } = useToast();
   const [answer, setAnswer] = useState('');
-  const [busy, setBusy] = useState(null); // 'start' | 'answer' | 'finish' | null
+  const [busy, setBusy] = useState(null); // 'start' | 'answer' | 'next' | 'finish' | null
+  const [workshopDone, setWorkshopDone] = useState(false);
 
   const sessions = Array.isArray(application.mock_interviews) ? application.mock_interviews : [];
   const active = sessions.find((s) => s.status === 'active') || null;
   const finished = sessions.filter((s) => s.status === 'finished');
   const prep = application.interview_prep || null;
 
+  const isWorkshop = active?.session_type === 'answers';
+
   const pendingQuestion = useMemo(() => {
-    if (!active || !Array.isArray(active.turns)) return null;
+    if (!active || isWorkshop || !Array.isArray(active.turns)) return null;
     return active.turns.find((t) => !String(t.answer || '').trim()) || null;
-  }, [active]);
+  }, [active, isWorkshop]);
 
   const call = async (mode, extra = {}) => {
     setBusy(mode);
@@ -41,6 +45,12 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
         setAnswer('');
         if (data.done) {
           toast({ title: 'Interviewer has what they need', description: 'Wrap up whenever you are ready for the readiness report.' });
+        }
+      }
+      if (mode === 'start' || mode === 'next') {
+        setWorkshopDone(Boolean(data.done));
+        if (mode === 'next' && data.done) {
+          toast({ title: 'The posting has been covered', description: 'End the session when you are ready.' });
         }
       }
       return data;
@@ -67,22 +77,43 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
           <h2 className="eyebrow">Interview</h2>
         </div>
         <p className="mt-1.5 text-[15px] font-medium">
-          {active ? 'Drill in progress' : `Practice with ${application.company || 'the hiring company'}'s HR`}
+          {active
+            ? isWorkshop
+              ? 'Answer workshop in progress'
+              : 'Drill in progress'
+            : `Practice with ${application.company || 'the hiring company'}'s HR`}
         </p>
         <p className="mt-1 text-[13px] text-muted-foreground">
-          {active
-            ? 'Answer out loud or type it. The interviewer grades each answer honestly, then asks the next question.'
-            : 'A mock interview for this exact posting: questions grounded in the job description and your résumé, honest feedback on every answer, and a readiness report at the end.'}
+          {isWorkshop
+            ? 'The interviewer asks one question at a time, then shows two answers you could give, each from a different experience in your history. Read the pair, then move on.'
+            : active
+              ? 'Answer out loud or type it. The interviewer grades each answer honestly, then asks the next question.'
+              : 'Two ways to prepare for this exact posting. Practice: you answer, the interviewer grades you and shows the answer to give. Answers: the interviewer asks, then shows you two answers you could give.'}
         </p>
 
         {!active && (
-          <Button className="mt-4 rounded-full" onClick={() => call('start')} disabled={busy === 'start'}>
-            {busy === 'start' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-            {busy === 'start' ? 'The interviewer is getting ready…' : 'Start mock interview'}
-          </Button>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button className="rounded-full" onClick={() => call('start', { session_type: 'practice' })} disabled={busy === 'start'}>
+              {busy === 'start' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+              {busy === 'start' ? 'The interviewer is getting ready…' : 'Mock interview'}
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-full"
+              onClick={() => call('start', { session_type: 'answers' })}
+              disabled={busy === 'start'}
+            >
+              {busy === 'start' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+              {busy === 'start' ? 'The interviewer is getting ready…' : 'Mock interview / Answers'}
+            </Button>
+          </div>
         )}
 
-        {active && (
+        {active && isWorkshop && (
+          <AnswerWorkshop session={active} busy={busy} atEnd={workshopDone} onCall={(mode) => call(mode)} />
+        )}
+
+        {active && !isWorkshop && (
           <div className="mt-4 space-y-4">
             <p className="rounded-xl bg-muted/50 px-4 py-3 text-[14px] italic text-muted-foreground">
               {active.greeting}
@@ -180,6 +211,13 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
                   {session.turns?.length || 0} questions
                 </summary>
                 <div className="mt-3 space-y-3 text-[13px]">
+                  {session.session_type === 'answers' && session.turns?.length > 0 && (
+                    <ol className="list-decimal space-y-1.5 pl-4">
+                      {session.turns.map((turn, i) => (
+                        <li key={i}>{turn.question}</li>
+                      ))}
+                    </ol>
+                  )}
                   {session.summary?.readiness && (
                     <p className="text-[13.5px]">{session.summary.readiness}</p>
                   )}

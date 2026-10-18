@@ -320,6 +320,14 @@
           "id": {
             "type": "string"
           },
+          "session_type": {
+            "type": "string",
+            "enum": [
+              "practice",
+              "answers"
+            ],
+            "default": "practice"
+          },
           "started_at": {
             "type": "string"
           },
@@ -346,6 +354,20 @@
                 },
                 "answer": {
                   "type": "string"
+                },
+                "examples": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "story": {
+                        "type": "string"
+                      },
+                      "answer": {
+                        "type": "string"
+                      }
+                    }
+                  }
                 },
                 "feedback": {
                   "type": "object",

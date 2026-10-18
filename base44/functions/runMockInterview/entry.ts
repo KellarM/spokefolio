@@ -6,10 +6,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 // facts about the company.
 //
 // Modes:
-//   start  - open a session: in-character greeting + first question
+//   start  - open a session: 'practice' gets a greeting + first question, 'answers'
+//            opens the workshop with a question plus two answers the candidate could
+//            give, each drawn from a different experience in their history
 //   answer - grade the candidate's latest answer (what landed, what to improve),
-//            then ask the next question (or signal done)
-//   finish - close the session with a readiness summary
+//            then ask the next question (or signal done) [practice]
+//   next   - workshop only: the next question with its pair of model answers [answers]
+//   finish - close the session: practice gets a readiness summary, answers just closes
+//            (there are no answers of their own to grade in the workshop)
 //
 // The full transcript lives on the application record (mock_interviews, capped at the
 // five most recent sessions), so a drill survives refreshes and can be reviewed later.
@@ -36,6 +40,39 @@ const ANSWER_SCHEMA = {
     next_question: { type: ['string', 'null'] }
   },
   required: ['landed', 'model_answer', 'next_question']
+};
+
+const WORKSHOP_START_SCHEMA = {
+  type: 'object',
+  properties: {
+    greeting: { type: 'string' },
+    question: { type: 'string' },
+    examples: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { story: { type: 'string' }, answer: { type: 'string' } },
+        required: ['story', 'answer']
+      }
+    }
+  },
+  required: ['greeting', 'question', 'examples']
+};
+
+const WORKSHOP_NEXT_SCHEMA = {
+  type: 'object',
+  properties: {
+    question: { type: 'string' },
+    examples: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { story: { type: 'string' }, answer: { type: 'string' } },
+        required: ['story', 'answer']
+      }
+    }
+  },
+  required: ['question', 'examples']
 };
 
 const SUMMARY_SCHEMA = {
@@ -90,6 +127,35 @@ function transcriptOf(session: any): string {
   }
   return lines.join('\n');
 }
+
+function examplesOf(value: unknown, max = 2): any[] {
+  return Array.isArray(value)
+    ? value
+        .map((e: any) => ({ story: text(e?.story, 200), answer: text(e?.answer, 1600) }))
+        .filter((e) => e.answer)
+        .slice(0, max)
+    : [];
+}
+
+// What the answer workshop has already asked, and which experience each shown pair
+// came from, so the next pair never repeats one.
+function workshopTranscript(session: any): string {
+  const lines: string[] = [];
+  for (const turn of Array.isArray(session?.turns) ? session.turns : []) {
+    lines.push('INTERVIEWER: ' + text(turn.question, 500));
+    for (const example of Array.isArray(turn.examples) ? turn.examples : []) {
+      lines.push('  pair already shown, drawn from: ' + text(example.story, 200));
+    }
+  }
+  return lines.join('\n') || '(nothing asked yet)';
+}
+
+const WORKSHOP_RULES = `Rules for each pair of answers:
+- The two answers must come from two DIFFERENT experiences on the resume: a different employer, role, project or period. Never the same one twice, never one already used in an earlier pair above, and never an invented one.
+- Each answer is in the candidate's own voice, first person, spoken the way they would say it out loud: 3 to 5 sentences that directly answer the question, carrying the concrete detail the resume gives (a number, a system, a program, a certification).
+- Both answers must be strong and usable on their own; the candidate will borrow whichever fits.
+- story: a short label naming the experience it came from, e.g. "Kuehne & Nagel - emergency medical logistics, 2020".
+- examples: exactly 2.`;
 
 function contextBlock(application: any, resume: any): string {
   const a = application;
@@ -160,6 +226,49 @@ export default async function (req: Request) {
         return Response.json({ error: 'An interview drill is already in progress on this application.' }, { status: 400 });
       }
 
+      if (text(body?.session_type, 20) === 'answers') {
+        const workshop: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt: `${contextBlock(application, resume)}
+
+You are the HR interviewer for this role at this company. You are running an answer workshop: you ask the question, then you show the candidate two answers they could give.
+
+Rules for your character:
+- Professional, warm, but probing. Ground everything in the posting above. Invent no facts about the company beyond the research notes.
+- Plain, spoken language. No filler, no flattery.
+
+${WORKSHOP_RULES}
+
+Produce:
+1. greeting: 1 or 2 sentences in character that open the workshop and say that after each question they will see two answers they could give.
+2. question: the single best opening question for THIS specific role. One question only.
+3. examples: exactly 2 answers, from two different experiences (see the rules above).`,
+          response_json_schema: WORKSHOP_START_SCHEMA
+        });
+
+        const workshopSession = {
+          id: crypto.randomUUID(),
+          session_type: 'answers',
+          started_at: now,
+          finished_at: '',
+          status: 'active',
+          greeting: text(workshop?.greeting, 600),
+          turns: [
+            {
+              question: text(workshop?.question, 500),
+              examples: examplesOf(workshop?.examples),
+              answer: '',
+              feedback: null,
+              asked_at: now,
+              answered_at: ''
+            }
+          ],
+          summary: null
+        };
+        sessions = trimSessions([workshopSession, ...sessions]);
+        await base44.entities.JobApplication.update(applicationId, { mock_interviews: sessions });
+        return Response.json({ ok: true, mock_interviews: sessions });
+      }
+
       const result: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `${contextBlock(application, resume)}
 
@@ -178,6 +287,7 @@ Produce:
 
       const session = {
         id: crypto.randomUUID(),
+        session_type: 'practice',
         started_at: now,
         finished_at: '',
         status: 'active',
@@ -203,6 +313,10 @@ Produce:
       if (!session) {
         return Response.json({ error: 'No interview drill is in progress. Start one first.' }, { status: 400 });
       }
+      if (session.session_type === 'answers') {
+        return Response.json({ error: 'This session is the answers workshop; it does not take your own answers.' }, { status: 400 });
+      }
+
       const answer = text(body?.answer, 3000);
       if (!answer) {
         return Response.json({ error: 'Say something first; the interviewer is waiting.' }, { status: 400 });
@@ -264,10 +378,64 @@ Produce:
       return Response.json({ ok: true, mock_interviews: sessions, done });
     }
 
+    if (mode === 'next') {
+      const session = activeSession(sessions);
+      if (!session || session.session_type !== 'answers') {
+        return Response.json({ error: 'No answer workshop is in progress.' }, { status: 400 });
+      }
+
+      const workshopTurns = Array.isArray(session.turns) ? session.turns : [];
+      if (workshopTurns.length >= MAX_TURNS) {
+        return Response.json({ ok: true, mock_interviews: sessions, done: true });
+      }
+
+      const result: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt: `${contextBlock(application, resume)}
+
+You are the HR interviewer running an answer workshop. What you have already asked, and the experience each pair was drawn from:
+
+${workshopTranscript(session)}
+
+Rules for your character:
+- Professional, warm, but probing. Ground everything in the posting above. Invent no facts about the company beyond the research notes.
+- Plain, spoken language. No filler, no flattery.
+
+${WORKSHOP_RULES}
+
+Produce:
+1. question: your next question in character, one question only. Probe a requirement in the posting that has not been covered yet; do not repeat an earlier question. Return an empty string only when the posting's main requirements have all been covered.
+2. examples: exactly 2 answers, from two different experiences (see the rules above).`,
+        response_json_schema: WORKSHOP_NEXT_SCHEMA
+      });
+
+      const nextQuestion = text(result?.question, 500);
+      if (!nextQuestion) {
+        return Response.json({ ok: true, mock_interviews: sessions, done: true });
+      }
+
+      workshopTurns.push({
+        question: nextQuestion,
+        examples: examplesOf(result?.examples),
+        answer: '',
+        feedback: null,
+        asked_at: now,
+        answered_at: ''
+      });
+      await base44.entities.JobApplication.update(applicationId, { mock_interviews: sessions });
+      return Response.json({ ok: true, mock_interviews: sessions, done: false });
+    }
+
     if (mode === 'finish') {
       const session = activeSession(sessions);
       if (!session) {
         return Response.json({ error: 'No interview drill is in progress to finish.' }, { status: 400 });
+      }
+
+      if (session.session_type === 'answers') {
+        session.status = 'finished';
+        session.finished_at = now;
+        await base44.entities.JobApplication.update(applicationId, { mock_interviews: sessions });
+        return Response.json({ ok: true, mock_interviews: sessions });
       }
 
       const result: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
