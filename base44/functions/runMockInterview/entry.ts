@@ -9,8 +9,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 //   start  - open a session: 'practice' gets a greeting + first question, 'answers'
 //            opens the workshop with a question plus two answers the candidate could
 //            give, each drawn from a different experience in their history
-//   answer - grade the candidate's latest answer (what landed, what to improve),
-//            then ask the next question (or signal done) [practice]
+//   answer - 'practice': grade the candidate's latest answer (what landed, what to
+//            improve), then ask the next question (or signal done). 'answers': keep the
+//            candidate's own answer, their third, on the question it belongs to (no grading)
 //   next   - workshop only: the next question with its pair of model answers [answers]
 //   finish - close the session: practice gets a readiness summary, answers just closes
 //            (there are no answers of their own to grade in the workshop)
@@ -100,8 +101,10 @@ function list(value: unknown, max = 10, each = 400): string[] {
 function resumeOutline(resume: any): string {
   const lines: string[] = [];
   if (resume?.summary) lines.push('Summary: ' + text(resume.summary, 1200));
+  let entries = 0;
   for (const role of Array.isArray(resume?.experience) ? resume.experience : []) {
-    lines.push(`${text(role.title, 120)} at ${text(role.organization, 120)} (${text(role.dates, 60)})`);
+    entries += 1;
+    lines.push(`[Experience ${entries}] ${text(role.title, 120)} at ${text(role.organization, 120)} (${text(role.dates, 60)})`);
     for (const bullet of Array.isArray(role.bullets) ? role.bullets.slice(0, 8) : []) {
       lines.push('  - ' + text(bullet, 400));
     }
@@ -152,9 +155,12 @@ function workshopTranscript(session: any): string {
 
 const WORKSHOP_RULES = `Rules for each pair of answers:
 - The two answers must come from two DIFFERENT experiences on the resume: a different employer, role, project or period. Never the same one twice, never one already used in an earlier pair above, and never an invented one.
-- Each answer is in the candidate's own voice, first person, spoken the way they would say it out loud: 3 to 5 sentences that directly answer the question, carrying the concrete detail the resume gives (a number, a system, a program, a certification).
+- Every fact inside an answer must be one the resume records for THAT ONE experience. Never move a detail from another role, project or period into it, and never merge two experiences into a single answer. If the resume does not record how something was done (a system, a manual process, a team, a setting), leave that out instead of assuming it.
+- The candidate will be held to these words in a real interview, so a wrong-looking sentence is worse than a thinner one. Use the resume's own wording for names, systems, programs and numbers; do not rename or round anything.
+- The answer must squarely answer the question asked. Read what the question assumes and check it against what is recorded: if the question describes a manual, paper-based process and their real experience ran on scanners, say so plainly and answer from the nearest genuine experience, naming where theirs differed. Never dress a recorded fact up to sound like the situation being asked about.
+- Each answer is in the candidate's own voice, first person, spoken the way they would say it out loud: 3 to 5 sentences that directly answer the question, carrying the concrete detail the resume gives for that experience (a number, a system, a program, a certification).
 - Both answers must be strong and usable on their own; the candidate will borrow whichever fits.
-- story: a short label naming the experience it came from, e.g. "Kuehne & Nagel - emergency medical logistics, 2020".
+- story: a short label naming the experience it came from, in the resume's own terms: employer, role or project, and period, e.g. "Kuehne & Nagel - 3M Canada logistics, 1989-2008".
 - examples: exactly 2.`;
 
 function contextBlock(application: any, resume: any): string {
@@ -241,7 +247,7 @@ ${WORKSHOP_RULES}
 Produce:
 1. greeting: 1 or 2 sentences in character that open the workshop and say that after each question they will see two answers they could give.
 2. question: the single best opening question for THIS specific role. One question only.
-3. examples: exactly 2 answers, from two different experiences (see the rules above).`,
+3. examples: exactly 2 answers, from two different experiences (see the rules above). Trace every detail in an answer back to that one experience's own lines before you write it, and drop anything you cannot.`,
           response_json_schema: WORKSHOP_START_SCHEMA
         });
 
@@ -313,13 +319,25 @@ Produce:
       if (!session) {
         return Response.json({ error: 'No interview drill is in progress. Start one first.' }, { status: 400 });
       }
-      if (session.session_type === 'answers') {
-        return Response.json({ error: 'This session is the answers workshop; it does not take your own answers.' }, { status: 400 });
-      }
-
       const answer = text(body?.answer, 3000);
       if (!answer) {
-        return Response.json({ error: 'Say something first; the interviewer is waiting.' }, { status: 400 });
+        return Response.json({ error: 'Write something first.' }, { status: 400 });
+      }
+
+      // Answer workshop: keep the candidate's own answer (their third) on the question it
+      // belongs to. Nothing is graded here; the workshop is for borrowing the pair, not scoring.
+      if (session.session_type === 'answers') {
+        const owned = Array.isArray(session.turns) ? session.turns : [];
+        const requested = Number(body?.turn_index);
+        const ownedIndex =
+          Number.isInteger(requested) && requested >= 0 && requested < owned.length ? requested : owned.length - 1;
+        if (ownedIndex < 0 || !owned[ownedIndex]) {
+          return Response.json({ error: 'There is no question to answer yet.' }, { status: 400 });
+        }
+        owned[ownedIndex].answer = answer;
+        owned[ownedIndex].answered_at = now;
+        await base44.entities.JobApplication.update(applicationId, { mock_interviews: sessions });
+        return Response.json({ ok: true, mock_interviews: sessions });
       }
 
       // Grade the latest unanswered turn.
@@ -350,7 +368,7 @@ Grade the answer as a real interviewer would, then continue.
 Rules:
 - Ground every judgment in the resume and the posting. If the answer dodges the question, misses an obvious metric from the resume, or sounds rehearsed and hollow, say so plainly in "improve". No flattery. If the answer is genuinely strong, "improve" is a short coaching note or empty.
 - Never invent experience the candidate does not have. If they claimed something not in the resume, call it out in "improve".
-- model_answer is the answer you wish they had given: the same answer done properly. First person, in the candidate's own voice, using only experience that is in the resume above. 3 to 5 spoken sentences that directly answer this question, name the specific example, and include a concrete detail from the resume (a number, a system, a program) where one exists. Fold in whatever "improve" says was missing. Invent nothing new.
+- model_answer is the answer you wish they had given: the same answer done properly. First person, in the candidate's own voice, using only experience that is in the resume above. 3 to 5 spoken sentences that directly answer this question, name the specific example, and include a concrete detail from the resume (a number, a system, a program) where one exists. Fold in whatever "improve" says was missing. Invent nothing new, and keep every detail inside the one experience it came from: never move a fact to another role, and never state a system, method or setting the resume does not record for that experience. If the question assumes something the candidate's history does not have, answer from the nearest real experience and say plainly where theirs differed.
 - Questions already asked: ${askedCount}. Cover the posting's requirements across the drill; do not repeat a question.
 ${askedCount >= MAX_TURNS ? '- The drill has reached its question limit: set next_question to null.' : ''}
 
@@ -404,7 +422,7 @@ ${WORKSHOP_RULES}
 
 Produce:
 1. question: your next question in character, one question only. Probe a requirement in the posting that has not been covered yet; do not repeat an earlier question. Return an empty string only when the posting's main requirements have all been covered.
-2. examples: exactly 2 answers, from two different experiences (see the rules above).`,
+2. examples: exactly 2 answers, from two different experiences (see the rules above). Trace every detail in an answer back to that one experience's own lines before you write it, and drop anything you cannot.`,
         response_json_schema: WORKSHOP_NEXT_SCHEMA
       });
 

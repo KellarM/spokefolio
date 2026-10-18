@@ -1,10 +1,11 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import WorkshopAnswerBox from '@/components/applications/WorkshopAnswerBox';
 
 // Mock interview, answers type: the interviewer asks one question at a time and shows
 // two answers the candidate could give, each built from a different experience in
-// their history. Nothing to type here - read the pair, then move on.
+// their history, with room underneath for their own third answer.
 export default function AnswerWorkshop({ session, busy, atEnd, onCall }) {
   const turns = Array.isArray(session.turns) ? session.turns : [];
 
@@ -34,6 +35,12 @@ export default function AnswerWorkshop({ session, busy, atEnd, onCall }) {
               ))}
             </div>
           )}
+
+          <WorkshopAnswerBox
+            value={turn.answer}
+            saving={busy === 'answer'}
+            onSave={(text) => onCall('answer', { answer: text, turn_index: index })}
+          />
         </div>
       ))}
 
