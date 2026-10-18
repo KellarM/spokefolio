@@ -41,6 +41,18 @@ export default function AnswerWorkshop({ session, busy, atEnd, onCall }) {
             saving={busy === 'answer'}
             onSave={(text) => onCall('answer', { answer: text, turn_index: index })}
           />
+
+          {turn.feedback && (turn.feedback.landed || turn.feedback.improve) && (
+            <div className="rounded-xl border border-border/70 px-4 py-3 text-[13px]">
+              <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                How that landed
+              </span>
+              {turn.feedback.landed && <p>{turn.feedback.landed}</p>}
+              {turn.feedback.improve && (
+                <p className="mt-1.5 text-muted-foreground">To improve: {turn.feedback.improve}</p>
+              )}
+            </div>
+          )}
         </div>
       ))}
 

@@ -85,7 +85,7 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
         </p>
         <p className="mt-1 text-[13px] text-muted-foreground">
           {isWorkshop
-            ? 'The interviewer asks one question at a time, then shows two answers you could give, each from a different experience in your history. Borrow either one, or write your own in the third box.'
+            ? 'The interviewer asks one question at a time, then shows two answers you could give, each from a different experience in your history. Borrow either one, or write your own in the third box and the interviewer will tell you how it landed.'
             : active
               ? 'Answer out loud or type it. The interviewer grades each answer honestly, then asks the next question.'
               : 'Two ways to prepare for this exact posting. Practice: you answer, the interviewer grades you and shows the answer to give. Answers: the interviewer asks, then shows you two answers you could give.'}
@@ -218,6 +218,9 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
                           {turn.question}
                           {String(turn.answer || '').trim() && (
                             <span className="mt-0.5 block text-muted-foreground">My answer: {turn.answer}</span>
+                          )}
+                          {turn.feedback?.improve && (
+                            <span className="mt-0.5 block text-muted-foreground">To improve: {turn.feedback.improve}</span>
                           )}
                         </li>
                       ))}

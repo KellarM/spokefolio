@@ -11,7 +11,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 //            give, each drawn from a different experience in their history
 //   answer - 'practice': grade the candidate's latest answer (what landed, what to
 //            improve), then ask the next question (or signal done). 'answers': keep the
-//            candidate's own answer, their third, on the question it belongs to (no grading)
+//            candidate's own answer, their third, on the question it belongs to and coach
+//            them on it, including any claim the recorded history does not support
 //   next   - workshop only: the next question with its pair of model answers [answers]
 //   finish - close the session: practice gets a readiness summary, answers just closes
 //            (there are no answers of their own to grade in the workshop)
@@ -74,6 +75,15 @@ const WORKSHOP_NEXT_SCHEMA = {
     }
   },
   required: ['question', 'examples']
+};
+
+const WORKSHOP_FEEDBACK_SCHEMA = {
+  type: 'object',
+  properties: {
+    landed: { type: 'string' },
+    improve: { type: 'string' }
+  },
+  required: ['landed', 'improve']
 };
 
 const SUMMARY_SCHEMA = {
@@ -325,7 +335,8 @@ Produce:
       }
 
       // Answer workshop: keep the candidate's own answer (their third) on the question it
-      // belongs to. Nothing is graded here; the workshop is for borrowing the pair, not scoring.
+      // belongs to, then coach them on it. The check that matters most here is whether the
+      // answer only claims what the recorded history supports, since they may say it out loud.
       if (session.session_type === 'answers') {
         const owned = Array.isArray(session.turns) ? session.turns : [];
         const requested = Number(body?.turn_index);
@@ -334,8 +345,50 @@ Produce:
         if (ownedIndex < 0 || !owned[ownedIndex]) {
           return Response.json({ error: 'There is no question to answer yet.' }, { status: 400 });
         }
-        owned[ownedIndex].answer = answer;
-        owned[ownedIndex].answered_at = now;
+
+        const workshopTurn = owned[ownedIndex];
+        workshopTurn.answer = answer;
+        workshopTurn.answered_at = now;
+
+        const shown = (Array.isArray(workshopTurn.examples) ? workshopTurn.examples : [])
+          .map((e: any, i: number) => `Answer ${i + 1} (${text(e?.story, 200)}): ${text(e?.answer, 1200)}`)
+          .join('\n');
+
+        const coached: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt: `${contextBlock(application, resume)}
+
+You are the HR interviewer running an answer workshop for this role. You asked:
+
+"""
+${text(workshopTurn.question, 500)}
+"""
+
+You had already shown these two answers:
+${shown || '(none shown)'}
+
+THE CANDIDATE HAS NOW WRITTEN THEIR OWN ANSWER INSTEAD:
+"""
+${answer}
+"""
+
+Coach them on their own answer. Rules:
+- Ground every judgment in the question asked and in the resume above. No flattery.
+- Say plainly whether the answer actually answers the question that was asked; if it drifts to a different subject or stays general, name that.
+- Check the answer against the record, and do this first: if it claims an experience, system, method or number the resume does not support for that experience, or carries a detail over from a different role or period, say so in "improve" and say what the record does support instead. A claim they cannot stand behind in the room outranks any polish.
+- If the answer is genuinely strong and fully supported, "improve" is one short coaching note or empty.
+
+Produce:
+1. landed: 1 or 2 sentences on what worked in their own answer.
+2. improve: 1 or 2 sentences on what to fix: an unsupported claim, drift from the question, or a missing concrete detail. Empty string if nothing material.`,
+          response_json_schema: WORKSHOP_FEEDBACK_SCHEMA
+        });
+
+        workshopTurn.feedback = {
+          landed: text(coached?.landed, 600),
+          improve: text(coached?.improve, 600),
+          model_answer: ''
+        };
+
         await base44.entities.JobApplication.update(applicationId, { mock_interviews: sessions });
         return Response.json({ ok: true, mock_interviews: sessions });
       }

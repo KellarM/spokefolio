@@ -39,7 +39,7 @@ export default function WorkshopAnswerBox({ value, saving, onSave }) {
           disabled={saving || !draft.trim() || unchanged}
         >
           {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : unchanged && stored ? <Check className="mr-2 h-4 w-4" /> : null}
-          {unchanged && stored ? 'Saved' : 'Save my answer'}
+          {saving ? 'Reading your answer…' : unchanged && stored ? 'Saved' : stored ? 'Update my answer' : 'Save my answer'}
         </Button>
         <span className="ml-auto text-[11.5px] text-muted-foreground">
           Answers 1 and 2 use only what your history records for that experience.
