@@ -260,8 +260,12 @@
           "items": {
             "type": "object",
             "properties": {
-              "requirement": { "type": "string" },
-              "evidence": { "type": "string" }
+              "requirement": {
+                "type": "string"
+              },
+              "evidence": {
+                "type": "string"
+              }
             }
           }
         },
@@ -270,20 +274,30 @@
           "items": {
             "type": "object",
             "properties": {
-              "gap": { "type": "string" },
-              "response": { "type": "string" }
+              "gap": {
+                "type": "string"
+              },
+              "response": {
+                "type": "string"
+              }
             }
           }
         },
         "likely_questions": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
         "questions_to_ask": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
-        "generated_at": { "type": "string" }
+        "generated_at": {
+          "type": "string"
+        }
       }
     },
     "last_sent_to": {
@@ -303,37 +317,83 @@
       "items": {
         "type": "object",
         "properties": {
-          "id": { "type": "string" },
-          "started_at": { "type": "string" },
-          "finished_at": { "type": "string" },
-          "status": { "type": "string", "enum": ["active", "finished"] },
-          "greeting": { "type": "string" },
+          "id": {
+            "type": "string"
+          },
+          "started_at": {
+            "type": "string"
+          },
+          "finished_at": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "finished"
+            ]
+          },
+          "greeting": {
+            "type": "string"
+          },
           "turns": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "question": { "type": "string" },
-                "answer": { "type": "string" },
+                "question": {
+                  "type": "string"
+                },
+                "answer": {
+                  "type": "string"
+                },
                 "feedback": {
                   "type": "object",
                   "properties": {
-                    "landed": { "type": "string" },
-                    "improve": { "type": "string" }
+                    "landed": {
+                      "type": "string"
+                    },
+                    "improve": {
+                      "type": "string"
+                    },
+                    "model_answer": {
+                      "type": "string"
+                    }
                   }
                 },
-                "asked_at": { "type": "string" },
-                "answered_at": { "type": "string" }
+                "asked_at": {
+                  "type": "string"
+                },
+                "answered_at": {
+                  "type": "string"
+                }
               }
             }
           },
           "summary": {
             "type": "object",
             "properties": {
-              "readiness": { "type": "string" },
-              "strengths": { "type": "array", "items": { "type": "string" } },
-              "rehearse": { "type": "array", "items": { "type": "string" } },
-              "best_proof_points": { "type": "array", "items": { "type": "string" } }
+              "readiness": {
+                "type": "string"
+              },
+              "strengths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "rehearse": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "best_proof_points": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             }
           }
         }

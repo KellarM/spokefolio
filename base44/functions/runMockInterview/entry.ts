@@ -32,9 +32,10 @@ const ANSWER_SCHEMA = {
   properties: {
     landed: { type: 'string' },
     improve: { type: 'string' },
+    model_answer: { type: 'string' },
     next_question: { type: ['string', 'null'] }
   },
-  required: ['landed', 'next_question']
+  required: ['landed', 'model_answer', 'next_question']
 };
 
 const SUMMARY_SCHEMA = {
@@ -235,19 +236,22 @@ Grade the answer as a real interviewer would, then continue.
 Rules:
 - Ground every judgment in the resume and the posting. If the answer dodges the question, misses an obvious metric from the resume, or sounds rehearsed and hollow, say so plainly in "improve". No flattery. If the answer is genuinely strong, "improve" is a short coaching note or empty.
 - Never invent experience the candidate does not have. If they claimed something not in the resume, call it out in "improve".
+- model_answer is the answer you wish they had given: the same answer done properly. First person, in the candidate's own voice, using only experience that is in the resume above. 3 to 5 spoken sentences that directly answer this question, name the specific example, and include a concrete detail from the resume (a number, a system, a program) where one exists. Fold in whatever "improve" says was missing. Invent nothing new.
 - Questions already asked: ${askedCount}. Cover the posting's requirements across the drill; do not repeat a question.
 ${askedCount >= MAX_TURNS ? '- The drill has reached its question limit: set next_question to null.' : ''}
 
 Produce:
 1. landed: 1 or 2 sentences, what worked in the answer.
 2. improve: 1 or 2 sentences, what was weak, evasive, or missing. Empty string if nothing material.
-3. next_question: your next question in character, one question only. Set it to null only when the posting's main requirements have all been probed or the question limit is reached.`,
+3. model_answer: the answer that would have landed, written as their own words (see the rules above).
+4. next_question: your next question in character, one question only. Set it to null only when the posting's main requirements have all been probed or the question limit is reached.`,
         response_json_schema: ANSWER_SCHEMA
       });
 
       turns[openIndex].feedback = {
         landed: text(result?.landed, 600),
-        improve: text(result?.improve, 600)
+        improve: text(result?.improve, 600),
+        model_answer: text(result?.model_answer, 1600)
       };
 
       const nextQuestion = text(result?.next_question, 500);

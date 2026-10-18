@@ -112,6 +112,14 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
                         {turn.feedback.improve && (
                           <p className="mt-1.5 text-muted-foreground">To improve: {turn.feedback.improve}</p>
                         )}
+                        {turn.feedback.model_answer && (
+                          <div className="mt-3 rounded-lg border border-accent/40 bg-accent/5 px-3.5 py-3">
+                            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-accent">
+                              The answer to give
+                            </span>
+                            <p>{turn.feedback.model_answer}</p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </>
