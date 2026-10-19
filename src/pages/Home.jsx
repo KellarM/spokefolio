@@ -84,7 +84,7 @@ export default function Home() {
                 </div>
               ) : historyComplete && profile.master_summary ? (
                 <div>
-                  <p className="mt-3 font-body text-[14.5px] leading-relaxed text-[#F9FAFB]/90">
+                  <p className="mt-3 font-body text-[16px] leading-relaxed text-[#F9FAFB]/90 lg:text-[14.5px]">
                     {profile.master_summary}
                   </p>
                   {Array.isArray(profile.core_skills) && profile.core_skills.length > 0 && (
@@ -92,7 +92,7 @@ export default function Home() {
                       {profile.core_skills.slice(0, 14).map((skill) => (
                         <span
                           key={skill}
-                          className="rounded-full border border-[#D4AF37]/30 bg-[#0B0F17] px-2.5 py-1 font-body text-[12px] text-[#D4AF37]"
+                          className="rounded-full border border-[#D4AF37]/30 bg-[#0B0F17] px-2.5 py-1 font-body text-[13.5px] text-[#D4AF37] lg:text-[12px]"
                         >
                           {skill}
                         </span>
@@ -100,7 +100,7 @@ export default function Home() {
                     </div>
                   )}
                   {Array.isArray(profile.target_titles) && profile.target_titles.length > 0 && (
-                    <p className="mt-4 font-body text-[13px] text-[#aab3c5]">
+                    <p className="mt-4 font-body text-[15px] text-[#aab3c5] lg:text-[13px]">
                       Best fit roles: {profile.target_titles.join(' · ')}
                     </p>
                   )}

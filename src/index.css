@@ -845,4 +845,77 @@
   .mec-fields {
     grid-template-columns: 1fr;
   }
+
+  /* Reading sizes for phones and small tablets: the labels and captions below
+     carry the meaning of most cards, so they need more than 10-11px here. */
+  .mec-links a {
+    font-size: 16px;
+  }
+  .mec-brand img {
+    width: 40px;
+    height: 40px;
+  }
+  .mec-bs {
+    font-size: 11px;
+  }
+  .mec-cta small {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .mec-btn {
+    font-size: 14px;
+  }
+  .mec-sm {
+    font-size: 13px;
+  }
+  .mec-eyebrow {
+    font-size: 12px;
+  }
+  .eyebrow {
+    font-size: 12px;
+  }
+  .mec-lede {
+    font-size: 17px;
+  }
+  .mec-f label {
+    font-size: 12px;
+    letter-spacing: 0.16em;
+  }
+  .mec-v {
+    height: 48px;
+    font-size: 16px;
+  }
+  .mec-hl small {
+    font-size: 14px;
+  }
+  .mec-load {
+    font-size: 15px;
+  }
+  .mec-tk span {
+    font-size: 12px;
+  }
+  .mec-st span {
+    font-size: 11px;
+  }
+  .mec-va {
+    font-size: 14px;
+  }
+  .mec-ac {
+    font-size: 15px;
+  }
+  .mec-badge {
+    font-size: 12px;
+  }
+  .mec-empty {
+    font-size: 15px;
+  }
+  .mec-style p {
+    font-size: 20px;
+  }
+  .mec-style small {
+    font-size: 14px;
+  }
+  .mec-ps {
+    font-size: 14px;
+  }
 }

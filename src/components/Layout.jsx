@@ -62,7 +62,7 @@ export default function Layout() {
 
       <footer className="border-t border-[#D4AF37]/20 px-6 py-5 lg:px-[80px]">
         <div className="flex items-center justify-between gap-4">
-          <span className="font-body text-xs tracking-wider text-[#8a94a8]">
+          <span className="font-body text-sm tracking-wider text-[#8a94a8] lg:text-xs">
             Spokefolio Personal Resume Studio
           </span>
           <AccountMenu className="max-w-xs" />
