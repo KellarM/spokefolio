@@ -1,8 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 
 // Mock interview drill for one application. The LLM plays the hiring company's HR
-// interviewer for this specific role, grounded strictly in the job description, the
-// candidate's tailored resume, company research, and known gaps. It never invents
+// interviewer for this specific role, and works from what that interviewer could
+// actually know: the job description, the candidate's tailored resume, company research,
+// and the gaps those two expose. The candidate's wider recorded history is background for
+// the model only, never something the room expects them to have said. It never invents
 // facts about the company.
 //
 // Modes:
@@ -178,10 +180,10 @@ const WORKSHOP_RULES = `Rules for each pair of answers:
 - examples: exactly 2.`;
 
 // The wider record behind the tailored resume: every entry the candidate has captured,
-// with its own summary, accomplishments and skills. The tailored resume keeps only a
-// couple of lines per role, so the accounts, clients and projects a job actually ran live
-// here and nowhere else. Both go to the interviewer, so a real claim is never called
-// unsupported just because the tailored resume trimmed it away.
+// with its own summary, accomplishments and skills. It is background for the model alone,
+// never something the interviewer in the room knows: it is here so that a real claim is
+// never called unsupported, absent or invented just because the resume trimmed it away,
+// and so the workshop's sample answers can use the candidate's real material.
 function careerHistory(entries: any[]): string {
   const lines: string[] = [];
   let count = 0;
@@ -214,12 +216,12 @@ ${text(a.job_description, 6000)}
 CANDIDATE'S TAILORED RESUME FOR THIS JOB (trimmed to fit a page, so it leaves detail out)
 ${resumeOutline(resume)}
 
-CANDIDATE'S FULL RECORDED CAREER HISTORY (the same career in the candidate's own words, with the detail the resume trimmed; with the resume, the only source of truth about the candidate)
+BACKGROUND NOTES ON THE CANDIDATE (private to you; the interviewer in the room has never seen this and only ever has the resume above)
 ${history}
 
-The resume above is the trimmed copy, so a true fact about this candidate is often missing from it. Before you call something unsupported, absent or unmentioned, look for it in the history above; treat it as unsupported only when neither source records it.
+WHAT THE ROOM KNOWS: the resume above, and the posting. Nobody who interviews this candidate can see anything their resume does not say, so nobody in that room can notice what was left out, and what a candidate puts on their own resume is their choice to make. So: never treat these notes as a list of what the candidate should have mentioned, never ask them to account for or explain a detail that appears only here, never fault an answer for omitting one, and never imply they were hiding it. The notes have exactly one use: before you call a claim unsupported, absent or invented, check them, and drop the objection when the record supports the claim.
 
-KNOWN GAPS (already identified; probe these honestly, do not pretend they are strengths)
+KNOWN GAPS FROM THE RESUME (what the resume itself does not evidence against the posting: ask about these as open questions about the requirement, never as a challenge about something missing)
 ${gaps.map((g) => '- ' + g).join('\n') || '(none recorded)'}
 
 COMPANY RESEARCH (the only company facts you may rely on; invent nothing else)
@@ -411,7 +413,8 @@ ${answer}
 """
 
 Coach them on their own answer. Rules:
-- Ground every judgment in the question asked and in the resume above. No flattery.
+- Ground every judgment in the question asked and in the resume and posting above. No flattery.
+- Stay in the interviewer's lane: the room knows this candidate only from the resume, so never fault their answer for leaving out something that appears only in the background notes, never ask them to account for it, and never hint that they were hiding it. Judge what they said the way the person across the table would, who can see nothing beyond the page in front of them.
 - Say plainly whether the answer actually answers the question that was asked; if it drifts to a different subject or stays general, name that.
 - Check the answer against the record, and do this first: if it claims an experience, system, method or number that neither the resume nor the recorded history supports for that experience, or carries a detail over from a different role or period, say so in "improve" and say what the record does support instead. Never call a claim unsupported until you have checked the history as well as the resume. A claim they cannot stand behind in the room outranks any polish.
 - If the answer answers the question and the record supports it, "improve" must be an empty string and "landed" must say plainly that it holds up. Never manufacture a note to have something in the field. If their answer is one of the two you showed them, say so and leave "improve" empty: do not find fault with the answer you just gave them.
@@ -463,6 +466,7 @@ Rules:
 - When the candidate gives the very answer you gave them as model_answer, or words that land as well, treat it as the answer to give: "improve" empty, and "landed" says plainly that it holds up.
 - Say a thing once: do not repeat a note you already made earlier in this drill, and always clear it once the answer has fixed it.
 - Ground every judgment in the resume and the posting. If the answer dodges the question, misses an obvious metric from the resume, or sounds rehearsed and hollow, say so plainly in "improve". No flattery.
+- Stay in the interviewer's lane: you know this candidate exactly as the person who will actually meet them does, from the resume and the posting, and they can only judge what was said out loud. Never fault an answer for leaving out something that appears only in the background notes, never ask them to account for it, and never suggest they were hiding it: what a candidate puts on their own resume is their call, and nobody in that room can miss what they never saw.
 - Never invent experience the candidate does not have. If they claimed something that is in neither the resume nor the recorded history, call it out in "improve"; if the history does record it, they were right to say it, so judge the answer on how well it answered the question instead.
 - model_answer is the answer you wish they had given: the same answer done properly. First person, in the candidate's own voice, using only experience that is in the resume or the history above. 3 to 5 spoken sentences that directly answer this question, name the specific example, and include a concrete detail from the resume (a number, a system, a program) where one exists. Fold in whatever "improve" says was missing. Invent nothing new, and keep every detail inside the one experience it came from: never move a fact to another role, and never state a system, method or setting the resume does not record for that experience. If the question assumes something the candidate's history does not have, answer from the nearest real experience and say plainly where theirs differed.
 - Questions already asked: ${askedCount}. Cover the posting's requirements across the drill; do not repeat a question.
@@ -558,6 +562,8 @@ Produce:
 The mock interview is over. Full transcript:
 
 ${transcriptOf(session)}
+
+Judge them as the person who will actually interview them would, from the resume, the posting and this transcript alone: the wider background notes are not part of that room, so a detail the candidate chose not to put on their resume is neither a weakness nor anything to rehearse.
 
 Produce a readiness report for the candidate, as a sharp coach would:
 1. readiness: one honest paragraph on whether this candidate is ready to interview for this role, and the impression the transcript leaves. Judge the answers as they stand and be fair in both directions: if they answered the questions and held up under the follow-ups, say plainly, in those words, that the candidate is ready. If they were vague or dodged the questions, say that just as plainly. The verdict follows the transcript; it never averages toward caution.
