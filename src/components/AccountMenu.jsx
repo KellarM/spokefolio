@@ -14,13 +14,13 @@ export default function AccountMenu({ className }) {
 
   return (
     <div className={cn('flex items-center gap-3', className)}>
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-[13px] font-medium text-secondary-foreground lg:text-[12px]">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-[14px] font-medium text-secondary-foreground">
         {initial}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[15px] leading-tight lg:text-[13px]">{name}</p>
+        <p className="truncate text-[16px] leading-tight">{name}</p>
         {user?.full_name && user?.email ? (
-          <p className="truncate text-[13px] text-muted-foreground lg:text-[11px]">{user.email}</p>
+          <p className="truncate text-[14px] text-muted-foreground">{user.email}</p>
         ) : null}
       </div>
       <Button

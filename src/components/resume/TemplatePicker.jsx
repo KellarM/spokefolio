@@ -46,8 +46,8 @@ export default function TemplatePicker({ value, onChange, variant = 'default', c
             <span className="flex min-w-0 items-center gap-2.5">
               <MiniStyle template={selected} className="h-7 w-6" />
               <span className="min-w-0">
-                <span className="block truncate text-[15px] font-medium lg:text-[13.5px]">{selected.name}</span>
-                <span className="block truncate text-[13px] text-muted-foreground lg:text-[11.5px]">{selected.blurb}</span>
+                <span className="block truncate text-[16px] font-medium">{selected.name}</span>
+                <span className="block truncate text-[14px] text-muted-foreground">{selected.blurb}</span>
               </span>
             </span>
             <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
@@ -71,8 +71,8 @@ export default function TemplatePicker({ value, onChange, variant = 'default', c
               >
                 <MiniStyle template={template} className="h-9 w-7" />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[15px] font-medium lg:text-[13px]">{template.name}</span>
-                  <span className="mt-0.5 flex items-center gap-1.5 text-[13px] text-muted-foreground lg:text-[11px]">
+                  <span className="block truncate text-[16px] font-medium">{template.name}</span>
+                  <span className="mt-0.5 flex items-center gap-1.5 text-[14px] text-muted-foreground">
                     {template.config.photo && <Camera className="h-2.5 w-2.5 shrink-0" strokeWidth={2} />}
                     <span className="truncate">{template.blurb}</span>
                   </span>

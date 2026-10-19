@@ -29,7 +29,7 @@ export default function StudioHero({ draftCount = 0 }) {
         {draftCount > 0 && (
           <Link
             to="/history"
-            className="mt-6 inline-flex items-center gap-2 font-body text-[15px] font-medium text-[#D4AF37] transition-opacity hover:opacity-80 lg:text-[13px]"
+            className="mt-6 inline-flex items-center gap-2 font-body text-[16px] font-medium text-[#D4AF37] transition-opacity hover:opacity-80"
           >
             <Clock className="h-3.5 w-3.5" />
             {draftCount} {draftCount === 1 ? 'entry is' : 'entries are'} still in progress — pick up where you left off
