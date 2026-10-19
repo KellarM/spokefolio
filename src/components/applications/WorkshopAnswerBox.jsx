@@ -7,13 +7,13 @@ import { appendLine } from '@/hooks/useDictation';
 
 // The workshop's third answer: the candidate's own, typed or dictated, kept with the
 // question so it is still there next time they open the session.
-export default function WorkshopAnswerBox({ value, saving, onSave }) {
+export default function WorkshopAnswerBox({ value, initialDraft = '', saving, onSave }) {
   const stored = String(value || '').trim();
-  const [draft, setDraft] = useState(stored);
+  const [draft, setDraft] = useState(stored || String(initialDraft || ''));
 
   useEffect(() => {
-    setDraft(String(value || ''));
-  }, [value]);
+    setDraft(String(value || '') || String(initialDraft || ''));
+  }, [value, initialDraft]);
 
   const unchanged = draft.trim() === stored;
 

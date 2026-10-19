@@ -1,5 +1,5 @@
-import React from 'react';
-import { Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Loader2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import WorkshopAnswerBox from '@/components/applications/WorkshopAnswerBox';
 
@@ -8,6 +8,14 @@ import WorkshopAnswerBox from '@/components/applications/WorkshopAnswerBox';
 // their history, with room underneath for their own third answer.
 export default function AnswerWorkshop({ session, busy, atEnd, onCall }) {
   const turns = Array.isArray(session.turns) ? session.turns : [];
+  // A question reopened for another attempt comes back without its answer, so the words
+  // already written are handed to the box to retry from.
+  const [seeds, setSeeds] = useState({});
+
+  const redo = (turn, index) => {
+    setSeeds((prev) => ({ ...prev, [index]: String(turn?.answer || '') }));
+    onCall('redo', { turn_index: index });
+  };
 
   return (
     <div className="mt-4 space-y-4">
@@ -38,6 +46,7 @@ export default function AnswerWorkshop({ session, busy, atEnd, onCall }) {
 
           <WorkshopAnswerBox
             value={turn.answer}
+            initialDraft={seeds[index] || ''}
             saving={busy === 'answer'}
             onSave={(text) => onCall('answer', { answer: text, turn_index: index })}
           />
@@ -51,6 +60,21 @@ export default function AnswerWorkshop({ session, busy, atEnd, onCall }) {
               {turn.feedback.improve && (
                 <p className="mt-1.5 text-muted-foreground">To improve: {turn.feedback.improve}</p>
               )}
+            </div>
+          )}
+
+          {String(turn.answer || '').trim() && (
+            <div className="flex justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full text-muted-foreground"
+                onClick={() => redo(turn, index)}
+                disabled={busy === 'redo'}
+              >
+                {busy === 'redo' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCcw className="mr-2 h-4 w-4" />}
+                {busy === 'redo' ? 'Reopening the question…' : 'Redo this answer'}
+              </Button>
             </div>
           )}
         </div>

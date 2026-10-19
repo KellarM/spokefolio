@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Loader2, MessageSquare, Mic, Sparkles, X } from 'lucide-react';
+import { Loader2, MessageSquare, Mic, RotateCcw, Sparkles, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,6 +30,16 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
     if (!active || isWorkshop || !Array.isArray(active.turns)) return null;
     return active.turns.find((t) => !String(t.answer || '').trim()) || null;
   }, [active, isWorkshop]);
+
+  // Only the most recent answered question can be reopened: the questions after it were
+  // asked in response to how it was answered.
+  const lastAnsweredIndex = useMemo(() => {
+    const list = Array.isArray(active?.turns) ? active.turns : [];
+    for (let i = list.length - 1; i >= 0; i -= 1) {
+      if (String(list[i]?.answer || '').trim()) return i;
+    }
+    return -1;
+  }, [active]);
 
   const call = async (mode, extra = {}) => {
     setBusy(mode);
@@ -64,6 +74,13 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
     } finally {
       setBusy(null);
     }
+  };
+
+  // Second chance on a question: their answer and its grade are cleared and the question
+  // comes back open with what they wrote, so they can say it better.
+  const redo = async (turn, index) => {
+    const data = await call('redo', { turn_index: index });
+    if (data) setAnswer(String(turn?.answer || ''));
   };
 
   const askCount = active?.turns?.length || 0;
@@ -149,6 +166,24 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
                               The answer to give
                             </span>
                             <p>{turn.feedback.model_answer}</p>
+                          </div>
+                        )}
+                        {index === lastAnsweredIndex && (
+                          <div className="mt-3 flex justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-full text-muted-foreground"
+                              onClick={() => redo(turn, index)}
+                              disabled={busy === 'redo'}
+                            >
+                              {busy === 'redo' ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                              )}
+                              {busy === 'redo' ? 'Reopening the question…' : 'Redo this answer'}
+                            </Button>
                           </div>
                         )}
                       </div>

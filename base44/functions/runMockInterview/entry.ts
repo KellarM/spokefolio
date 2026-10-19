@@ -16,6 +16,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 //   next   - workshop only: the next question with its pair of model answers [answers]
 //   finish - close the session: practice gets a readiness summary, answers just closes
 //            (there are no answers of their own to grade in the workshop)
+//   redo   - reopen a question already answered, so the candidate gets a second attempt:
+//            the answer and its feedback are cleared and the drill resumes there. In a
+//            practice drill the questions that followed came out of that answer, so they
+//            go with it; workshop questions stand alone and only the one is reopened
 //
 // The full transcript lives on the application record (mock_interviews, capped at the
 // five most recent sessions), so a drill survives refreshes and can be reviewed later.
@@ -164,16 +168,38 @@ function workshopTranscript(session: any): string {
 }
 
 const WORKSHOP_RULES = `Rules for each pair of answers:
-- The two answers must come from two DIFFERENT experiences on the resume: a different employer, role, project or period. Never the same one twice, never one already used in an earlier pair above, and never an invented one.
-- Every fact inside an answer must be one the resume records for THAT ONE experience. Never move a detail from another role, project or period into it, and never merge two experiences into a single answer. If the resume does not record how something was done (a system, a manual process, a team, a setting), leave that out instead of assuming it.
-- The candidate will be held to these words in a real interview, so a wrong-looking sentence is worse than a thinner one. Use the resume's own wording for names, systems, programs and numbers; do not rename or round anything.
+- The two answers must come from two DIFFERENT experiences in the resume or the history: a different employer, role, project or period. Never the same one twice, never one already used in an earlier pair above, and never an invented one.
+- Every fact inside an answer must be one the record holds for THAT ONE experience. Never move a detail from another role, project or period into it, and never merge two experiences into a single answer. If the record does not say how something was done (a system, a manual process, a team, a setting), leave that out instead of assuming it.
+- The candidate will be held to these words in a real interview, so a wrong-looking sentence is worse than a thinner one. Use the record's own wording for names, systems, programs and numbers; do not rename or round anything.
 - The answer must squarely answer the question asked. Read what the question assumes and check it against what is recorded: if the question describes a manual, paper-based process and their real experience ran on scanners, say so plainly and answer from the nearest genuine experience, naming where theirs differed. Never dress a recorded fact up to sound like the situation being asked about.
 - Each answer is in the candidate's own voice, first person, spoken the way they would say it out loud: 3 to 5 sentences that directly answer the question, carrying the concrete detail the resume gives for that experience (a number, a system, a program, a certification).
 - Both answers must be strong and usable on their own; the candidate will borrow whichever fits.
-- story: a short label naming the experience it came from, in the resume's own terms: employer, role or project, and period, e.g. "Kuehne & Nagel - 3M Canada logistics, 1989-2008".
+- story: a short label naming the experience it came from, in the record's own terms: employer, role or project, and period, e.g. "Kuehne & Nagel - 3M Canada logistics, 1989-2008".
 - examples: exactly 2.`;
 
-function contextBlock(application: any, resume: any): string {
+// The wider record behind the tailored resume: every entry the candidate has captured,
+// with its own summary, accomplishments and skills. The tailored resume keeps only a
+// couple of lines per role, so the accounts, clients and projects a job actually ran live
+// here and nowhere else. Both go to the interviewer, so a real claim is never called
+// unsupported just because the tailored resume trimmed it away.
+function careerHistory(entries: any[]): string {
+  const lines: string[] = [];
+  let count = 0;
+  for (const entry of (Array.isArray(entries) ? entries : []).slice(0, 12)) {
+    const name = [text(entry?.title, 120), text(entry?.organization, 120)].filter(Boolean).join(' at ');
+    if (!name) continue;
+    count += 1;
+    const dates = [text(entry?.start_date, 40), text(entry?.end_date, 40)].filter(Boolean).join(' to ');
+    lines.push(`[History ${count}] ${name}${dates ? ' (' + dates + ')' : ''}`);
+    if (entry?.summary) lines.push('  ' + text(entry.summary, 800));
+    for (const line of list(entry?.accomplishments, 12, 300)) lines.push('  - ' + line);
+    const skills = list(entry?.skills, 20, 60);
+    if (skills.length) lines.push('  Skills: ' + skills.join(', '));
+  }
+  return lines.join('\n') || '(no recorded history)';
+}
+
+function contextBlock(application: any, resume: any, history: string): string {
   const a = application;
   const r = a.company_research || {};
   const gaps = list(a.gaps, 10, 300);
@@ -185,8 +211,13 @@ Posting:
 ${text(a.job_description, 6000)}
 """
 
-CANDIDATE'S TAILORED RESUME (the only source of truth about the candidate)
+CANDIDATE'S TAILORED RESUME FOR THIS JOB (trimmed to fit a page, so it leaves detail out)
 ${resumeOutline(resume)}
+
+CANDIDATE'S FULL RECORDED CAREER HISTORY (the same career in the candidate's own words, with the detail the resume trimmed; with the resume, the only source of truth about the candidate)
+${history}
+
+The resume above is the trimmed copy, so a true fact about this candidate is often missing from it. Before you call something unsupported, absent or unmentioned, look for it in the history above; treat it as unsupported only when neither source records it.
 
 KNOWN GAPS (already identified; probe these honestly, do not pretend they are strengths)
 ${gaps.map((g) => '- ' + g).join('\n') || '(none recorded)'}
@@ -233,6 +264,14 @@ export default async function (req: Request) {
 
     const mode = text(body?.mode, 20) || 'start';
     const resume = application.resume || {};
+
+    // The candidate's whole recorded career, not just the trimmed resume on this
+    // application: the accounts and projects it left out live here.
+    const historyPage: any = await base44.entities.CareerEntry.filter(
+      { created_by_id: user.id },
+      { sort: '-created_date', limit: 40 }
+    );
+    const history = careerHistory(Array.isArray(historyPage) ? historyPage : historyPage?.items || []);
     let sessions = trimSessions(application.mock_interviews);
     const now = new Date().toISOString();
 
@@ -244,7 +283,7 @@ export default async function (req: Request) {
 
       if (text(body?.session_type, 20) === 'answers') {
         const workshop: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
-          prompt: `${contextBlock(application, resume)}
+          prompt: `${contextBlock(application, resume, history)}
 
 You are the HR interviewer for this role at this company. You are running an answer workshop: you ask the question, then you show the candidate two answers they could give.
 
@@ -286,7 +325,7 @@ Produce:
       }
 
       const result: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `${contextBlock(application, resume)}
+        prompt: `${contextBlock(application, resume, history)}
 
 You are the HR interviewer for this role at this company. You are about to open the interview.
 
@@ -355,7 +394,7 @@ Produce:
           .join('\n');
 
         const coached: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
-          prompt: `${contextBlock(application, resume)}
+          prompt: `${contextBlock(application, resume, history)}
 
 You are the HR interviewer running an answer workshop for this role. You asked:
 
@@ -374,7 +413,7 @@ ${answer}
 Coach them on their own answer. Rules:
 - Ground every judgment in the question asked and in the resume above. No flattery.
 - Say plainly whether the answer actually answers the question that was asked; if it drifts to a different subject or stays general, name that.
-- Check the answer against the record, and do this first: if it claims an experience, system, method or number the resume does not support for that experience, or carries a detail over from a different role or period, say so in "improve" and say what the record does support instead. A claim they cannot stand behind in the room outranks any polish.
+- Check the answer against the record, and do this first: if it claims an experience, system, method or number that neither the resume nor the recorded history supports for that experience, or carries a detail over from a different role or period, say so in "improve" and say what the record does support instead. Never call a claim unsupported until you have checked the history as well as the resume. A claim they cannot stand behind in the room outranks any polish.
 - If the answer is genuinely strong and fully supported, "improve" is one short coaching note or empty.
 
 Produce:
@@ -405,7 +444,7 @@ Produce:
       const askedCount = turns.length;
 
       const result: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `${contextBlock(application, resume)}
+        prompt: `${contextBlock(application, resume, history)}
 
 You are the HR interviewer for this role. The interview is in progress. So far:
 
@@ -420,8 +459,8 @@ Grade the answer as a real interviewer would, then continue.
 
 Rules:
 - Ground every judgment in the resume and the posting. If the answer dodges the question, misses an obvious metric from the resume, or sounds rehearsed and hollow, say so plainly in "improve". No flattery. If the answer is genuinely strong, "improve" is a short coaching note or empty.
-- Never invent experience the candidate does not have. If they claimed something not in the resume, call it out in "improve".
-- model_answer is the answer you wish they had given: the same answer done properly. First person, in the candidate's own voice, using only experience that is in the resume above. 3 to 5 spoken sentences that directly answer this question, name the specific example, and include a concrete detail from the resume (a number, a system, a program) where one exists. Fold in whatever "improve" says was missing. Invent nothing new, and keep every detail inside the one experience it came from: never move a fact to another role, and never state a system, method or setting the resume does not record for that experience. If the question assumes something the candidate's history does not have, answer from the nearest real experience and say plainly where theirs differed.
+- Never invent experience the candidate does not have. If they claimed something that is in neither the resume nor the recorded history, call it out in "improve"; if the history does record it, they were right to say it, so judge the answer on how well it answered the question instead.
+- model_answer is the answer you wish they had given: the same answer done properly. First person, in the candidate's own voice, using only experience that is in the resume or the history above. 3 to 5 spoken sentences that directly answer this question, name the specific example, and include a concrete detail from the resume (a number, a system, a program) where one exists. Fold in whatever "improve" says was missing. Invent nothing new, and keep every detail inside the one experience it came from: never move a fact to another role, and never state a system, method or setting the resume does not record for that experience. If the question assumes something the candidate's history does not have, answer from the nearest real experience and say plainly where theirs differed.
 - Questions already asked: ${askedCount}. Cover the posting's requirements across the drill; do not repeat a question.
 ${askedCount >= MAX_TURNS ? '- The drill has reached its question limit: set next_question to null.' : ''}
 
@@ -461,7 +500,7 @@ Produce:
       }
 
       const result: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `${contextBlock(application, resume)}
+        prompt: `${contextBlock(application, resume, history)}
 
 You are the HR interviewer running an answer workshop. What you have already asked, and the experience each pair was drawn from:
 
@@ -510,7 +549,7 @@ Produce:
       }
 
       const result: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `${contextBlock(application, resume)}
+        prompt: `${contextBlock(application, resume, history)}
 
 The mock interview is over. Full transcript:
 
@@ -539,6 +578,38 @@ Plain language. No filler.`,
 
       await base44.entities.JobApplication.update(applicationId, { mock_interviews: sessions });
       return Response.json({ ok: true, mock_interviews: sessions });
+    }
+
+    if (mode === 'redo') {
+      const session = activeSession(sessions);
+      if (!session) {
+        return Response.json({ error: 'No interview drill is in progress. Start one first.' }, { status: 400 });
+      }
+
+      const turns = Array.isArray(session.turns) ? session.turns : [];
+      const requested = Number(body?.turn_index);
+      if (!Number.isInteger(requested) || requested < 0 || requested >= turns.length) {
+        return Response.json({ error: 'That question is not on this drill.' }, { status: 400 });
+      }
+
+      const turn = turns[requested];
+      if (!String(turn?.answer || '').trim()) {
+        return Response.json({ error: 'That question has not been answered yet.' }, { status: 400 });
+      }
+
+      turn.answer = '';
+      turn.feedback = null;
+      turn.answered_at = '';
+
+      // A practice drill runs in order, so the questions that came after this answer were
+      // asked because of it and go with it. Workshop questions stand alone: only this one
+      // is reopened and the rest keep their answers.
+      if (session.session_type !== 'answers') {
+        session.turns = turns.slice(0, requested + 1);
+      }
+
+      await base44.entities.JobApplication.update(applicationId, { mock_interviews: sessions });
+      return Response.json({ ok: true, mock_interviews: sessions, done: false });
     }
 
     return Response.json({ error: 'Unknown interview mode.' }, { status: 400 });
