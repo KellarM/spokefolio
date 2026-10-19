@@ -7,6 +7,7 @@ import DictateButton from '@/components/common/DictateButton';
 import { appendLine } from '@/hooks/useDictation';
 import { useToast } from '@/components/ui/use-toast';
 import AnswerWorkshop from '@/components/applications/AnswerWorkshop';
+import DeleteSessionButton from '@/components/applications/DeleteSessionButton';
 
 // The Interview section: the app plays the hiring company's HR interviewer for this
 // specific role. Answers can be typed or spoken with the dictate button. Every drill
@@ -81,6 +82,14 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
   const redo = async (turn, index) => {
     const data = await call('redo', { turn_index: index });
     if (data) setAnswer(String(turn?.answer || ''));
+  };
+
+  // Drop one saved session: the drill and its readiness report go with it.
+  const deleteSession = async (sessionId) => {
+    const remaining = sessions.filter((session) => session.id !== sessionId);
+    await base44.entities.JobApplication.update(application.id, { mock_interviews: remaining });
+    onApplicationUpdate({ mock_interviews: remaining });
+    toast({ title: 'Session deleted', description: 'That mock interview and its report are gone.' });
   };
 
   const askCount = active?.turns?.length || 0;
@@ -246,6 +255,9 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
                   {session.turns?.length || 0} questions
                 </summary>
                 <div className="mt-3 space-y-3 text-[13px]">
+                  <div className="flex justify-end">
+                    <DeleteSessionButton onDelete={() => deleteSession(session.id)} />
+                  </div>
                   {session.session_type === 'answers' && session.turns?.length > 0 && (
                     <ol className="list-decimal space-y-1.5 pl-4">
                       {session.turns.map((turn, i) => (
