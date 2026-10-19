@@ -1,0 +1,23 @@
+/* Each existing on-screen text size is one 2px step larger. */
+@layer utilities {
+  .text-\[10px\], .text-\[10\.5px\], .text-\[11px\],
+  .text-\[11\.5px\], .text-\[12px\], .text-\[12\.5px\] {
+    font-size: 16px;
+  }
+  .text-\[13px\], .text-\[13\.5px\] { font-size: 17px; }
+  .text-\[14px\], .text-\[14\.5px\], .text-\[15px\],
+  .text-\[15\.5px\], .text-\[16px\] { font-size: 18px; }
+  .text-\[16\.5px\] { font-size: 18.5px; }
+  .text-\[17px\] { font-size: 19px; }
+  .text-\[18px\] { font-size: 20px; }
+  .text-\[19px\] { font-size: 21px; }
+  .text-\[20px\] { font-size: 22px; }
+  .text-\[21px\] { font-size: 23px; }
+  .text-\[22px\] { font-size: 24px; }
+  .text-\[24px\] { font-size: 26px; }
+  .text-\[28px\] { font-size: 30px; }
+  .text-\[30px\] { font-size: 32px; }
+  .text-\[32px\] { font-size: 34px; }
+  .text-\[36px\] { font-size: 38px; }
+  .text-\[0\.8rem\] { font-size: calc(0.8rem + 2px); }
+}

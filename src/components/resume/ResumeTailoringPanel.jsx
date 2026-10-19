@@ -74,18 +74,18 @@ const ResumeTailoringPanel = ({ entries = [], application, onSelectionChange }) 
                   <div style={{ fontWeight: 'bold' }}>
                     {entry.title || 'Untitled'}{entry.organization ? ` — ${entry.organization}` : ''}
                   </div>
-                  <div style={{ fontSize: '14px', color: '#666' }}>
+                  <div style={{ fontSize: '16px', color: '#666' }}>
                     {entry.start_date || ''}{entry.end_date ? ` to ${entry.end_date}` : ' to Present'}
                   </div>
                 </div>
               </div>
-              <span style={{ fontSize: '14px', padding: '2px 8px', borderRadius: '10px', whiteSpace: 'nowrap', ...TIER_STYLES[tier] }}>
+              <span style={{ fontSize: '16px', padding: '2px 8px', borderRadius: '10px', whiteSpace: 'nowrap', ...TIER_STYLES[tier] }}>
                 {tier} ({score})
               </span>
             </div>
           ))}
           {overLimit && (
-            <p style={{ color: '#c0392b', fontSize: '15px', margin: 0 }}>
+            <p style={{ color: '#c0392b', fontSize: '17px', margin: 0 }}>
               Over the 2-page target — deselect lower-relevance roles or trim bullets.
             </p>
           )}

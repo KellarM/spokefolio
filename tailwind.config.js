@@ -4,6 +4,21 @@ module.exports = {
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
   	extend: {
+      fontSize: {
+        xs: ['16px', { lineHeight: '18px' }],
+        sm: ['18px', { lineHeight: '22px' }],
+        base: ['18px', { lineHeight: '26px' }],
+        lg: ['20px', { lineHeight: '30px' }],
+        xl: ['22px', { lineHeight: '30px' }],
+        '2xl': ['26px', { lineHeight: '34px' }],
+        '3xl': ['32px', { lineHeight: '38px' }],
+        '4xl': ['38px', { lineHeight: '42px' }],
+        '5xl': ['50px', { lineHeight: '1' }],
+        '6xl': ['62px', { lineHeight: '1' }],
+        '7xl': ['74px', { lineHeight: '1' }],
+        '8xl': ['98px', { lineHeight: '1' }],
+        '9xl': ['130px', { lineHeight: '1' }]
+      },
   		opacity: Object.fromEntries(Array.from({ length: 101 }, (_, i) => [i, `${i / 100}`])),
   		borderRadius: {
   			lg: 'var(--radius)',

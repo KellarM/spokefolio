@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600&display=swap');
 
+@import './components/styles/typography.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -129,6 +131,7 @@
 
   body {
     @apply bg-background text-foreground font-body;
+    font-size: 18px;
   }
 
   ::selection {
@@ -257,7 +260,7 @@
 }
 
 .mec-bn {
-  font-size: 22px;
+  font-size: 24px;
   line-height: 1;
   letter-spacing: 0.02em;
   color: #F9FAFB;
@@ -266,7 +269,7 @@
 
 .mec-bs {
   margin-top: 6px;
-  font: 500 12px system-ui, sans-serif;
+  font: 500 14px system-ui, sans-serif;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: #D4AF37;
@@ -279,7 +282,7 @@
 }
 
 .mec-links a {
-  font: 500 17px system-ui, sans-serif;
+  font: 500 19px system-ui, sans-serif;
   letter-spacing: 0.06em;
   color: #aab3c5;
   text-decoration: none;
@@ -309,7 +312,7 @@
 }
 
 .mec-cta small {
-  font: 400 13px system-ui, sans-serif;
+  font: 400 15px system-ui, sans-serif;
   color: #8a94a8;
 }
 
@@ -318,7 +321,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  font: 600 15px system-ui, sans-serif;
+  font: 600 17px system-ui, sans-serif;
   letter-spacing: 0.06em;
   padding: 13px 26px;
   border-radius: 999px;
@@ -360,7 +363,7 @@
 
 .mec-sm {
   padding: 9px 18px;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .mec-quiet {
@@ -378,7 +381,7 @@
 }
 
 .mec-eyebrow {
-  font: 600 13px system-ui, sans-serif;
+  font: 600 15px system-ui, sans-serif;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: #D4AF37;
@@ -386,7 +389,7 @@
 
 .mec-h1 {
   margin: 22px 0 0;
-  font-size: 84px;
+  font-size: 86px;
   line-height: 1.04;
   font-weight: 400;
   letter-spacing: -0.01em;
@@ -399,7 +402,7 @@
 .mec-body {
   margin: 30px 0 0;
   max-width: 680px;
-  font: italic 300 21px/1.6 Georgia, serif;
+  font: italic 300 23px/1.6 Georgia, serif;
   color: #c3cad8;
   animation: fade 1s 0.3s ease-out both;
 }
@@ -451,7 +454,7 @@
 }
 
 .mec-tk b {
-  font-size: 52px;
+  font-size: 54px;
   line-height: 1;
   font-weight: 400;
   color: #D4AF37;
@@ -459,7 +462,7 @@
 }
 
 .mec-tk span {
-  font: 600 13px system-ui, sans-serif;
+  font: 600 15px system-ui, sans-serif;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: #aab3c5;
@@ -496,7 +499,7 @@
 
 .mec-h2 {
   margin: 12px 0 0;
-  font-size: 38px;
+  font-size: 40px;
   line-height: 1.1;
   font-weight: 400;
   color: #F9FAFB;
@@ -505,7 +508,7 @@
 
 .mec-h3 {
   margin: 12px 0 0;
-  font-size: 30px;
+  font-size: 32px;
   line-height: 1.15;
   font-weight: 400;
   color: #F9FAFB;
@@ -514,7 +517,7 @@
 
 .mec-h3-top {
   margin: 12px 0 0;
-  font-size: 30px;
+  font-size: 32px;
   line-height: 1.15;
   font-weight: 400;
   color: #F9FAFB;
@@ -523,7 +526,7 @@
 
 .mec-lede {
   margin: 14px 0 0;
-  font: italic 300 18px/1.6 Georgia, serif;
+  font: italic 300 20px/1.6 Georgia, serif;
   color: #aab3c5;
   max-width: 640px;
 }
@@ -538,7 +541,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font: 600 15px system-ui, sans-serif;
+  font: 600 17px system-ui, sans-serif;
   letter-spacing: 0.04em;
   color: #D4AF37;
   text-decoration: none;
@@ -585,7 +588,7 @@
 }
 
 .mec-at {
-  font-size: 30px;
+  font-size: 32px;
   line-height: 1.2;
   color: #F9FAFB;
   font-family: Georgia, 'Times New Roman', serif;
@@ -593,12 +596,12 @@
 
 .mec-ac {
   margin-top: 8px !important;
-  font: 400 15.5px system-ui, sans-serif;
+  font: 400 17.5px system-ui, sans-serif;
   color: #aab3c5;
 }
 
 .mec-badge {
-  font: 700 12.5px system-ui, sans-serif;
+  font: 700 14.5px system-ui, sans-serif;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   padding: 9px 16px;
@@ -629,7 +632,7 @@
 
 .mec-f label {
   display: block;
-  font: 600 13px system-ui, sans-serif;
+  font: 600 15px system-ui, sans-serif;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #D4AF37;
@@ -644,7 +647,7 @@
   padding: 0 14px;
   background: #0B0F17;
   border: 1px solid rgba(249, 250, 251, 0.12);
-  font: 400 16px system-ui, sans-serif;
+  font: 400 18px system-ui, sans-serif;
   color: #F9FAFB;
   transition: border-color 0.2s;
   outline: none;
@@ -669,7 +672,7 @@
 
 .mec-hl p {
   margin: 10px 0 0;
-  font-size: 19px;
+  font-size: 21px;
   line-height: 1.4;
   color: #F9FAFB;
   font-family: Georgia, 'Times New Roman', serif;
@@ -678,7 +681,7 @@
 .mec-hl small {
   display: block;
   margin-top: 8px;
-  font: italic 300 15px/1.5 Georgia, serif;
+  font: italic 300 17px/1.5 Georgia, serif;
   color: #8a94a8;
 }
 
@@ -701,7 +704,7 @@
 
 .mec-st b {
   display: block;
-  font-size: 30px;
+  font-size: 32px;
   line-height: 1;
   font-weight: 400;
   color: #D4AF37;
@@ -711,7 +714,7 @@
 .mec-st span {
   display: block;
   margin-top: 8px;
-  font: 600 12.5px system-ui, sans-serif;
+  font: 600 14.5px system-ui, sans-serif;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #aab3c5;
@@ -746,7 +749,7 @@
 
 .mec-style p {
   margin: 0;
-  font-size: 21px;
+  font-size: 23px;
   font-family: Georgia, 'Times New Roman', serif;
   color: #F9FAFB;
 }
@@ -754,7 +757,7 @@
 .mec-style small {
   display: block;
   margin-top: 8px;
-  font: 400 15px/1.55 system-ui, sans-serif;
+  font: 400 17px/1.55 system-ui, sans-serif;
   color: #aab3c5;
 }
 
@@ -789,14 +792,14 @@
 }
 
 .mec-pt {
-  font-size: 21px;
+  font-size: 23px;
   font-family: Georgia, 'Times New Roman', serif;
   color: #F9FAFB;
 }
 
 .mec-ps {
   margin-top: 6px !important;
-  font: 400 15px/1.55 system-ui, sans-serif;
+  font: 400 17px/1.55 system-ui, sans-serif;
   color: #aab3c5;
 }
 
@@ -811,12 +814,12 @@
   padding: 22px;
   border: 1px dashed rgba(212, 175, 55, 0.3);
   text-align: center;
-  font: 400 15.5px system-ui, sans-serif;
+  font: 400 17.5px system-ui, sans-serif;
   color: #8a94a8;
 }
 
 .mec-load {
-  font: 400 15px system-ui, sans-serif;
+  font: 400 17px system-ui, sans-serif;
   color: #8a94a8;
 }
 
@@ -832,7 +835,7 @@
     gap: 40px;
   }
   .mec-h1 {
-    font-size: 46px;
+    font-size: 48px;
   }
   .mec-ticker {
     margin: 0 24px;
@@ -851,7 +854,7 @@
   /* Phones take one more step up, and the input boxes grow so iOS does not
      zoom the whole page when a field is tapped. */
   .mec-links a {
-    font-size: 19px;
+    font-size: 21px;
   }
   .mec-brand img {
     width: 40px;
@@ -859,48 +862,18 @@
   }
   .mec-v {
     height: 52px;
-    font-size: 17px;
-  }
-  .mec-btn {
-    font-size: 16px;
-  }
-  .mec-sm {
-    font-size: 15px;
-  }
-  .mec-lede {
     font-size: 19px;
   }
-  .mec-tk b {
-    font-size: 44px;
+  .mec-btn {
+    font-size: 18px;
   }
-}
-
-/* -----------------------------------------------------------------------------
-   Standard type ladder
-   Every page uses the same three small sizes, at every breakpoint, and nothing
-   in the app is allowed to sit below them. Written after Tailwind's utilities
-   so these win over the older per-page pixel sizes (including their lg: and
-   sm: variants), which were shrinking text on desktop.
-   ----------------------------------------------------------------------------- */
-.text-\[10px\],
-.text-\[10\.5px\],
-.text-\[11px\],
-.text-\[11\.5px\],
-.text-\[12px\],
-.text-\[12\.5px\],
-.text-xs {
-  font-size: 14px;
-}
-
-.text-\[13px\],
-.text-\[13\.5px\] {
-  font-size: 15px;
-}
-
-.text-\[14px\],
-.text-\[14\.5px\],
-.text-\[15px\],
-.text-\[15\.5px\],
-.text-sm {
-  font-size: 16px;
+  .mec-sm {
+    font-size: 17px;
+  }
+  .mec-lede {
+    font-size: 21px;
+  }
+  .mec-tk b {
+    font-size: 46px;
+  }
 }
