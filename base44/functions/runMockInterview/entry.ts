@@ -414,11 +414,11 @@ Coach them on their own answer. Rules:
 - Ground every judgment in the question asked and in the resume above. No flattery.
 - Say plainly whether the answer actually answers the question that was asked; if it drifts to a different subject or stays general, name that.
 - Check the answer against the record, and do this first: if it claims an experience, system, method or number that neither the resume nor the recorded history supports for that experience, or carries a detail over from a different role or period, say so in "improve" and say what the record does support instead. Never call a claim unsupported until you have checked the history as well as the resume. A claim they cannot stand behind in the room outranks any polish.
-- If the answer is genuinely strong and fully supported, "improve" is one short coaching note or empty.
+- If the answer answers the question and the record supports it, "improve" must be an empty string and "landed" must say plainly that it holds up. Never manufacture a note to have something in the field. If their answer is one of the two you showed them, say so and leave "improve" empty: do not find fault with the answer you just gave them.
 
 Produce:
 1. landed: 1 or 2 sentences on what worked in their own answer.
-2. improve: 1 or 2 sentences on what to fix: an unsupported claim, drift from the question, or a missing concrete detail. Empty string if nothing material.`,
+2. improve: 1 or 2 sentences on what to fix (an unsupported claim, drift from the question, a missing concrete detail), or an empty string when their answer holds up. Empty is required when they used one of the answers you showed.`,
           response_json_schema: WORKSHOP_FEEDBACK_SCHEMA
         });
 
@@ -458,7 +458,11 @@ ${answer}
 Grade the answer as a real interviewer would, then continue.
 
 Rules:
-- Ground every judgment in the resume and the posting. If the answer dodges the question, misses an obvious metric from the resume, or sounds rehearsed and hollow, say so plainly in "improve". No flattery. If the answer is genuinely strong, "improve" is a short coaching note or empty.
+- Grade against the bar of the real interview, not against a perfect answer: would a hiring manager for this role accept this answer in the room? If yes, it lands and "improve" is an empty string. Withholding credit to sound rigorous is itself a failure of the grade.
+- "improve" is not a quota, and an empty one is a normal, correct outcome. Fill it only with something material that would change the outcome: a part of the question left unanswered, an unsupported claim, a metric the record holds that went unused. Never manufacture a shortcoming, a polish note or a "you could also have mentioned".
+- When the candidate gives the very answer you gave them as model_answer, or words that land as well, treat it as the answer to give: "improve" empty, and "landed" says plainly that it holds up.
+- Say a thing once: do not repeat a note you already made earlier in this drill, and always clear it once the answer has fixed it.
+- Ground every judgment in the resume and the posting. If the answer dodges the question, misses an obvious metric from the resume, or sounds rehearsed and hollow, say so plainly in "improve". No flattery.
 - Never invent experience the candidate does not have. If they claimed something that is in neither the resume nor the recorded history, call it out in "improve"; if the history does record it, they were right to say it, so judge the answer on how well it answered the question instead.
 - model_answer is the answer you wish they had given: the same answer done properly. First person, in the candidate's own voice, using only experience that is in the resume or the history above. 3 to 5 spoken sentences that directly answer this question, name the specific example, and include a concrete detail from the resume (a number, a system, a program) where one exists. Fold in whatever "improve" says was missing. Invent nothing new, and keep every detail inside the one experience it came from: never move a fact to another role, and never state a system, method or setting the resume does not record for that experience. If the question assumes something the candidate's history does not have, answer from the nearest real experience and say plainly where theirs differed.
 - Questions already asked: ${askedCount}. Cover the posting's requirements across the drill; do not repeat a question.
@@ -466,8 +470,8 @@ ${askedCount >= MAX_TURNS ? '- The drill has reached its question limit: set nex
 
 Produce:
 1. landed: 1 or 2 sentences, what worked in the answer.
-2. improve: 1 or 2 sentences, what was weak, evasive, or missing. Empty string if nothing material.
-3. model_answer: the answer that would have landed, written as their own words (see the rules above).
+2. improve: 1 or 2 sentences, what was weak, evasive or missing, or an empty string when the answer lands. Never fill it just to have something in it.
+3. model_answer: the answer that would have landed, written as their own words (see the rules above). If their own answer already lands, this is their answer, kept as it stands.
 4. next_question: your next question in character, one question only. Set it to null only when the posting's main requirements have all been probed or the question limit is reached.`,
         response_json_schema: ANSWER_SCHEMA
       });
@@ -556,9 +560,9 @@ The mock interview is over. Full transcript:
 ${transcriptOf(session)}
 
 Produce a readiness report for the candidate, as a sharp coach would:
-1. readiness: one honest paragraph. Is this candidate ready to interview for this role, and what is the overall impression the transcript leaves? No flattery; if the answers were vague, say so.
-2. strengths: 2 to 4 things that clearly landed, each one specific to the transcript.
-3. rehearse: 2 to 4 things to practice before the real interview, each specific to what went wrong or missing in the transcript.
+1. readiness: one honest paragraph on whether this candidate is ready to interview for this role, and the impression the transcript leaves. Judge the answers as they stand and be fair in both directions: if they answered the questions and held up under the follow-ups, say plainly, in those words, that the candidate is ready. If they were vague or dodged the questions, say that just as plainly. The verdict follows the transcript; it never averages toward caution.
+2. strengths: 2 to 5 things that clearly landed, each one specific to the transcript. Credit what was actually said, including any question the candidate handled well.
+3. rehearse: what to practice before the real interview, each item a real weakness from the transcript. This list may be empty: when the answers held up, an empty list is the honest answer, and items are never invented to fill it.
 4. best_proof_points: 2 or 3 proof points from the resume that this candidate should make sure they say out loud in the real interview, phrased in the candidate's voice.
 
 Plain language. No filler.`,
