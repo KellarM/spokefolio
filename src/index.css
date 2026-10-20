@@ -1612,3 +1612,48 @@
     gap: 18px 36px;
   }
 }
+
+/* What's inside: feature cards */
+.lnd-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+  margin: 52px auto 0;
+  max-width: 940px;
+}
+
+.lnd-feat {
+  border: 1px solid #232B3A;
+  border-radius: 10px;
+  padding: 30px 30px 28px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.lnd-feat-tag {
+  font: 700 11.5px var(--font-body);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #D4AF37;
+  margin-bottom: 12px;
+}
+
+.lnd-feat h3 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  font-size: 25px;
+  line-height: 1.25;
+  color: #F9FAFB;
+  margin-bottom: 10px;
+}
+
+.lnd-feat p {
+  font-size: 17px;
+  line-height: 1.65;
+  color: #aab3c5;
+}
+
+@media (max-width: 900px) {
+  .lnd-features {
+    grid-template-columns: 1fr;
+  }
+}

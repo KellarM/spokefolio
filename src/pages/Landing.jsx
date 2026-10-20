@@ -144,6 +144,52 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* WHAT'S INSIDE */}
+      <section className="lnd-section">
+        <div className="lnd-wrap">
+          <p className="mec-eyebrow">What’s inside</p>
+          <h2 className="lnd-h2">Four tools. One memory.</h2>
+          <p className="lnd-lede lnd-lede-top">
+            Your account is not a template gallery. It is one knowledge base with four things
+            built on top of it, and every one of them runs on the career you told us once.
+          </p>
+          <div className="lnd-features">
+            <div className="lnd-feat">
+              <p className="lnd-feat-tag">The foundation</p>
+              <h3>Your career knowledge base</h3>
+              <p>
+                Everything you tell it, kept and organized: jobs, skills, wins, dates. The story
+                of what you did, in your words, ready for every job after.
+              </p>
+            </div>
+            <div className="lnd-feat">
+              <p className="lnd-feat-tag">Résumés</p>
+              <h3>Custom tailoring for every application</h3>
+              <p>
+                Paste the posting and choose what to emphasize. Your résumé reshapes itself
+                around that job. Different job, different résumé, same one career.
+              </p>
+            </div>
+            <div className="lnd-feat">
+              <p className="lnd-feat-tag">Cover letters</p>
+              <h3>Letters that sound like you</h3>
+              <p>
+                Not a template with your name swapped in. A cover letter built from what you
+                actually did, matched to the job you actually want.
+              </p>
+            </div>
+            <div className="lnd-feat">
+              <p className="lnd-feat-tag">Practice</p>
+              <h3>The interview mock-up</h3>
+              <p>
+                A rehearsal drill grounded in your own history, not generic prompts. You practise
+                the answers you will actually have to give.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CONTRAST */}
       <section className="lnd-section">
         <div className="lnd-wrap">
