@@ -1,7 +1,8 @@
 import React from 'react';
-import { Loader2, Play, TrendingUp } from 'lucide-react';
+import { Loader2, Play, Plus, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ResumeRunDetail from '@/components/applications/ResumeRunDetail';
+import RunFixProposal from '@/components/applications/RunFixProposal';
 
 const BANDS = {
   'Strong match': {
@@ -41,7 +42,17 @@ function barFor(score) {
 
 // The Résumé Run: one scored pass over the résumé as it stands, with the parts of the grade
 // broken out and the changes that would raise it most.
-export default function ResumeRunPanel({ run, history = [], onRun, running }) {
+export default function ResumeRunPanel({
+  run,
+  history = [],
+  onRun,
+  running,
+  onApplyFix,
+  applyingIndex = null,
+  proposal,
+  onAcceptProposal,
+  onDiscardProposal
+}) {
   const band = (run && BANDS[run.band]) || FALLBACK;
   const previous = history.length > 1 ? history[1].score : null;
   const delta = run && typeof previous === 'number' ? run.score - previous : 0;
@@ -139,14 +150,32 @@ export default function ResumeRunPanel({ run, history = [], onRun, running }) {
                     <span className="mt-0.5 shrink-0 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[12px] font-semibold text-primary">
                       +{fix.points}
                     </span>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-[14px] font-medium leading-snug text-foreground">{fix.title}</p>
                       <p className="mt-1 text-[13px] leading-relaxed text-foreground/80">{fix.detail}</p>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => onApplyFix(fix, index)}
+                      disabled={applyingIndex !== null}
+                      title="Write this change into the résumé, using only your own history"
+                      className="mt-0.5 inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-primary/40 px-2.5 text-[12px] font-medium text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-50"
+                    >
+                      {applyingIndex === index ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Plus className="h-3.5 w-3.5" />
+                      )}
+                      Add to résumé
+                    </button>
                   </li>
                 ))}
               </ul>
             </div>
+          )}
+
+          {proposal && (
+            <RunFixProposal proposal={proposal} onAccept={onAcceptProposal} onDiscard={onDiscardProposal} />
           )}
 
           <ResumeRunDetail requirements={run.requirements} checks={run.checks} />

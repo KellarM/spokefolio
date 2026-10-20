@@ -27,6 +27,7 @@ import { getTemplate, resolveTemplateId } from '@/lib/resumeTemplates';
 import { readElementOverrides } from '@/lib/resumeElementStyles';
 import DictateButton from '@/components/common/DictateButton';
 import { appendLine } from '@/hooks/useDictation';
+import { buildResumeProposal } from '@/lib/resumePatch';
 
 const STATUSES = [
   { value: 'draft', label: 'Draft' },
@@ -66,6 +67,8 @@ export default function ApplicationDetail() {
   const [sendOpen, setSendOpen] = useState(false);
   const [runs, setRuns] = useState([]);
   const [running, setRunning] = useState(false);
+  const [applyingFix, setApplyingFix] = useState(null);
+  const [proposal, setProposal] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -380,6 +383,34 @@ export default function ApplicationDetail() {
     setRunning(false);
   };
 
+  // Pulling one of the pluses into the résumé: the writer works the change up from the
+  // candidate's own history and it is shown, line by line, before anything lands.
+  const applyFix = async (fix, index) => {
+    setApplyingFix(index);
+    setProposal(null);
+    try {
+      const response = await base44.functions.invoke('applyResumeFix', {
+        application_id: application.id,
+        fix: { dimension: fix.dimension, title: fix.title, detail: fix.detail }
+      });
+      const patch = response.data?.patch;
+      if (!patch) throw new Error('Nothing came back for that line. Try again in a moment.');
+      setProposal({ fix, ...buildResumeProposal(resume, patch) });
+    } catch (error) {
+      reportError('Could not work up that change', error);
+    }
+    setApplyingFix(null);
+  };
+
+  const acceptProposal = () => {
+    if (!proposal) return;
+    if (proposal.outcome === 'ready') {
+      handleResumeChange(proposal.resume);
+      toast({ title: 'Added to the résumé', description: 'Run the check again to see the mark move.' });
+    }
+    setProposal(null);
+  };
+
   if (loading || loadingProfile) {
     return (
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -489,7 +520,17 @@ export default function ApplicationDetail() {
         </div>
       )}
 
-      <ResumeRunPanel run={runs[0] || null} history={runs} onRun={runCheck} running={running} />
+      <ResumeRunPanel
+        run={runs[0] || null}
+        history={runs}
+        onRun={runCheck}
+        running={running}
+        onApplyFix={applyFix}
+        applyingIndex={applyingFix}
+        proposal={proposal}
+        onAcceptProposal={acceptProposal}
+        onDiscardProposal={() => setProposal(null)}
+      />
 
       <section className="mt-7 rounded-2xl border border-border/70 bg-card p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
