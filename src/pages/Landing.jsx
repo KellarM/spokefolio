@@ -101,7 +101,7 @@ export default function Landing() {
         <div className="lnd-wrap">
           <p className="mec-eyebrow">Not just another résumé builder</p>
           <h1 className="lnd-h1">
-            This is a résumé <em>tailored</em> to the application.
+            This is a résumé <em>tailored</em> to the JOB Application.
           </h1>
           <p className="lnd-tagline text-xs">Your career, told once. Tailored everywhere.</p>
           <p className="lnd-lede">
