@@ -9,6 +9,27 @@
 
 export const DEFAULT_TEMPLATE_ID = 'editorial';
 
+// What a template is for. Every style carries a track:
+//   ats     — single-column layouts that parse cleanly in employer portals and screening
+//             software. Safe to submit anywhere.
+//   designed — two-column layouts with visual impact, for résumés a person reads
+//             directly (email to a hiring manager, networking, career fairs, portfolio
+//             links). Not for automated portals.
+// The picker groups and labels styles by track, so no one sends a Designed résumé
+// into a machine by accident.
+export const TEMPLATE_TRACKS = {
+  ats: {
+    label: 'ATS-safe',
+    hint: 'For portals and screening software',
+    blurb: 'Single-column layouts that parse cleanly in employer portals (Workday, Greenhouse, Taleo) and screening software. Safe to submit anywhere.'
+  },
+  designed: {
+    label: 'Designed',
+    hint: 'For direct contact',
+    blurb: 'Two-column layouts with visual impact, for résumés a person reads directly — email to a hiring manager, networking, career fairs, portfolio links. Not for automated portals.'
+  }
+};
+
 export const RESUME_SECTIONS = {
   summary: 'Professional summary',
   skills: 'Core skills',
@@ -21,6 +42,7 @@ export const RESUME_SECTIONS = {
 export const RESUME_TEMPLATES = [
   {
     id: 'editorial',
+    track: 'ats',
     name: 'Editorial Navy',
     blurb: 'Serif name, brass rule, navy section headings',
     config: { photo: false, sections: ['summary', 'skills', 'experience', 'education', 'certifications', 'keywords'] },
@@ -40,6 +62,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'ats',
+    track: 'ats',
     name: 'Plain ATS',
     blurb: 'Times New Roman, centred, no colour or decoration',
     config: { photo: false, sections: ['summary', 'skills', 'experience', 'education', 'certifications', 'keywords'] },
@@ -59,6 +82,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'modern',
+    track: 'ats',
     name: 'Modern Sans',
     blurb: 'Sans throughout, skills up front, indigo labels',
     config: { photo: true, sections: ['skills', 'summary', 'experience', 'education', 'certifications', 'keywords'] },
@@ -78,6 +102,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'minimal',
+    track: 'ats',
     name: 'Quiet Minimal',
     blurb: 'Airy spacing, experience first, no rules',
     config: { photo: false, sections: ['summary', 'experience', 'skills', 'education', 'certifications', 'keywords'] },
@@ -97,6 +122,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'executive',
+    track: 'ats',
     name: 'Executive Serif',
     blurb: 'Centred Georgia letterhead, credentials before skills',
     config: { photo: false, sections: ['summary', 'experience', 'education', 'certifications', 'skills', 'keywords'] },
@@ -116,6 +142,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'emerald',
+    track: 'ats',
     name: 'Emerald Boardroom',
     blurb: 'Skills-led green layout with an accent bar',
     config: { photo: true, sections: ['skills', 'summary', 'experience', 'certifications', 'education', 'keywords'] },
@@ -135,6 +162,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'crimson',
+    track: 'ats',
     name: 'Crimson Classic',
     blurb: 'Deep red headings, credentials before skills',
     config: { photo: false, sections: ['summary', 'experience', 'education', 'skills', 'certifications', 'keywords'] },
@@ -154,6 +182,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'graphite',
+    track: 'ats',
     name: 'Graphite Bold',
     blurb: 'Black section bands, certificate-led, tight rhythm',
     config: { photo: true, sections: ['summary', 'skills', 'experience', 'certifications', 'education', 'keywords'] },
@@ -173,6 +202,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'teal',
+    track: 'ats',
     name: 'Teal Compact',
     blurb: 'Experience-led dense layout with teal accents',
     config: { photo: true, sections: ['experience', 'skills', 'summary', 'education', 'certifications', 'keywords'] },
@@ -192,6 +222,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'bronze',
+    track: 'ats',
     name: 'Bronze Heritage',
     blurb: 'Letterspaced serif name, education elevated',
     config: { photo: true, sections: ['summary', 'education', 'experience', 'certifications', 'skills', 'keywords'] },
@@ -211,6 +242,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'slate',
+    track: 'ats',
     name: 'Slate Split',
     blurb: 'Experience first, slate rules, navy headings',
     config: { photo: true, sections: ['experience', 'summary', 'skills', 'education', 'certifications', 'keywords'] },
@@ -230,6 +262,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'mono',
+    track: 'ats',
     name: 'Monochrome',
     blurb: 'Black and grey only, credentials before skills',
     config: { photo: false, sections: ['summary', 'experience', 'education', 'certifications', 'skills', 'keywords'] },
@@ -250,6 +283,7 @@ export const RESUME_TEMPLATES = [
   // Variations inspired by four reference layouts: timeline, studio, gold-and-navy, classic rule.
   {
     id: 'timeline-navy',
+    track: 'ats',
     name: 'Timeline Navy',
     blurb: 'Wide navy headings, slate rule, portrait beside name',
     config: { photo: true, sections: ['summary', 'experience', 'education', 'certifications', 'skills', 'keywords'] },
@@ -269,6 +303,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'timeline-plum',
+    track: 'ats',
     name: 'Timeline Plum',
     blurb: 'Same timeline look in deep plum',
     config: { photo: true, sections: ['summary', 'experience', 'education', 'certifications', 'skills', 'keywords'] },
@@ -288,6 +323,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'studio-charcoal',
+    track: 'ats',
     name: 'Studio Charcoal',
     blurb: 'Soft grey sheet, spaced caps, heavy black rules',
     config: { photo: false, sections: ['summary', 'experience', 'education', 'skills', 'certifications', 'keywords'] },
@@ -307,6 +343,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'studio-sage',
+    track: 'ats',
     name: 'Studio Sage',
     blurb: 'Studio layout on a warm sage sheet',
     config: { photo: false, sections: ['summary', 'experience', 'education', 'skills', 'certifications', 'keywords'] },
@@ -326,6 +363,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'gold-navy',
+    track: 'ats',
     name: 'Gold & Navy',
     blurb: 'Bold serif name, gold accent bars, skills up front',
     config: { photo: true, sections: ['summary', 'skills', 'experience', 'education', 'certifications', 'keywords'] },
@@ -345,6 +383,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'gold-burgundy',
+    track: 'ats',
     name: 'Gold & Burgundy',
     blurb: 'Gold & Navy layout in burgundy',
     config: { photo: true, sections: ['summary', 'skills', 'experience', 'education', 'certifications', 'keywords'] },
@@ -364,6 +403,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'classic-rule',
+    track: 'ats',
     name: 'Classic Rule',
     blurb: 'Letterspaced serif name, thin rules between sections',
     config: { photo: false, sections: ['summary', 'experience', 'education', 'skills', 'certifications', 'keywords'] },
@@ -383,6 +423,7 @@ export const RESUME_TEMPLATES = [
   },
   {
     id: 'classic-navy',
+    track: 'ats',
     name: 'Classic Navy',
     blurb: 'Classic Rule with navy ink and a blue rule',
     config: { photo: false, sections: ['summary', 'experience', 'education', 'skills', 'certifications', 'keywords'] },

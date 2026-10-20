@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Camera, Check, ChevronDown } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { RESUME_TEMPLATES, getTemplate } from '@/lib/resumeTemplates';
+import { RESUME_TEMPLATES, TEMPLATE_TRACKS, getTemplate } from '@/lib/resumeTemplates';
 
 // A miniature of a style's look: the accent, the name rule and a couple of text lines.
 function MiniStyle({ template, className = '' }) {
@@ -24,6 +24,12 @@ function MiniStyle({ template, className = '' }) {
 export default function TemplatePicker({ value, onChange, variant = 'default', className = '' }) {
   const [open, setOpen] = useState(false);
   const selected = getTemplate(value);
+
+  // ATS-safe styles first, then Designed ones — groups only appear once they have styles.
+  const TRACK_ORDER = ['ats', 'designed'];
+  const grouped = TRACK_ORDER
+    .map((track) => ({ track, templates: RESUME_TEMPLATES.filter((t) => (t.track || 'ats') === track) }))
+    .filter((group) => group.templates.length > 0);
 
   const choose = (id) => {
     setOpen(false);
@@ -58,29 +64,39 @@ export default function TemplatePicker({ value, onChange, variant = 'default', c
       <PopoverContent align="start" className="w-[340px] max-w-[calc(100vw-2rem)] p-1.5">
         <p className="eyebrow px-2 py-1.5">Résumé style</p>
         <div className="max-h-[330px] overflow-y-auto pr-0.5">
-          {RESUME_TEMPLATES.map((template) => {
-            const isSelected = template.id === selected.id;
-            return (
-              <button
-                key={template.id}
-                type="button"
-                onClick={() => choose(template.id)}
-                className={`flex w-full items-center gap-3 rounded-md px-2 py-2 text-left transition-colors ${
-                  isSelected ? 'bg-accent/10' : 'hover:bg-secondary'
-                }`}
-              >
-                <MiniStyle template={template} className="h-9 w-7" />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[16px] font-medium">{template.name}</span>
-                  <span className="mt-0.5 flex items-center gap-1.5 text-[14px] text-muted-foreground">
-                    {template.config.photo && <Camera className="h-2.5 w-2.5 shrink-0" strokeWidth={2} />}
-                    <span className="truncate">{template.blurb}</span>
-                  </span>
+          {grouped.map(({ track, templates }) => (
+            <div key={track}>
+              <div className="flex items-baseline justify-between gap-2 px-2 pb-1 pt-2.5">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {TEMPLATE_TRACKS[track].label}
                 </span>
-                {isSelected && <Check className="h-3.5 w-3.5 shrink-0 text-accent" strokeWidth={2.5} />}
-              </button>
-            );
-          })}
+                <span className="text-[11px] text-muted-foreground/80">{TEMPLATE_TRACKS[track].hint}</span>
+              </div>
+              {templates.map((template) => {
+                const isSelected = template.id === selected.id;
+                return (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => choose(template.id)}
+                    className={`flex w-full items-center gap-3 rounded-md px-2 py-2 text-left transition-colors ${
+                      isSelected ? 'bg-accent/10' : 'hover:bg-secondary'
+                    }`}
+                  >
+                    <MiniStyle template={template} className="h-9 w-7" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[16px] font-medium">{template.name}</span>
+                      <span className="mt-0.5 flex items-center gap-1.5 text-[14px] text-muted-foreground">
+                        {template.config.photo && <Camera className="h-2.5 w-2.5 shrink-0" strokeWidth={2} />}
+                        <span className="truncate">{template.blurb}</span>
+                      </span>
+                    </span>
+                    {isSelected && <Check className="h-3.5 w-3.5 shrink-0 text-accent" strokeWidth={2.5} />}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
       </PopoverContent>
     </Popover>
