@@ -149,9 +149,9 @@ export default function Landing() {
         <div className="lnd-wrap">
           <p className="mec-eyebrow">Sound familiar?</p>
           <h2 className="lnd-h2">
-            You’ve already used this product.
+            You’ve filled in these boxes before.
             <br />
-            It was just wearing a different logo.
+            Then came the invoice.
           </h2>
           <p className="lnd-lede lnd-lede-top">
             This is not the same as every résumé site you’ve ever tried: a template gallery, a box-by-box wizard,
