@@ -71,7 +71,7 @@ export default function Landing() {
 
       {/* HERO - the price is the headline */}
       <section className="lnd-hero">
-        <div className="lnd-wrap lnd-hero-inner">
+        <div className="lnd-wrap">
           <p className="mec-eyebrow">The career knowledge base</p>
           <h1 className="lnd-h1">Your career, told once. Tailored everywhere.</h1>
           <p className="lnd-lede">
