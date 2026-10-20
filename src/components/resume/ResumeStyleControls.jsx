@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import { Eye, EyeOff, GripVertical, RotateCcw } from 'lucide-react';
+import { ChevronDown, Eye, EyeOff, GripVertical, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import { RESUME_SECTIONS } from '@/lib/resumeTemplates';
 import { DEFAULT_RESUME_LAYOUT, PLACEMENTS, PORTRAIT_OPTIONS, layoutOrder, readLayout } from '@/lib/resumeLayout';
 
@@ -9,6 +9,8 @@ import { DEFAULT_RESUME_LAYOUT, PLACEMENTS, PORTRAIT_OPTIONS, layoutOrder, readL
 // off, and whether the portrait is used. Each choice is saved on the application, and the
 // preview and both downloads follow it.
 export default function ResumeStyleControls({ config, layout, onChange }) {
+  // Folded away until it is wanted, so the style panel stays short.
+  const [open, setOpen] = useState(false);
   const current = readLayout(layout);
   const sectionOrder = layoutOrder(config, layout);
   const touched =
@@ -43,7 +45,28 @@ export default function ResumeStyleControls({ config, layout, onChange }) {
   };
 
   return (
-    <div className="mt-5 space-y-5 border-t border-border/60 pt-5">
+    <div className="mt-5 border-t border-border/60 pt-5">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-4 rounded-xl border border-border/70 bg-muted/20 px-3.5 py-2.5 text-left transition-colors hover:border-accent/50"
+      >
+        <span>
+          <span className="flex items-center gap-2 text-[15px] font-medium text-foreground">
+            <SlidersHorizontal className="h-4 w-4 text-accent" />
+            Layout &amp; styling
+          </span>
+          <span className="mt-1 block text-[13px] text-muted-foreground">
+            Placement, section order, portrait, and clicking a part of the résumé to restyle it.
+          </span>
+        </span>
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      {open ? <div className="mt-5 space-y-5">
       <p className="rounded-xl border border-accent/30 bg-accent/5 px-3.5 py-2.5 text-[13px] text-muted-foreground">
         Click any part of the résumé itself — your name, the headline, a section heading, the line beneath it or the
         skills list — to restyle just that part. One setting covers every part of its kind, and it carries through to
@@ -157,6 +180,7 @@ export default function ResumeStyleControls({ config, layout, onChange }) {
           Restore to default
         </button>
       </div>
+      </div> : null}
     </div>
   );
 }
