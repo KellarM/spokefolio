@@ -72,9 +72,9 @@ export default function Landing() {
       {/* HERO - the price is the headline */}
       <section className="lnd-hero">
         <div className="lnd-wrap">
-          <p className="mec-eyebrow">Not another résumé builder</p>
+          <p className="mec-eyebrow">Not just another résumé builder</p>
           <h1 className="lnd-h1">
-            This is <em>not</em> a résumé builder.
+            This is a résumé <em>tailored</em> to the application.
           </h1>
           <p className="lnd-tagline text-xs">Your career, told once. Tailored everywhere.</p>
           <p className="lnd-lede">

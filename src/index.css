@@ -902,8 +902,12 @@
 }
 
 .lnd .mec-eyebrow {
+  display: inline-block;
   font-size: 17px;
-  margin-bottom: 22px;
+  margin: 0 0 22px;
+  padding: 10px 22px;
+  border: 1px solid #B89656;
+  color: #B89656;
 }
 
 .lnd-nav {
