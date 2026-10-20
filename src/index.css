@@ -901,6 +901,11 @@
   text-decoration: none;
 }
 
+.lnd .mec-eyebrow {
+  font-size: 17px;
+  margin-bottom: 22px;
+}
+
 .lnd-nav {
   position: sticky;
   top: 0;
@@ -922,7 +927,7 @@
 
 .lnd-wordmark {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 22px;
+  font-size: 27px;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: #D4AF37;
@@ -935,7 +940,7 @@
 }
 
 .lnd-signin {
-  font-size: 15px;
+  font-size: 18px;
   color: #c3cad8;
 }
 
@@ -950,36 +955,36 @@
 }
 
 .lnd-section {
-  padding: 88px 0;
+  padding: 96px 0;
   border-top: 1px solid rgba(212, 175, 55, 0.18);
 }
 
 .lnd-hero {
-  padding: 110px 0 96px;
+  padding: 120px 0 104px;
 }
 
 .lnd-h1 {
   font-family: Georgia, 'Times New Roman', serif;
   font-weight: 400;
-  font-size: clamp(40px, 5.4vw, 62px);
-  line-height: 1.08;
+  font-size: clamp(40px, 6.4vw, 78px);
+  line-height: 1.06;
   color: #F9FAFB;
-  max-width: 860px;
-  margin-bottom: 24px;
+  max-width: 940px;
+  margin-bottom: 26px;
   animation: fade 1s 0.15s ease-out both;
 }
 
 .lnd-h2 {
   font-family: Georgia, 'Times New Roman', serif;
   font-weight: 400;
-  font-size: clamp(28px, 3.6vw, 38px);
-  line-height: 1.15;
+  font-size: clamp(32px, 4.4vw, 50px);
+  line-height: 1.14;
   color: #F9FAFB;
 }
 
 .lnd-lede {
-  font-size: 17px;
-  max-width: 620px;
+  font-size: 22px;
+  max-width: 700px;
 }
 
 .lnd-lede-top {
@@ -990,9 +995,9 @@
   display: inline-block;
   border: 1px solid rgba(212, 175, 55, 0.3);
   background: #161E2E;
-  padding: 14px 22px;
-  margin: 28px 0 32px;
-  font-size: 15px;
+  padding: 17px 26px;
+  margin: 30px 0 34px;
+  font-size: 19px;
   color: #F9FAFB;
 }
 
@@ -1013,10 +1018,10 @@
   gap: 10px;
   background: #D4AF37;
   color: #0B0F17;
-  font: 700 15px var(--font-body);
+  font: 700 17px var(--font-body);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 15px 32px;
+  padding: 18px 38px;
   border: none;
   cursor: pointer;
 }
@@ -1032,8 +1037,8 @@
   background: transparent;
   color: #F9FAFB;
   border: 1px solid rgba(212, 175, 55, 0.3);
-  font: 600 15px var(--font-body);
-  padding: 15px 26px;
+  font: 600 17px var(--font-body);
+  padding: 18px 32px;
   cursor: pointer;
 }
 
@@ -1049,9 +1054,9 @@
 .lnd-tagline {
   font-family: Georgia, 'Times New Roman', serif;
   font-style: italic;
-  font-size: 22px;
-  color: #aab3c5;
-  margin-bottom: 20px;
+  font-size: 27px;
+  color: #c3cad8;
+  margin-bottom: 22px;
 }
 
 /* Hero: the category's sins, struck out */
@@ -1059,9 +1064,9 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px 26px;
-  margin-top: 44px;
+  margin-top: 48px;
   align-items: baseline;
-  font-size: 15px;
+  font-size: 19px;
 }
 
 .lnd-sin {
@@ -1081,18 +1086,18 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 36px;
-  margin-top: 48px;
+  margin-top: 52px;
 }
 
 .lnd-step {
   border: 1px solid rgba(212, 175, 55, 0.18);
   background: #161E2E;
-  padding: 32px 28px;
+  padding: 38px 32px;
 }
 
 .lnd-step-num {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 40px;
+  font-size: 50px;
   line-height: 1;
   color: #D4AF37;
   margin-bottom: 16px;
@@ -1100,20 +1105,20 @@
 
 .lnd-step h3 {
   color: #F9FAFB;
-  font-size: 19px;
+  font-size: 23px;
   font-weight: 600;
   margin-bottom: 10px;
 }
 
 .lnd-step p {
-  font-size: 15px;
+  font-size: 18px;
 }
 
 .lnd-note {
   font-family: Georgia, 'Times New Roman', serif;
   font-style: italic;
-  color: #aab3c5;
-  font-size: 16px;
+  color: #c3cad8;
+  font-size: 20px;
 }
 
 .lnd-note-center {
@@ -1138,16 +1143,16 @@
 
 .lnd-table th,
 .lnd-table td {
-  padding: 18px 26px;
+  padding: 22px 30px;
   text-align: left;
-  font-size: 15px;
+  font-size: 18px;
   border-bottom: 1px solid rgba(212, 175, 55, 0.18);
   vertical-align: top;
   width: 50%;
 }
 
 .lnd-table th {
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-weight: 600;
@@ -1176,16 +1181,16 @@
 .lnd-dont-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px 36px;
-  margin-top: 44px;
-  max-width: 820px;
+  gap: 18px 40px;
+  margin-top: 48px;
+  max-width: 900px;
 }
 
 .lnd-dont {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   align-items: baseline;
-  font-size: 17px;
+  font-size: 21px;
   color: #F9FAFB;
 }
 
@@ -1196,10 +1201,10 @@
 }
 
 .lnd-confession {
-  margin-top: 44px;
+  margin-top: 48px;
   font-family: Georgia, 'Times New Roman', serif;
   font-style: italic;
-  font-size: 17px;
+  font-size: 21px;
   color: #aab3c5;
   max-width: 640px;
 }
@@ -1215,11 +1220,11 @@
 .lnd-plan {
   border: 1px solid rgba(212, 175, 55, 0.3);
   background: #161E2E;
-  padding: 40px 36px;
+  padding: 46px 40px;
 }
 
 .lnd-plan-when {
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #D4AF37;
@@ -1229,23 +1234,23 @@
 
 .lnd-plan-amount {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 52px;
+  font-size: 66px;
   line-height: 1;
   color: #F9FAFB;
   margin-bottom: 8px;
 }
 
 .lnd-plan-amount small {
-  font-size: 20px;
+  font-size: 25px;
   color: #aab3c5;
 }
 
 .lnd-plan p {
-  font-size: 15px;
+  font-size: 18px;
 }
 
 .lnd-fine {
-  font-size: 12.5px;
+  font-size: 15px;
   font-style: italic;
   color: #aab3c5;
   margin-top: 18px;
@@ -1259,41 +1264,41 @@
 .lnd-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 40px;
+  gap: 16px;
+  margin-top: 44px;
 }
 
 .lnd-chip {
   border: 1px solid rgba(212, 175, 55, 0.3);
   background: #161E2E;
   color: #F9FAFB;
-  font-size: 14.5px;
-  padding: 14px 22px;
+  font-size: 18px;
+  padding: 17px 28px;
   border-radius: 999px;
 }
 
 /* FAQ */
 .lnd-faq {
-  max-width: 760px;
-  margin-top: 44px;
+  max-width: 860px;
+  margin-top: 48px;
 }
 
 .lnd-qa {
   border: 1px solid rgba(212, 175, 55, 0.18);
   background: #161E2E;
-  margin-bottom: 12px;
-  padding: 22px 28px;
+  margin-bottom: 14px;
+  padding: 26px 32px;
 }
 
 .lnd-qa h3 {
   color: #F9FAFB;
-  font-size: 16.5px;
+  font-size: 20px;
   font-weight: 600;
   margin-bottom: 8px;
 }
 
 .lnd-qa p {
-  font-size: 15px;
+  font-size: 18px;
 }
 
 /* Final CTA */
@@ -1304,8 +1309,8 @@
 }
 
 .lnd-final h2 {
-  font-size: clamp(32px, 4.2vw, 46px);
-  margin-bottom: 14px;
+  font-size: clamp(36px, 4.8vw, 58px);
+  margin-bottom: 16px;
 }
 
 /* Footer */
@@ -1323,7 +1328,7 @@
 }
 
 .lnd-foot-in p {
-  font-size: 13px;
+  font-size: 15.5px;
   color: #aab3c5;
 }
 
