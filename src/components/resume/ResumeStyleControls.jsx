@@ -164,6 +164,11 @@ export default function ResumeStyleControls({ config, layout, onChange }) {
             </button>
           ))}
         </div>
+        <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
+          Best kept off for portal applications. Many employers set aside résumés with photos
+          to avoid bias claims, and some screen them out automatically. The portrait is for
+          résumés a person reads directly.
+        </p>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-4">
