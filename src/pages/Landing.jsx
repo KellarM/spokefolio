@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 
 // Public front door. Logged-out visitors land here from "/" (see ProtectedRoute in
-// App.jsx: unauthenticated visitors see this page instead of being bounced to /welcome).
+// App.jsx: unauthenticated visitors see this page at the root URL.)
 // Signed-in users go straight to the Overview.
 //
 // Note: apostrophes are typed as real characters (’) in the copy below. Do NOT use
