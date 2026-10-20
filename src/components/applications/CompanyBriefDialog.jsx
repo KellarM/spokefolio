@@ -1,9 +1,9 @@
 import React from 'react';
-import { AlertTriangle, Building2, Loader2, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Building2, ExternalLink, Loader2, RefreshCw } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
-const facts = [['founded', 'Founded'], ['years_active', 'Length of existence'], ['headquarters', 'Headquarters'], ['size', 'Size'], ['ownership', 'Ownership']];
+const facts = [['website', 'Website'], ['founded', 'Founded'], ['years_active', 'Length of existence'], ['headquarters', 'Headquarters'], ['size', 'Size'], ['ownership', 'Ownership']];
 
 function Section({ title, children }) {
   return (
@@ -75,7 +75,19 @@ export default function CompanyBriefDialog({ open, onOpenChange, company, resear
               {facts.filter(([key]) => research[key]).map(([key, label]) => (
                 <div key={key} className="rounded-xl border border-border/70 bg-secondary/40 p-3.5">
                   <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
-                  <p className="mt-1.5 text-[13.5px]">{research[key]}</p>
+                  {key === 'website' ? (
+                    <a
+                      href={research.website.startsWith('http') ? research.website : `https://${research.website}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1.5 inline-flex max-w-full items-center gap-1.5 break-all text-[13.5px] text-accent underline underline-offset-4"
+                    >
+                      {research.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                      <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                    </a>
+                  ) : (
+                    <p className="mt-1.5 text-[13.5px]">{research[key]}</p>
+                  )}
                 </div>
               ))}
             </div>

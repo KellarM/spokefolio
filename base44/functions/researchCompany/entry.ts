@@ -38,6 +38,9 @@ export default async function (req) {
         'Cover, in the applicant\'s plain language:',
         '- How long the company has existed: founding year or earliest reliable date, plus the resulting years in business today. If unsure, give a range and say it is approximate.',
         '- What the company actually does: the work, the industries it serves, and its main services or products.',
+        '- The official website: the address of the organisation\'s own public website. Only include it once you have '
+        + 'confirmed it belongs to this exact organisation and location, not a same-named one. Never list a job board, '
+        + 'social network, directory or review site. If you cannot confirm the official site, leave "website" empty.',
         '- Size and structure: employee count or range, unionised or not if known, headquarters, whether it is public, private, a subsidiary, or government, and any parent company.',
         '- Management: named owners, executives, directors or managers with their roles, plus anything notable about leadership or ownership changes.',
         '- Labour and employee reputation: what employee review sites, unions, labour boards, safety regulators, news reporting and court or labour-board records say. Summarise the recurring themes (pay, scheduling, safety, turnover, management, culture) rather than quoting reviews. Note layoffs, strikes, lockouts, labour board complaints or safety orders when they exist.',
@@ -57,6 +60,7 @@ export default async function (req) {
         type: 'object',
         properties: {
           overview: { type: 'string' },
+          website: { type: 'string' },
           founded: { type: 'string' },
           years_active: { type: 'string' },
           headquarters: { type: 'string' },
