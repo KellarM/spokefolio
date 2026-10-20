@@ -147,7 +147,7 @@ export default function Landing() {
       {/* CONTRAST */}
       <section className="lnd-section">
         <div className="lnd-wrap">
-          <p className="mec-eyebrow">The difference</p>
+          <p className="mec-eyebrow">Sound familiar?</p>
           <h2 className="lnd-h2">
             You’ve already used this product.
             <br />
