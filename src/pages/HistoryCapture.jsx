@@ -11,6 +11,7 @@ import EntryList from '@/components/history/EntryList';
 import CombineDialog from '@/components/history/CombineDialog';
 import HistoryReviewDialog from '@/components/history/review/HistoryReviewDialog';
 import HistoryReviewPanel from '@/components/history/review/HistoryReviewPanel';
+import ClearHistoryButton from '@/components/history/ClearHistoryButton';
 import { buildCombinedEntry } from '@/lib/mergeEntries';
 import { sortEntriesByDate } from '@/lib/entryOrder';
 import retryOnTimeout from '@/lib/retryOnTimeout';
@@ -380,6 +381,21 @@ export default function HistoryCapture() {
     toast({ title: 'History unlocked', description: 'Add more entries whenever you like.' });
   };
 
+  // Testing account only: once the entries are gone, this page goes back to a blank slate.
+  const clearLocalHistory = async () => {
+    setDraft(null);
+    setSelectedIds([]);
+    setDictation('');
+    await save({
+      history_complete: false,
+      master_summary: '',
+      core_skills: [],
+      target_titles: [],
+      experience_order: []
+    });
+    await loadEntries();
+  };
+
   const addDetailToDraft = (item) => {
     if (!draft || !item?.text) return;
     const text = item.text.trim();
@@ -482,7 +498,7 @@ export default function HistoryCapture() {
             One entry at a time. I will ask follow-up questions you can accept with a detail, pass on, or skip.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {historyComplete ? (
             <Button variant="secondary" className="rounded-full" onClick={unlockHistory}>
               <LockOpen className="mr-2 h-4 w-4" /> Unlock history
@@ -493,6 +509,7 @@ export default function HistoryCapture() {
               History is complete
             </Button>
           )}
+          <ClearHistoryButton entries={entries.length} disabled={busy || loading} onCleared={clearLocalHistory} />
         </div>
       </header>
 
