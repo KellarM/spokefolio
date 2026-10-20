@@ -72,11 +72,14 @@ export default function Landing() {
       {/* HERO - the price is the headline */}
       <section className="lnd-hero">
         <div className="lnd-wrap">
-          <p className="mec-eyebrow">The career knowledge base</p>
-          <h1 className="lnd-h1">Your career, told once. Tailored everywhere.</h1>
+          <p className="mec-eyebrow">Not another résumé builder</p>
+          <h1 className="lnd-h1">
+            This is <em>not</em> a résumé builder.
+          </h1>
+          <p className="lnd-tagline">Your career, told once. Tailored everywhere.</p>
           <p className="lnd-lede">
-            Spokefolio remembers your career, then writes a résumé tailored to each job you apply
-            for. Paste the posting. Get the résumé. That’s the whole product.
+            Spokefolio is a career knowledge base. Tell it your history once, and it writes a
+            résumé tailored to each job you apply for. No wizard. No gate. No subscription trap.
           </p>
           <div className="lnd-price-chip">
             <b>Free through 2026.</b> In 2027, if you wish to use the service, sign up for{' '}
@@ -85,6 +88,13 @@ export default function Landing() {
           <div className="lnd-btn-row">
             <Link to="/register" className="lnd-btn">Create your free account</Link>
             <Link to="/login" className="lnd-btn-ghost">Sign in</Link>
+          </div>
+          <div className="lnd-sins" aria-label="What you will not find here">
+            <span className="lnd-sin">Hidden fees</span>
+            <span className="lnd-sin">Auto-renewing trials</span>
+            <span className="lnd-sin">Re-typing your history</span>
+            <span className="lnd-sin">Template mazes</span>
+            <span className="lnd-not">None of that here.</span>
           </div>
         </div>
       </section>

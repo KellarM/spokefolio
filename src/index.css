@@ -1041,6 +1041,41 @@
   border-color: #D4AF37;
 }
 
+.lnd-h1 em {
+  font-style: italic;
+  color: #D4AF37;
+}
+
+.lnd-tagline {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 22px;
+  color: #aab3c5;
+  margin-bottom: 20px;
+}
+
+/* Hero: the category's sins, struck out */
+.lnd-sins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 26px;
+  margin-top: 44px;
+  align-items: baseline;
+  font-size: 15px;
+}
+
+.lnd-sin {
+  color: #aab3c5;
+  text-decoration: line-through;
+  text-decoration-color: rgba(212, 175, 55, 0.75);
+  text-decoration-thickness: 2px;
+}
+
+.lnd-not {
+  color: #D4AF37;
+  font-weight: 600;
+}
+
 /* Steps */
 .lnd-steps {
   display: grid;
