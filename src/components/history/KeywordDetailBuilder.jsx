@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { GripVertical, Loader2, Plus, Search, Sparkles, Wand2 } from 'lucide-react';
+import { GripVertical, Loader2, Plus, RefreshCw, Search, Sparkles, Wand2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -58,7 +58,7 @@ export default function KeywordDetailBuilder({
     return new Set(droppedItems.map((i) => i.text.trim().toLowerCase()));
   }, [targetMode, activeDraft, droppedItems]);
 
-  const handleGenerate = async (rawInput = query) => {
+  const handleGenerate = async (rawInput = query, { refresh = false } = {}) => {
     const clean = String(rawInput || '').trim();
     if (!clean) return;
 
@@ -66,8 +66,10 @@ export default function KeywordDetailBuilder({
     setSearchedQuery(clean);
     setCheckedIds([]);
 
-    // Start with any instant built-in library matches for this term
-    const builtIn = matchBuiltInDetails(clean);
+    // A refresh asks for a different selection: the built-in library is spent on the first
+    // look, and everything already on screen is handed over so it is not offered again.
+    const avoid = refresh ? generatedItems.map((item) => item.text) : [];
+    const builtIn = refresh ? { items: [], matchedTitle: '' } : matchBuiltInDetails(clean);
     if (builtIn.items.length > 0) {
       setGeneratedItems(builtIn.items);
       if (!entryTitle.trim() && builtIn.matchedTitle) {
@@ -78,7 +80,7 @@ export default function KeywordDetailBuilder({
     }
 
     try {
-      const existingTexts = builtIn.items.map((i) => i.text);
+      const existingTexts = [...builtIn.items.map((i) => i.text), ...avoid];
       const response = await base44.functions.invoke('suggestKeywordDetails', {
         query: clean,
         existing: existingTexts
@@ -268,15 +270,28 @@ export default function KeywordDetailBuilder({
                   Drag items into the tray, or tick the checkboxes and click Add selected.
                 </p>
               </div>
-              {selectableItems.length > 0 && (
-                <button
-                  type="button"
-                  onClick={toggleSelectAll}
-                  className="text-[12px] text-primary hover:underline"
-                >
-                  {checkedIds.length === selectableItems.length ? 'Uncheck all' : 'Check all'}
-                </button>
-              )}
+              <div className="flex items-center gap-3">
+                {searchedQuery && (
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={() => handleGenerate(searchedQuery, { refresh: true })}
+                    className="inline-flex items-center gap-1.5 text-[12px] text-primary hover:underline disabled:opacity-50"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                    {loading && generatedItems.length === 0 ? 'Finding more…' : 'New ideas'}
+                  </button>
+                )}
+                {selectableItems.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={toggleSelectAll}
+                    className="text-[12px] text-primary hover:underline"
+                  >
+                    {checkedIds.length === selectableItems.length ? 'Uncheck all' : 'Check all'}
+                  </button>
+                )}
+              </div>
             </div>
 
             {loading && generatedItems.length === 0 ? (
