@@ -72,6 +72,8 @@ export interface DocxTheme {
   // How the skills list reads in the finished document: one designed line, one skill per
   // line, or two columns.
   skillsLayout: 'line' | 'lines' | 'columns';
+  // How each skill is drawn: as plain words, or on its own tinted bubble or block.
+  skillsShape: 'none' | 'bubble' | 'block';
   // The screening keyword line: the style's own meta treatment unless a candidate restyled it.
   keywordFont?: string;
   keywordSize?: number;
@@ -141,7 +143,8 @@ const BASE: DocxTheme = {
   skillsSeparator: '   \u00B7   ',
   skillsSeparatorColor: 'B0854A',
   margin: 1008,
-  skillsLayout: 'line'
+  skillsLayout: 'line',
+  skillsShape: 'none'
 };
 
 const OVERRIDES: Record<string, Partial<DocxTheme>> = {
@@ -684,6 +687,7 @@ export interface ResumeElementStyle {
   size?: 'style' | 'smaller' | 'larger';
   rule?: 'line' | 'solid' | 'bar' | 'none';
   display?: 'line' | 'lines' | 'columns';
+  shape?: 'none' | 'bubble' | 'block';
 }
 
 export type ResumeStyleOverrides = Record<string, ResumeElementStyle>;
@@ -695,7 +699,7 @@ const ELEMENT_KEYS: Record<string, string[]> = {
   contact: ['color', 'font', 'size'],
   heading: ['color', 'font', 'case', 'size'],
   rule: ['color', 'rule'],
-  skills: ['color', 'font', 'size', 'display'],
+  skills: ['color', 'font', 'size', 'shape', 'display'],
   role: ['color', 'font', 'case', 'size'],
   meta: ['color', 'font', 'size'],
   body: ['color', 'font', 'size'],
@@ -707,7 +711,8 @@ const CHOICES: Record<string, string[]> = {
   case: ['style', 'upper'],
   size: ['style', 'smaller', 'larger'],
   rule: ['line', 'solid', 'bar', 'none'],
-  display: ['line', 'lines', 'columns']
+  display: ['line', 'lines', 'columns'],
+  shape: ['none', 'bubble', 'block']
 };
 
 export function sanitizeResumeStyleOverrides(value: unknown): ResumeStyleOverrides {
@@ -738,6 +743,22 @@ function sized(value: unknown, choice?: string): number {
   const factor = choice ? SIZE_FACTOR[choice] : undefined;
   if (!factor || typeof value !== 'number' || value <= 0) return value as number;
   return Math.round(value * factor);
+}
+
+// A skill bubble or block sits on a tint of the colour the list already carries, so the
+// colour stays a choice of its own, separate from the typeface. Mirrored in the app
+// (src/lib/resumeElementStyles.js).
+export function tintHex(value: unknown, amount: number): string {
+  const hex = String(value ?? '').replace('#', '').trim();
+  if (!/^[0-9a-f]{6}$/i.test(hex)) return 'FFFFFF';
+  const channel = (start: number) => {
+    const part = parseInt(hex.slice(start, start + 2), 16);
+    return Math.round(255 * (1 - amount) + part * amount)
+      .toString(16)
+      .padStart(2, '0')
+      .toUpperCase();
+  };
+  return channel(0) + channel(2) + channel(4);
 }
 
 // The theme the exports draw with, once the restyled parts are applied on top of the style.
@@ -808,6 +829,7 @@ export function applyStyleOverrides(theme: DocxTheme, overrides?: ResumeStyleOve
   if (family(skills.font)) next.skillsFont = family(skills.font) as string;
   next.skillsSize = sized(next.skillsSize, skills.size);
   if (skills.display) next.skillsLayout = skills.display;
+  if (skills.shape) next.skillsShape = skills.shape;
 
   // The entry lines: job titles and companies, degrees and certifications.
   const role = overrides.role || {};

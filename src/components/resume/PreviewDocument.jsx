@@ -5,7 +5,7 @@ import DocumentSection from '@/components/resume/DocumentSection';
 import RestyleablePart from '@/components/resume/RestyleablePart';
 import { getTemplate, RESUME_SECTIONS } from '@/lib/resumeTemplates';
 import { layoutPhoto, layoutSections, readLayout } from '@/lib/resumeLayout';
-import { skillsDisplay } from '@/lib/resumeElementStyles';
+import { baseColor, overridesFor, skillPlate, skillsDisplay, skillsShape } from '@/lib/resumeElementStyles';
 
 // The finished document, read-only: the same style tokens, section order and restyled parts
 // the Word download and the PDF use, drawn without the editing fields. Every part of it can
@@ -49,9 +49,35 @@ export default function PreviewDocument({
   const certifications = (resume.certifications || []).filter(Boolean);
   const keywords = (resume.keywords || []).filter(Boolean);
 
+  // Each skill can sit on its own bubble or block, tinted with the colour the list carries.
+  const shape = skillsShape(overrides);
+  const plate = skillPlate(shape, overridesFor(overrides, 'skills').color || baseColor(style.body));
+  const plateRow =
+    display === 'lines'
+      ? 'flex flex-col items-start gap-1.5'
+      : display === 'columns'
+        ? 'grid grid-cols-2 justify-items-start gap-1.5'
+        : 'flex flex-wrap gap-1.5';
+
   const skillsBlock = !skills.length
     ? null
-    : display === 'lines'
+    : plate
+      ? (
+          <RestyleablePart id="skills" token={style.body} overrides={overrides} onUpdate={onUpdateOverride} as="div">
+            <div className={plateRow}>
+              {skills.map((item, index) => (
+                <span
+                  key={index}
+                  className={shape === 'bubble' ? 'rounded-full border px-2.5 py-1' : 'px-2.5 py-1'}
+                  style={plate}
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          </RestyleablePart>
+        )
+      : display === 'lines'
       ? (
           <RestyleablePart
             id="skills"

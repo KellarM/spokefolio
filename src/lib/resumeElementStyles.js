@@ -37,7 +37,7 @@ export const ELEMENTS = {
   skills: {
     label: 'Skills',
     hint: 'The whole skills list follows this one setting.',
-    options: ['color', 'font', 'size', 'display']
+    options: ['color', 'font', 'size', 'shape', 'display']
   },
   role: {
     label: 'Job titles',
@@ -108,6 +108,12 @@ export const DISPLAY_OPTIONS = [
   { id: 'columns', label: 'Two columns' }
 ];
 
+export const SHAPE_OPTIONS = [
+  { id: 'bubble', label: 'Bubble' },
+  { id: 'block', label: 'Block' },
+  { id: 'none', label: 'None' }
+];
+
 const FONT_CLASS = { serif: 'font-heading', sans: 'font-body' };
 const SIZE_FACTOR = { smaller: 0.88, larger: 1.18 };
 const ALLOWED = {
@@ -116,7 +122,8 @@ const ALLOWED = {
   case: (value) => ['style', 'upper'].includes(value),
   size: (value) => ['style', 'smaller', 'larger'].includes(value),
   rule: (value) => ['line', 'solid', 'bar', 'none'].includes(value),
-  display: (value) => ['line', 'lines', 'columns'].includes(value)
+  display: (value) => ['line', 'lines', 'columns'].includes(value),
+  shape: (value) => ['bubble', 'block'].includes(value)
 };
 
 // Only the settings that differ from the style are kept, so an untouched résumé stores
@@ -227,4 +234,27 @@ export function ruleStyle(rowClass, overrides) {
 export function skillsDisplay(overrides) {
   const choice = overridesFor(overrides, 'skills').display;
   return DISPLAY_OPTIONS.some((option) => option.id === choice) ? choice : 'line';
+}
+
+// What each skill is drawn as: plain words, or its own bubble or block.
+export function skillsShape(overrides) {
+  const choice = overridesFor(overrides, 'skills').shape;
+  return choice === 'bubble' || choice === 'block' ? choice : 'none';
+}
+
+// A tint of one colour, for a skill's plate.
+export function tint(hex, amount) {
+  const value = String(hex || '').replace('#', '');
+  if (!/^[0-9a-f]{6}$/i.test(value)) return null;
+  const channel = (start) => Math.round(255 * (1 - amount) + parseInt(value.slice(start, start + 2), 16) * amount);
+  return `rgb(${channel(0)}, ${channel(2)}, ${channel(4)})`;
+}
+
+// The plate under one skill, tinted with the colour the list carries, so the colour stays a
+// choice of its own, separate from the typeface.
+export function skillPlate(shape, ink) {
+  if (shape === 'none') return null;
+  const background = tint(ink, shape === 'bubble' ? 0.12 : 0.2);
+  if (!background) return null;
+  return shape === 'bubble' ? { background, borderColor: tint(ink, 0.5) } : { background };
 }

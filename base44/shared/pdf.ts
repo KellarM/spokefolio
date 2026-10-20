@@ -9,7 +9,7 @@
 // file readable by applicant tracking systems.
 
 import { PDFDocument, StandardFonts, rgb } from 'npm:pdf-lib@1.17.1';
-import { applyLayoutToTheme, applyStyleOverrides, resolveDocxConfig, resolveDocxTheme } from './resumeTemplates.ts';
+import { applyLayoutToTheme, applyStyleOverrides, resolveDocxConfig, resolveDocxTheme, tintHex } from './resumeTemplates.ts';
 import { fitResumeToPages } from './resumeFit.ts';
 
 const PAGE = { width: 612, height: 792 }; // US Letter, points
@@ -259,6 +259,65 @@ class Writer {
     }
     this.y -= opts.after ?? 4;
   }
+
+  // Skills on their own plates: one wrapping row, a two-column grid, or one per line. A
+  // bubble carries an outline, a block a heavier fill, and the plate tints the list's colour.
+  chips(items: string[], opts: TextOptions & { fill?: any; border?: any; cols?: number; stack?: boolean } = {}) {
+    const font = opts.font || this.fonts.regular;
+    const size = opts.size || 10.5;
+    const color = opts.color || INK;
+    const pad = Math.max(4, size * 0.45);
+    const gap = 6;
+    const rowHeight = size + pad * 1.4;
+    const labels = items.map((item) => safe(item)).filter(Boolean);
+    if (!labels.length) return;
+
+    const perRow = opts.stack ? 1 : opts.cols === 2 ? 2 : 0;
+    const rows: string[][] = [];
+    if (perRow) {
+      for (let i = 0; i < labels.length; i += perRow) rows.push(labels.slice(i, i + perRow));
+    } else {
+      let row: string[] = [];
+      let used = 0;
+      for (const label of labels) {
+        const width = font.widthOfTextAtSize(label, size) + pad * 2;
+        if (row.length && used + gap + width > this.width) {
+          rows.push(row);
+          row = [];
+          used = 0;
+        }
+        used += row.length ? gap + width : width;
+        row.push(label);
+      }
+      if (row.length) rows.push(row);
+    }
+
+    const columnWidth = perRow === 2 ? (this.width - gap) / 2 : this.width;
+    for (const row of rows) {
+      this.ensure(rowHeight);
+      let x = this.margin.left;
+      row.forEach((label, index) => {
+        const width = perRow
+          ? Math.min(font.widthOfTextAtSize(label, size) + pad * 2, columnWidth)
+          : font.widthOfTextAtSize(label, size) + pad * 2;
+        if (perRow && index) x = this.margin.left + index * (columnWidth + gap);
+        const y = this.y - rowHeight;
+        this.page.drawRectangle({
+          x,
+          y,
+          width,
+          height: rowHeight,
+          color: opts.fill,
+          borderColor: opts.border,
+          borderWidth: opts.border ? 0.7 : 0
+        });
+        this.page.drawText(label, { x: x + pad, y: y + rowHeight / 2 - size * 0.35, size, font, color });
+        if (!perRow) x += width + gap;
+      });
+      this.y -= rowHeight + 2;
+    }
+    this.y -= opts.after ?? 4;
+  }
 }
 
 async function open(margin: Margins) {
@@ -434,6 +493,24 @@ export async function buildResumePdf({
       const font = pick(theme.skillsFont)[theme.skillsBold ? 'bold' : 'regular'];
       const size = halfPoints(theme.skillsSize, bodySize);
       const color = ink(theme.skillsColor, bodyColor);
+      // Each skill can sit on its own plate instead: a bubble carries an outline, a block a
+      // heavier fill, and the plate tints the list's own colour.
+      const shape = theme.skillsShape || 'none';
+      if (shape !== 'none') {
+        const plate = tintHex(theme.skillsColor || theme.bodyColor, shape === 'bubble' ? 0.12 : 0.2);
+        const outline = shape === 'bubble' ? tintHex(theme.skillsColor || theme.bodyColor, 0.5) : undefined;
+        w.chips(skills, {
+          font,
+          size,
+          color,
+          fill: ink(plate),
+          border: outline ? ink(outline) : undefined,
+          cols: theme.skillsLayout === 'columns' ? 2 : 1,
+          stack: theme.skillsLayout === 'lines',
+          after: 4
+        });
+        return;
+      }
       // The list reads as one designed line, one skill per line, or two columns.
       if (theme.skillsLayout === 'lines') {
         for (const item of skills) w.text(item, { font, size, color, lineGap: bodyGap, after: 2 });

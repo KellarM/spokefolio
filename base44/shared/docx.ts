@@ -1,7 +1,7 @@
 // Dependency-free .docx writer.
 // Builds a valid Word package (OOXML) and stores it as an uncompressed ZIP.
 
-import { applyLayoutToTheme, applyStyleOverrides, resolveDocxConfig, resolveDocxTheme } from './resumeTemplates.ts';
+import { applyLayoutToTheme, applyStyleOverrides, resolveDocxConfig, resolveDocxTheme, tintHex } from './resumeTemplates.ts';
 import { fitResumeToPages } from './resumeFit.ts';
 
 const encoder = new TextEncoder();
@@ -140,7 +140,10 @@ function run(text, opts = {}) {
     opts.italic ? '<w:i/>' : '',
     typeof opts.spacing === 'number' ? `<w:spacing w:val="${opts.spacing}"/>` : '',
     `<w:sz w:val="${size}"/><w:szCs w:val="${size}"/>`,
-    `<w:color w:val="${opts.color || '1F2937'}"/>`
+    `<w:color w:val="${opts.color || '1F2937'}"/>`,
+    // A skill plate: its own tint behind the word, with an outline for a bubble.
+    opts.fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${opts.fill}"/>` : '',
+    opts.border ? `<w:bdr w:val="single" w:sz="6" w:space="4" w:color="${opts.border}"/>` : ''
   ].join('');
   const tab = opts.tabAfter ? '<w:tab/>' : '';
   return `<w:r><w:rPr>${props}</w:rPr><w:t xml:space="preserve">${esc(text)}</w:t>${tab}</w:r>`;
@@ -316,9 +319,39 @@ function skillsLine(items, t) {
     .join('');
 }
 
-// The skills list reads as one designed line, one skill per line, or two columns.
+// The skills list reads as one designed line, one skill per line, or two columns — and each
+// skill can sit on its own tinted plate instead, as a bubble or a block.
 function skillsBlock(items, t) {
   const ink = { bold: t.skillsBold, size: t.skillsSize, color: t.skillsColor, font: t.skillsFont };
+  const shape = t.skillsShape || 'none';
+  if (shape !== 'none') {
+    // The plate tints the list's own colour, so the colour stays a choice of its own.
+    const fill = tintHex(t.skillsColor, shape === 'bubble' ? 0.12 : 0.2);
+    const border = shape === 'bubble' ? tintHex(t.skillsColor, 0.5) : null;
+    const plate = (item, tabAfter = false) => run(item, { ...ink, fill, border, tabAfter });
+    if (t.skillsLayout === 'lines') {
+      return items.map((item) => para(plate(item), { after: 50, line: t.bodyLine }));
+    }
+    if (t.skillsLayout === 'columns') {
+      const half = Math.ceil(items.length / 2);
+      const left = items.slice(0, half);
+      const right = items.slice(half);
+      const tabStop = Math.round((12240 - t.margin * 2) / 2);
+      return left.map((item, index) =>
+        para(plate(item, Boolean(right[index])) + (right[index] ? plate(right[index]) : ''), {
+          after: 50,
+          line: t.bodyLine,
+          tabStops: [tabStop]
+        })
+      );
+    }
+    return [
+      para(items.map((item, index) => plate(item) + (index < items.length - 1 ? run('  ', ink) : '')).join(''), {
+        after: 80,
+        line: t.bodyLine
+      })
+    ];
+  }
   if (t.skillsLayout === 'lines') {
     return items.map((item) => para(run(item, ink), { after: 40, line: t.bodyLine }));
   }

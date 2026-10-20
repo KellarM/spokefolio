@@ -5,6 +5,7 @@ import {
   ELEMENTS,
   FONT_OPTIONS,
   RULE_OPTIONS,
+  SHAPE_OPTIONS,
   SIZE_OPTIONS,
   SWATCHES,
   baseColor,
@@ -36,13 +37,15 @@ export default function ElementStylePanel({ elementId, token, overrides, onChang
   const has = (key) => spec.options.includes(key);
 
   // "The style's own" simply drops the choice, leaving the style to decide.
-  const choices = (key, list) =>
+  // The option that hands the part back to the style — "the style's own", or "none" for the
+  // skill style, which is how a plain list is stored.
+  const choices = (key, list, fallback = 'style') =>
     list.map((option) => (
       <button
         key={option.id}
         type="button"
-        onClick={() => onChange({ [key]: option.id === 'style' ? undefined : option.id })}
-        className={chip(option.id === 'style' ? !choice[key] : choice[key] === option.id)}
+        onClick={() => onChange({ [key]: option.id === fallback ? undefined : option.id })}
+        className={chip(option.id === fallback ? !choice[key] : choice[key] === option.id)}
       >
         {option.label}
       </button>
@@ -92,6 +95,7 @@ export default function ElementStylePanel({ elementId, token, overrides, onChang
       {has('case') && <Group title="Lettering">{choices('case', CASE_OPTIONS)}</Group>}
       {has('size') && <Group title="Size">{choices('size', SIZE_OPTIONS)}</Group>}
       {has('rule') && <Group title="Line">{choices('rule', RULE_OPTIONS)}</Group>}
+      {has('shape') && <Group title="Style">{choices('shape', SHAPE_OPTIONS, 'none')}</Group>}
       {has('display') && <Group title="How it reads">{choices('display', DISPLAY_OPTIONS)}</Group>}
     </div>
   );
