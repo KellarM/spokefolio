@@ -154,7 +154,7 @@ export default function Landing() {
             It was just wearing a different logo.
           </h2>
           <p className="lnd-lede lnd-lede-top">
-            Here is every résumé site you’ve ever tried: a template gallery, a box-by-box wizard,
+            This is not the same as every résumé site you’ve ever tried: a template gallery, a box-by-box wizard,
             forty-five minutes of re-typing your own life, and then, at the only moment that
             matters, a screen asking for payment to download the thing you just built. Different
             brands. Same machine. It’s not an accident. The gate is the product.
