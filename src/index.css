@@ -1357,3 +1357,53 @@
     gap: 14px;
   }
 }
+
+/* ============================================================
+   Landing — centered alignment (titles, text and details)
+   ============================================================ */
+
+.lnd-hero,
+.lnd-section,
+.lnd-footer {
+  text-align: center;
+}
+
+.lnd-h1,
+.lnd-lede,
+.lnd-confession {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.lnd-btn-row,
+.lnd-sins,
+.lnd-chips {
+  justify-content: center;
+}
+
+.lnd-table th,
+.lnd-table td {
+  text-align: center;
+}
+
+.lnd-dont {
+  justify-content: center;
+}
+
+.lnd-step,
+.lnd-plan,
+.lnd-qa {
+  text-align: center;
+}
+
+.lnd-note-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.lnd-foot-in {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
