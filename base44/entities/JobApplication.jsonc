@@ -80,6 +80,13 @@
           ],
           "default": "style"
         },
+        "order": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
         "hidden_sections": {
           "type": "array",
           "items": {

@@ -619,6 +619,8 @@ export interface ResumeLayout {
   placement: 'style' | 'left' | 'center';
   hidden_sections: string[];
   photo: 'style' | 'on' | 'off';
+  // The section order dragged on the style panel. Empty means the style's own order.
+  order: string[];
 }
 
 const ALL_SECTIONS = ['summary', 'skills', 'experience', 'education', 'certifications', 'keywords'];
@@ -631,7 +633,10 @@ export function sanitizeResumeLayout(value: unknown): ResumeLayout {
   const hidden = Array.isArray(raw.hidden_sections)
     ? raw.hidden_sections.filter((id: unknown) => typeof id === 'string' && ALL_SECTIONS.includes(id as string))
     : [];
-  return { placement, hidden_sections: hidden, photo };
+  const order = Array.isArray(raw.order)
+    ? Array.from(new Set(raw.order.filter((id: unknown) => typeof id === 'string' && ALL_SECTIONS.includes(id as string))))
+    : [];
+  return { placement, hidden_sections: hidden, photo, order };
 }
 
 // Where the identity block and the section headings sit, when the candidate has moved them.
@@ -645,8 +650,12 @@ export function resolveDocxConfig(id?: string, layout?: ResumeLayout): DocxConfi
   const override = id ? CONFIGS[id] : undefined;
   const base = override ? { ...BASE_CONFIG, ...override } : BASE_CONFIG;
   if (!layout) return base;
+  // The order dragged on the style panel first, then anything the style shows that the
+  // dragged list does not mention, minus the sections switched off.
+  const dragged = layout.order.filter((section) => base.sections.includes(section));
+  const ordered = Array.from(new Set([...dragged, ...base.sections]));
   return {
     photo: layout.photo === 'on' ? true : layout.photo === 'off' ? false : base.photo,
-    sections: base.sections.filter((section) => !layout.hidden_sections.includes(section))
+    sections: ordered.filter((section) => !layout.hidden_sections.includes(section))
   };
 }
