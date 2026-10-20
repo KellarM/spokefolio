@@ -141,7 +141,7 @@ export default function Landing() {
           <h2 className="lnd-h2">
             You’ve already used this product.
             <br />
-            It was wearing a different logo.
+            It was just wearing a different logo.
           </h2>
           <p className="lnd-lede lnd-lede-top">
             Here is every résumé site you’ve ever tried: a template gallery, a box-by-box wizard,
