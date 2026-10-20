@@ -56,12 +56,39 @@ const PERSONAS = [
 'Career changer who’s earned more than one résumé admits'];
 
 
+/* The Speak-O-Phone: the Spokefolio voice mark. */
+const SpeakOPhone = () => (
+  <svg
+    className="lnd-phone"
+    viewBox="0 0 64 64"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.4"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-label="Speak-O-Phone"
+  >
+    <ellipse cx="32" cy="53" rx="15" ry="4" />
+    <ellipse cx="32" cy="49" rx="11" ry="3" />
+    <path d="M32 49 V27" />
+    <path d="M27 27 h10" />
+    <path d="M29 27 L25 13" />
+    <path d="M35 27 L39 13" />
+    <ellipse cx="32" cy="12" rx="8.5" ry="3" />
+    <path d="M16 7 q-4 5 0 10" />
+    <path d="M48 7 q4 5 0 10" />
+  </svg>
+);
+
 export default function Landing() {
   return (
     <div className="lnd">
       <nav className="lnd-nav">
         <div className="lnd-nav-in">
-          <span className="lnd-wordmark">SPOKEFOLIO</span>
+          <span className="lnd-brand">
+            <SpeakOPhone />
+            <span className="lnd-wordmark">SPOKEFOLIO</span>
+          </span>
           <div className="lnd-nav-links">
             <Link to="/login" className="lnd-signin">Sign in</Link>
             <Link to="/register" className="lnd-btn">Create your account</Link>
@@ -345,7 +372,10 @@ export default function Landing() {
 
       <footer className="lnd-footer">
         <div className="lnd-wrap lnd-foot-in">
-          <span className="lnd-wordmark">SPOKEFOLIO</span>
+          <span className="lnd-brand">
+            <SpeakOPhone />
+            <span className="lnd-wordmark">SPOKEFOLIO</span>
+          </span>
           <p>The career knowledge base · Made by XFH Game Studio</p>
         </div>
       </footer>

@@ -1695,3 +1695,17 @@
     border-width: 1.5px;
   }
 }
+
+/* Speak-O-Phone brand mark beside the wordmark */
+.lnd-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.lnd-phone {
+  width: 30px;
+  height: 30px;
+  color: #D4AF37;
+  flex-shrink: 0;
+}
