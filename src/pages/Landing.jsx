@@ -81,9 +81,19 @@ export default function Landing() {
             Spokefolio is a career knowledge base. Tell it your history once, and it writes a
             résumé tailored to each job you apply for. No wizard. No gate. No subscription trap.
           </p>
-          <div className="lnd-price-chip">
-            <b>Free through 2026.</b> In 2027, if you wish to use the service, sign up for{' '}
-            <b>$15 a year. Flat.</b>
+          <div className="lnd-promise-row">
+            <div className="lnd-price-chip">
+              <b>Free through 2026.</b> In 2027, if you wish to use the service, sign up for{' '}
+              <b>$15 a year. Flat.</b>
+            </div>
+            <div className="lnd-seal" aria-label="The Spokefolio pledge">
+              <div className="lnd-seal-inner">
+                <p className="lnd-seal-title">The Spokefolio Pledge</p>
+                <p>No hidden fees</p>
+                <p>No auto-renewal</p>
+                <p>No download gate</p>
+              </div>
+            </div>
           </div>
           <div className="lnd-btn-row">
             <Link to="/register" className="lnd-btn">Create your free account</Link>
@@ -149,6 +159,13 @@ export default function Landing() {
             matters, a screen asking for payment to download the thing you just built. Different
             brands. Same machine. It’s not an accident. The gate is the product.
           </p>
+          <div className="lnd-tried">
+            <p className="lnd-tried-label">Tried these?</p>
+            <p className="lnd-tried-names">
+              Zety <span>·</span> Resume-Now <span>·</span> MyPerfectResume <span>·</span> Resume
+              Genius <span>·</span> Canva
+            </p>
+          </div>
           <div className="lnd-table-wrap">
             <table className="lnd-table">
               <thead>
@@ -182,6 +199,12 @@ export default function Landing() {
               </div>
             )}
           </div>
+          <div className="lnd-zero-band">
+            <div className="lnd-zero"><b>0</b><span>hidden fees</span></div>
+            <div className="lnd-zero"><b>0</b><span>auto-renewals</span></div>
+            <div className="lnd-zero"><b>0</b><span>re-typing sessions</span></div>
+            <div className="lnd-zero"><b>1</b><span>career remembered</span></div>
+          </div>
           <p className="lnd-confession">
             Everything on this list is a standard feature of our industry. We consider that a
             confession, not a marketing strategy.
@@ -214,6 +237,17 @@ export default function Landing() {
                 cheaper than our competitors’ refund department.
               </p>
             </div>
+          </div>
+          <div className="lnd-receipt" aria-label="Spokefolio pricing statement">
+            <p className="lnd-r-head">SPOKEFOLIO</p>
+            <p className="lnd-r-sub">Pricing statement · Through Dec 31, 2026</p>
+            <div className="lnd-r-line"><span>Résumé export</span><span>$0</span></div>
+            <div className="lnd-r-line"><span>Job tailoring</span><span>$0</span></div>
+            <div className="lnd-r-line"><span>Career knowledge base</span><span>$0</span></div>
+            <div className="lnd-r-line"><span>Cover letter</span><span>$0</span></div>
+            <div className="lnd-r-total"><span>TOTAL</span><span>$0.00</span></div>
+            <p className="lnd-r-note">No trial. No lock-in. No card on file.</p>
+            <p className="lnd-r-thanks">Thank you. No, really.</p>
           </div>
         </div>
       </section>
