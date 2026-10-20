@@ -1,8 +1,8 @@
 import React from 'react';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import { Eye, EyeOff, GripVertical } from 'lucide-react';
+import { Eye, EyeOff, GripVertical, RotateCcw } from 'lucide-react';
 import { RESUME_SECTIONS } from '@/lib/resumeTemplates';
-import { PLACEMENTS, PORTRAIT_OPTIONS, layoutOrder, readLayout } from '@/lib/resumeLayout';
+import { DEFAULT_RESUME_LAYOUT, PLACEMENTS, PORTRAIT_OPTIONS, layoutOrder, readLayout } from '@/lib/resumeLayout';
 
 // The manual adjustments that sit on the Résumé style panel: where the heading block and the
 // section headings sit, the order this résumé runs its sections in with any of them switched
@@ -11,6 +11,11 @@ import { PLACEMENTS, PORTRAIT_OPTIONS, layoutOrder, readLayout } from '@/lib/res
 export default function ResumeStyleControls({ config, layout, onChange }) {
   const current = readLayout(layout);
   const sectionOrder = layoutOrder(config, layout);
+  const touched =
+    current.placement !== DEFAULT_RESUME_LAYOUT.placement ||
+    current.photo !== DEFAULT_RESUME_LAYOUT.photo ||
+    current.hidden_sections.length > 0 ||
+    current.order.length > 0;
 
   const pill = (active) =>
     `rounded-full border px-3.5 py-1.5 text-[13px] transition-colors ${
@@ -130,6 +135,21 @@ export default function ResumeStyleControls({ config, layout, onChange }) {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-4">
+        <p className="text-[13px] text-muted-foreground">
+          Restoring hands this résumé back to the style: its own order, every section showing.
+        </p>
+        <button
+          type="button"
+          onClick={() => onChange({ ...DEFAULT_RESUME_LAYOUT, hidden_sections: [], order: [] })}
+          disabled={!touched}
+          className="inline-flex items-center gap-1.5 rounded-full border border-border/70 px-3.5 py-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40 disabled:hover:text-muted-foreground"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          Restore to default
+        </button>
       </div>
     </div>
   );
