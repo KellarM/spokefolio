@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
-import { KeyRound, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ChevronDown, KeyRound, LogOut, UserRound } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import PasswordHelpDialog from '@/components/PasswordHelpDialog';
 
-// Shows whose career studio this is, helps them get onto another device, and signs them out.
+// The account control in the top right: who is signed in, their profile, and signing out.
 export default function AccountMenu({ className }) {
   const { user, logout } = useAuth();
   const [passwordHelp, setPasswordHelp] = useState(false);
@@ -13,39 +21,62 @@ export default function AccountMenu({ className }) {
   const initial = name.trim().charAt(0).toUpperCase();
 
   return (
-    <div className={cn('flex items-center gap-3', className)}>
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-[14px] font-medium text-secondary-foreground">
-        {initial}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[16px] leading-tight">{name}</p>
-        {user?.full_name && user?.email ? (
-          <p className="truncate text-[14px] text-muted-foreground">{user.email}</p>
-        ) : null}
-      </div>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        onClick={() => setPasswordHelp(true)}
-        aria-label="Sign in on another device"
-        title="Sign in on another device"
-        className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
-      >
-        <KeyRound className="h-4 w-4" strokeWidth={1.75} />
-      </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        onClick={() => logout(false)}
-        aria-label="Log out"
-        title="Log out"
-        className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
-      >
-        <LogOut className="h-4 w-4" strokeWidth={1.75} />
-      </Button>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            aria-label="Account menu"
+            className={cn(
+              'flex items-center gap-2 rounded-full border border-border/60 bg-secondary/70 px-2.5 py-1.5 font-body text-[15px] text-secondary-foreground transition-colors hover:bg-secondary',
+              className
+            )}
+          >
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-[13px] font-semibold text-primary-foreground">
+              {initial}
+            </span>
+            <span className="hidden max-w-[150px] truncate sm:inline">{name}</span>
+            <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
+          </button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent align="end" className="w-64 rounded-2xl border-border/70 bg-popover p-1.5">
+          <DropdownMenuLabel className="px-3 py-2">
+            <span className="block truncate font-body text-[15px] text-foreground">{name}</span>
+            {user?.email && (
+              <span className="mt-0.5 block truncate font-body text-[13px] font-normal text-muted-foreground">
+                {user.email}
+              </span>
+            )}
+          </DropdownMenuLabel>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2 text-[15px]">
+            <Link to="/profile">
+              <UserRound className="mr-2 h-4 w-4" /> Profile
+            </Link>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            onSelect={() => setPasswordHelp(true)}
+            className="cursor-pointer rounded-xl px-3 py-2 text-[15px]"
+          >
+            <KeyRound className="mr-2 h-4 w-4" /> Sign in on another device
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            onSelect={() => logout(false)}
+            className="cursor-pointer rounded-xl px-3 py-2 text-[15px] text-destructive focus:text-destructive"
+          >
+            <LogOut className="mr-2 h-4 w-4" /> Log out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       <PasswordHelpDialog open={passwordHelp} onOpenChange={setPasswordHelp} />
-    </div>
+    </>
   );
 }

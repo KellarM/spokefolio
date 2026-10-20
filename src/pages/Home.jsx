@@ -3,9 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import useProfile from '@/hooks/useProfile';
 import StudioHero from '@/components/home/StudioHero';
-import ContactForm from '@/components/home/ContactForm';
 import ProgressCard from '@/components/home/ProgressCard';
-import TemplateCard from '@/components/home/TemplateCard';
 import RecentApplications from '@/components/home/RecentApplications';
 
 export default function Home() {
@@ -74,8 +72,6 @@ export default function Home() {
 
         <div className="mec-deck">
           <div className="mec-col">
-            <ContactForm profile={profile} onSave={save} />
-
             <section className="mec-panel">
               <div className="mec-eyebrow">Master history</div>
               {busy ? (
@@ -123,7 +119,6 @@ export default function Home() {
               onUnlock={unlock}
             />
 
-            <TemplateCard profile={profile} onSave={save} />
           </div>
         </div>
       </div>
