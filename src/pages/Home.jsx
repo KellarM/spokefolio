@@ -68,7 +68,7 @@ export default function Home() {
       </div>
 
       <div className="mec-work">
-        <RecentApplications applications={applications.slice(0, 4)} />
+        <RecentApplications applications={applications.slice(0, 2)} />
 
         <div className="mec-deck">
           <div className="mec-col">
