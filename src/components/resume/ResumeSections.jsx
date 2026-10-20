@@ -7,10 +7,23 @@ import DocumentSection from '@/components/resume/DocumentSection';
 import RolesEditor from '@/components/resume/RolesEditor';
 import EducationEditor from '@/components/resume/EducationEditor';
 import DefaultOrderButton from '@/components/resume/DefaultOrderButton';
+import ResumeElementPicker from '@/components/resume/ResumeElementPicker';
 import { RESUME_SECTIONS } from '@/lib/resumeTemplates';
 
-// Renders the résumé body in the order the chosen style's configuration gives.
-export default function ResumeSections({ resume, style, sections, placement = 'style', onChange, onSetDefaultOrder, onSuggestBullets }) {
+// Renders the résumé body in the order the chosen style's configuration gives. Each section
+// heading and the line it carries are restyleable in edit mode; the skills list is restyled
+// from the chip beside its heading, since its body is an editing field rather than text.
+export default function ResumeSections({
+  resume,
+  style,
+  sections,
+  placement = 'style',
+  onChange,
+  onSetDefaultOrder,
+  onSuggestBullets,
+  overrides,
+  onUpdate
+}) {
   const set = (patch) => onChange({ ...resume, ...patch });
 
   const content = {
@@ -70,6 +83,14 @@ export default function ResumeSections({ resume, style, sections, placement = 's
     )
   };
 
+  const sectionAction = (id) => {
+    if (id === 'experience' && onSetDefaultOrder) return <DefaultOrderButton onClick={onSetDefaultOrder} />;
+    if (id === 'skills' && onUpdate) {
+      return <ResumeElementPicker elementId="skills" token={style.body} overrides={overrides} onUpdate={onUpdate} />;
+    }
+    return null;
+  };
+
   return (
     <>
       {sections.map((id) =>
@@ -80,7 +101,9 @@ export default function ResumeSections({ resume, style, sections, placement = 's
             rowClass={style.sectionRow}
             titleClass={style.sectionTitle}
             placement={placement}
-            action={id === 'experience' && onSetDefaultOrder ? <DefaultOrderButton onClick={onSetDefaultOrder} /> : null}
+            action={sectionAction(id)}
+            overrides={overrides}
+            onUpdate={onUpdate}
           >
             {content[id]}
           </DocumentSection>

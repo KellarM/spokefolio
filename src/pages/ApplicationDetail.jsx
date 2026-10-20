@@ -23,6 +23,7 @@ import CoverLetterSection from '@/components/resume/CoverLetterSection';
 import { downloadDocxFile } from '@/lib/downloadDocx';
 import TemplatePicker from '@/components/resume/TemplatePicker';
 import { getTemplate, resolveTemplateId } from '@/lib/resumeTemplates';
+import { readElementOverrides } from '@/lib/resumeElementStyles';
 import DictateButton from '@/components/common/DictateButton';
 import { appendLine } from '@/hooks/useDictation';
 
@@ -59,6 +60,7 @@ export default function ApplicationDetail() {
   const [rewriting, setRewriting] = useState(false);
   const [pickedTemplate, setPickedTemplate] = useState('');
   const [layout, setLayout] = useState(null);
+  const [styleOverrides, setStyleOverrides] = useState({});
   const [previewMode, setPreviewMode] = useState(false);
   const [sendOpen, setSendOpen] = useState(false);
 
@@ -77,6 +79,7 @@ export default function ApplicationDetail() {
         setCoverLetter(record.cover_letter || '');
         setNotes(record.notes || '');
         setLayout(record.resume_layout || null);
+        setStyleOverrides(readElementOverrides(record.resume_style_overrides));
       } catch (error) {
         if (!cancelled) setNotFound(true);
       }
@@ -152,7 +155,9 @@ export default function ApplicationDetail() {
         profile,
         resume: saved.resume || resume,
         label,
-        template
+        template,
+        layout,
+        style_overrides: styleOverrides
       });
       const { base64, filename } = response.data || {};
       downloadDocxFile(base64, filename, 'resume.docx');
@@ -301,6 +306,22 @@ export default function ApplicationDetail() {
       setApplication(updated);
     } catch (error) {
       reportError('Could not save the layout', error);
+    }
+  };
+
+  // One setting per part of the résumé: restyling one section heading restyles every one of
+  // them, and the choice travels to the exports.
+  const changeElementStyle = async (elementId, patch) => {
+    const next = readElementOverrides({
+      ...styleOverrides,
+      [elementId]: { ...(styleOverrides[elementId] || {}), ...patch }
+    });
+    setStyleOverrides(next);
+    try {
+      const updated = await base44.entities.JobApplication.update(application.id, { resume_style_overrides: next });
+      setApplication(updated);
+    } catch (error) {
+      reportError('Could not save the styling', error);
     }
   };
 
@@ -476,6 +497,7 @@ export default function ApplicationDetail() {
               resume={resume}
               template={template}
               layout={layout}
+              styleOverrides={styleOverrides}
               label={`${application?.company || 'Resume'}_${application?.job_title || ''}`}
             />
             <div className="flex items-center gap-1.5">
@@ -499,7 +521,13 @@ export default function ApplicationDetail() {
           </div>
         </div>
         {previewMode ? (
-          <PreviewDocument profile={profile} resume={resume} template={template} layout={layout} />
+          <PreviewDocument
+            profile={profile}
+            resume={resume}
+            template={template}
+            layout={layout}
+            overrides={styleOverrides}
+          />
         ) : (
           <ResumeDocument
             profile={profile}
@@ -507,6 +535,8 @@ export default function ApplicationDetail() {
             onChange={handleResumeChange}
             template={template}
             layout={layout}
+            overrides={styleOverrides}
+            onUpdateOverride={changeElementStyle}
             onSetDefaultOrder={makeDefaultOrder}
             onSuggestBullets={suggestBullets}
           />
@@ -571,6 +601,7 @@ export default function ApplicationDetail() {
         coverLetter={coverLetter}
         template={template}
         layout={layout}
+        styleOverrides={styleOverrides}
         onBeforeSend={persist}
         onSent={(data) =>
           setApplication((prev) => ({ ...prev, last_sent_to: data.sent_to, last_sent_at: data.sent_at }))

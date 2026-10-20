@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { buildResumePdf, buildCoverLetterPdf } from '../../shared/pdf.ts';
-import { sanitizeResumeLayout } from '../../shared/resumeTemplates.ts';
+import { sanitizeResumeLayout, sanitizeResumeStyleOverrides } from '../../shared/resumeTemplates.ts';
 
 // Emails the account holder their finished application package for one job:
 // the tailored résumé and cover letter as attached PDF files, the job's details, and a
@@ -301,7 +301,9 @@ export default async function (req: Request) {
       if (!hasContent) {
         return Response.json({ error: 'Build the résumé before sending it.' }, { status: 400 });
       }
-      const pdf = await buildResumePdf({ profile, resume, template, layout });
+      // The parts restyled by clicking them in the preview travel with the résumé too.
+      const overrides = sanitizeResumeStyleOverrides(body?.style_overrides || application.resume_style_overrides);
+      const pdf = await buildResumePdf({ profile, resume, template, layout, overrides });
       const stored = await uploadPrivatePdf(base44, pdf.bytes, pdf.filename);
       resumeLink = stored.signed_url;
       resumeUri = stored.file_uri;

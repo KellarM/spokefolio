@@ -19,7 +19,7 @@ function downloadPdfFile(base64, filename, fallback = 'resume.pdf') {
 
 // Both downloads are the tailored résumé this application holds, in the style it uses —
 // the same document the Word button in the header and the emailed package are built from.
-export default function ResumeDownloadButtons({ profile, resume, template, layout, label, className = '' }) {
+export default function ResumeDownloadButtons({ profile, resume, template, layout, styleOverrides, label, className = '' }) {
   const { toast } = useToast();
   const [busy, setBusy] = useState('');
 
@@ -28,12 +28,26 @@ export default function ResumeDownloadButtons({ profile, resume, template, layou
     setBusy(kind);
     try {
       if (kind === 'pdf') {
-        const { data } = await base44.functions.invoke('exportResumePdf', { profile, resume, template, layout, label });
+        const { data } = await base44.functions.invoke('exportResumePdf', {
+          profile,
+          resume,
+          template,
+          layout,
+          style_overrides: styleOverrides,
+          label
+        });
         if (!data?.base64) throw new Error('The PDF came back empty.');
         downloadPdfFile(data.base64, data.filename, 'resume.pdf');
         toast({ title: 'Résumé PDF downloaded', description: data.filename });
       } else {
-        const { data } = await base44.functions.invoke('exportResumeDocx', { profile, resume, label, template, layout });
+        const { data } = await base44.functions.invoke('exportResumeDocx', {
+          profile,
+          resume,
+          label,
+          template,
+          layout,
+          style_overrides: styleOverrides
+        });
         if (!data?.base64) throw new Error('The Word document came back empty.');
         downloadDocxFile(data.base64, data.filename, 'resume.docx');
         toast({ title: 'Word document downloaded', description: data.filename });

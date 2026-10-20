@@ -6,8 +6,19 @@ import { layoutPhoto, layoutSections, readLayout } from '@/lib/resumeLayout';
 
 // The editable preview. The chosen style decides the header treatment as well as the
 // order its sections appear in, so two styles can lay the same history out differently.
-// The manual adjustments on the style panel are applied on top of that.
-export default function ResumeDocument({ profile, resume, onChange, template, layout, onSetDefaultOrder, onSuggestBullets }) {
+// The manual adjustments on the style panel are applied on top of that, and every part of
+// the document can be clicked to restyle it on its own.
+export default function ResumeDocument({
+  profile,
+  resume,
+  onChange,
+  template,
+  layout,
+  overrides,
+  onUpdateOverride,
+  onSetDefaultOrder,
+  onSuggestBullets
+}) {
   const { preview: style, config } = getTemplate(template);
   const { placement } = readLayout(layout);
 
@@ -22,6 +33,8 @@ export default function ResumeDocument({ profile, resume, onChange, template, la
         showPhoto={layoutPhoto(config, layout)}
         placement={placement}
         onChange={onChange}
+        overrides={overrides}
+        onUpdateOverride={onUpdateOverride}
       />
       <ResumeSections
         resume={resume}
@@ -31,6 +44,8 @@ export default function ResumeDocument({ profile, resume, onChange, template, la
         onChange={onChange}
         onSetDefaultOrder={onSetDefaultOrder}
         onSuggestBullets={onSuggestBullets}
+        overrides={overrides}
+        onUpdate={onUpdateOverride}
       />
     </div>
   );

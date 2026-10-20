@@ -1,7 +1,7 @@
 // Dependency-free .docx writer.
 // Builds a valid Word package (OOXML) and stores it as an uncompressed ZIP.
 
-import { applyLayoutToTheme, resolveDocxConfig, resolveDocxTheme } from './resumeTemplates.ts';
+import { applyLayoutToTheme, applyStyleOverrides, resolveDocxConfig, resolveDocxTheme } from './resumeTemplates.ts';
 import { fitResumeToPages } from './resumeFit.ts';
 
 const encoder = new TextEncoder();
@@ -153,7 +153,11 @@ function para(runs, opts = {}) {
     : opts.indent
       ? `<w:ind w:left="${opts.indent}"/>`
       : '';
-  const tabs = opts.hanging ? `<w:tabs><w:tab w:val="left" w:pos="${opts.indent || 284}"/></w:tabs>` : '';
+  const tabs = opts.hanging
+    ? `<w:tabs><w:tab w:val="left" w:pos="${opts.indent || 284}"/></w:tabs>`
+    : Array.isArray(opts.tabStops) && opts.tabStops.length
+      ? `<w:tabs>${opts.tabStops.map((pos) => `<w:tab w:val="left" w:pos="${pos}"/>`).join('')}</w:tabs>`
+      : '';
   const edges = [];
   if (opts.rule) edges.push(`<w:bottom w:val="single" w:sz="${opts.ruleSize || 6}" w:space="3" w:color="${opts.rule}"/>`);
   if (opts.bar) edges.push(`<w:left w:val="single" w:sz="${opts.barSize || 24}" w:space="8" w:color="${opts.bar}"/>`);
@@ -312,6 +316,28 @@ function skillsLine(items, t) {
     .join('');
 }
 
+// The skills list reads as one designed line, one skill per line, or two columns.
+function skillsBlock(items, t) {
+  const ink = { bold: t.skillsBold, size: t.skillsSize, color: t.skillsColor, font: t.skillsFont };
+  if (t.skillsLayout === 'lines') {
+    return items.map((item) => para(run(item, ink), { after: 40, line: t.bodyLine }));
+  }
+  if (t.skillsLayout === 'columns') {
+    const half = Math.ceil(items.length / 2);
+    const left = items.slice(0, half);
+    const right = items.slice(half);
+    const tabStop = Math.round((12240 - t.margin * 2) / 2);
+    return left.map((item, index) =>
+      para(run(item, { ...ink, tabAfter: Boolean(right[index]) }) + (right[index] ? run(right[index], ink) : ''), {
+        after: 40,
+        line: t.bodyLine,
+        tabStops: [tabStop]
+      })
+    );
+  }
+  return [para(skillsLine(items, t), { after: 80, line: t.bodyLine })];
+}
+
 function buildBody(profile, resume, t, config, photo) {
   const identity = identityBlock(profile, resume.headline, t);
   const parts = config.photo && photo ? [photoHeader(identity, photo, t)] : t.identityFill ? [bandBlock(identity.join(''), t)] : [...identity];
@@ -325,7 +351,7 @@ function buildBody(profile, resume, t, config, photo) {
 
   const skills = (Array.isArray(resume.skills) ? resume.skills : []).filter(Boolean);
   if (skills.length) {
-    blocks.skills = [para(skillsLine(skills, t), { after: 80, line: t.bodyLine })];
+    blocks.skills = skillsBlock(skills, t);
   }
 
   const roles = (Array.isArray(resume.experience) ? resume.experience : []).filter(
@@ -442,9 +468,10 @@ function safeFilename(base, fallback = 'document') {
 
 const packStyle = (t) => ({ margin: t.margin, font: t.bodyFont, size: t.bodySize, line: t.bodyLine });
 
-export function buildResumeDocx({ profile, resume, label, template, photo, layout }) {
-  // The style's own placement and section order, with the candidate's adjustments on top.
-  const theme = applyLayoutToTheme(resolveDocxTheme(template), layout);
+export function buildResumeDocx({ profile, resume, label, template, photo, layout, overrides }) {
+  // The style's own placement and section order, with the candidate's adjustments and the
+  // parts they restyled by clicking them in the preview on top.
+  const theme = applyStyleOverrides(applyLayoutToTheme(resolveDocxTheme(template), layout), overrides);
   const config = resolveDocxConfig(template, layout);
   const portrait = config.photo && photo ? photo : null;
   const person = (profile && profile.full_name) || 'Resume';

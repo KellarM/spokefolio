@@ -105,6 +105,11 @@
         }
       }
     },
+    "resume_style_overrides": {
+      "type": "object",
+      "additionalProperties": true,
+      "default": {}
+    },
     "notes": {
       "type": "string"
     },

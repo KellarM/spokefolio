@@ -69,6 +69,9 @@ export interface DocxTheme {
   skillsSeparator: string;
   skillsSeparatorColor: string;
   margin: number;
+  // How the skills list reads in the finished document: one designed line, one skill per
+  // line, or two columns.
+  skillsLayout: 'line' | 'lines' | 'columns';
 }
 
 // The original editorial style: the profile default and the fallback for anything unknown.
@@ -133,7 +136,8 @@ const BASE: DocxTheme = {
   skillsBold: true,
   skillsSeparator: '   \u00B7   ',
   skillsSeparatorColor: 'B0854A',
-  margin: 1008
+  margin: 1008,
+  skillsLayout: 'line'
 };
 
 const OVERRIDES: Record<string, Partial<DocxTheme>> = {
@@ -658,4 +662,143 @@ export function resolveDocxConfig(id?: string, layout?: ResumeLayout): DocxConfi
     photo: layout.photo === 'on' ? true : layout.photo === 'off' ? false : base.photo,
     sections: ordered.filter((section) => !layout.hidden_sections.includes(section))
   };
+}
+
+// ---- Restyling one part of the résumé ----
+//
+// In the editable preview a candidate can click a part of the document — the name, the
+// headline, the contact line, every section heading, the separation line, the skills list —
+// and change how it prints. One setting covers every instance of that part, and the Word
+// export, the PDF and the read-only preview all draw from it. Mirrored in the app
+// (src/lib/resumeElementStyles.js).
+
+export interface ResumeElementStyle {
+  color?: string;
+  font?: 'serif' | 'sans';
+  case?: 'style' | 'upper';
+  size?: 'style' | 'smaller' | 'larger';
+  rule?: 'line' | 'solid' | 'bar' | 'none';
+  display?: 'line' | 'lines' | 'columns';
+}
+
+export type ResumeStyleOverrides = Record<string, ResumeElementStyle>;
+
+// The settings each part of the résumé accepts.
+const ELEMENT_KEYS: Record<string, string[]> = {
+  name: ['color', 'font', 'case', 'size'],
+  headline: ['color', 'font', 'case', 'size'],
+  contact: ['color', 'font', 'size'],
+  heading: ['color', 'font', 'case', 'size'],
+  rule: ['color', 'rule'],
+  skills: ['color', 'font', 'size', 'display']
+};
+
+const CHOICES: Record<string, string[]> = {
+  font: ['serif', 'sans'],
+  case: ['style', 'upper'],
+  size: ['style', 'smaller', 'larger'],
+  rule: ['line', 'solid', 'bar', 'none'],
+  display: ['line', 'lines', 'columns']
+};
+
+export function sanitizeResumeStyleOverrides(value: unknown): ResumeStyleOverrides {
+  const raw: any = value && typeof value === 'object' ? value : {};
+  const out: ResumeStyleOverrides = {};
+  for (const [element, keys] of Object.entries(ELEMENT_KEYS)) {
+    const entry = raw[element];
+    if (!entry || typeof entry !== 'object') continue;
+    const kept: ResumeElementStyle = {};
+    for (const key of keys) {
+      const choice = entry[key];
+      if (choice === undefined || choice === null) continue;
+      if (key === 'color') {
+        if (/^#[0-9a-f]{6}$/i.test(String(choice))) kept.color = String(choice);
+      } else if (CHOICES[key] && CHOICES[key].includes(String(choice))) {
+        (kept as any)[key] = String(choice);
+      }
+    }
+    if (Object.keys(kept).length) out[element] = kept;
+  }
+  return out;
+}
+
+const SIZE_FACTOR: Record<string, number> = { smaller: 0.88, larger: 1.18 };
+const FONT_NAME: Record<string, string> = { serif: 'Georgia', sans: 'Calibri' };
+
+function sized(value: unknown, choice?: string): number {
+  const factor = choice ? SIZE_FACTOR[choice] : undefined;
+  if (!factor || typeof value !== 'number' || value <= 0) return value as number;
+  return Math.round(value * factor);
+}
+
+// The theme the exports draw with, once the restyled parts are applied on top of the style.
+export function applyStyleOverrides(theme: DocxTheme, overrides?: ResumeStyleOverrides): DocxTheme {
+  if (!overrides || !Object.keys(overrides).length) return theme;
+  const next: DocxTheme = { ...theme };
+  const hex = (value?: string) => (value ? value.replace('#', '').toUpperCase() : undefined);
+  const family = (choice?: string) => (choice ? FONT_NAME[choice] : undefined);
+
+  const name = overrides.name || {};
+  if (hex(name.color)) {
+    next.nameColor = hex(name.color) as string;
+    // A style that prints its identity on a band draws the name in the band's own ink.
+    if (next.identityFill) next.identityNameColor = hex(name.color) as string;
+  }
+  if (family(name.font)) next.nameFont = family(name.font) as string;
+  if (name.case === 'upper') next.nameUpper = true;
+  next.nameSize = sized(next.nameSize, name.size);
+
+  const headline = overrides.headline || {};
+  if (hex(headline.color)) {
+    next.headlineColor = hex(headline.color) as string;
+    if (next.identityFill) next.identityHeadlineColor = hex(headline.color) as string;
+  }
+  if (family(headline.font)) next.headlineFont = family(headline.font) as string;
+  if (headline.case === 'upper') next.headlineUpper = true;
+  next.headlineSize = sized(next.headlineSize, headline.size);
+
+  const contact = overrides.contact || {};
+  if (hex(contact.color)) {
+    next.contactColor = hex(contact.color) as string;
+    if (next.identityFill) next.identityContactColor = hex(contact.color) as string;
+  }
+  if (family(contact.font)) next.contactFont = family(contact.font) as string;
+  next.contactSize = sized(next.contactSize, contact.size);
+
+  const heading = overrides.heading || {};
+  if (hex(heading.color)) next.sectionColor = hex(heading.color) as string;
+  if (family(heading.font)) next.sectionFont = family(heading.font) as string;
+  if (heading.case === 'upper') next.sectionUpper = true;
+  next.sectionSize = sized(next.sectionSize, heading.size);
+
+  // The separation line: the style's own line recoloured, replaced by a hairline, a solid
+  // rule or a short bar, or dropped altogether.
+  const rule = overrides.rule || {};
+  const ruleInk = hex(rule.color);
+  if (rule.rule === 'none') {
+    next.sectionRule = null;
+    next.sectionBar = null;
+  } else if (rule.rule) {
+    const ruleLine = ruleInk || next.sectionRule || next.sectionBar || '111827';
+    if (rule.rule === 'bar') {
+      next.sectionRule = null;
+      next.sectionBar = ruleLine;
+      next.sectionBarSize = 24;
+    } else {
+      next.sectionBar = null;
+      next.sectionRule = ruleLine;
+      next.sectionRuleSize = rule.rule === 'solid' ? 16 : 6;
+    }
+  } else if (ruleInk) {
+    if (next.sectionRule) next.sectionRule = ruleInk;
+    else if (next.sectionBar) next.sectionBar = ruleInk;
+  }
+
+  const skills = overrides.skills || {};
+  if (hex(skills.color)) next.skillsColor = hex(skills.color) as string;
+  if (family(skills.font)) next.skillsFont = family(skills.font) as string;
+  next.skillsSize = sized(next.skillsSize, skills.size);
+  if (skills.display) next.skillsLayout = skills.display;
+
+  return next;
 }

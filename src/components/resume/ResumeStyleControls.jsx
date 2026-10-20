@@ -44,6 +44,12 @@ export default function ResumeStyleControls({ config, layout, onChange }) {
 
   return (
     <div className="mt-5 space-y-5 border-t border-border/60 pt-5">
+      <p className="rounded-xl border border-accent/30 bg-accent/5 px-3.5 py-2.5 text-[13px] text-muted-foreground">
+        Click any part of the résumé itself — your name, the headline, a section heading, the line beneath it or the
+        skills list — to restyle just that part. One setting covers every part of its kind, and it carries through to
+        the preview and both downloads.
+      </p>
+
       <div>
         <p className="eyebrow">Placement</p>
         <p className="mt-1.5 text-[13px] text-muted-foreground">

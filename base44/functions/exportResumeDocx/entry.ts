@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { buildResumeDocx } from '../../shared/docx.ts';
-import { resolveDocxConfig, sanitizeResumeLayout } from '../../shared/resumeTemplates.ts';
+import { resolveDocxConfig, sanitizeResumeLayout, sanitizeResumeStyleOverrides } from '../../shared/resumeTemplates.ts';
 import { loadPhoto } from '../../shared/photo.ts';
 
 export default async function (req) {
@@ -44,7 +44,8 @@ export default async function (req) {
       }
     }
 
-    const { base64, filename } = buildResumeDocx({ profile, resume, label, template, photo, layout });
+    const overrides = sanitizeResumeStyleOverrides(body?.style_overrides);
+    const { base64, filename } = buildResumeDocx({ profile, resume, label, template, photo, layout, overrides });
 
     return Response.json({ base64, filename });
   } catch (error) {

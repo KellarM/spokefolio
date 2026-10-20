@@ -9,7 +9,7 @@
 // file readable by applicant tracking systems.
 
 import { PDFDocument, StandardFonts, rgb } from 'npm:pdf-lib@1.17.1';
-import { applyLayoutToTheme, resolveDocxConfig, resolveDocxTheme } from './resumeTemplates.ts';
+import { applyLayoutToTheme, applyStyleOverrides, resolveDocxConfig, resolveDocxTheme } from './resumeTemplates.ts';
 import { fitResumeToPages } from './resumeFit.ts';
 
 const PAGE = { width: 612, height: 792 }; // US Letter, points
@@ -222,6 +222,43 @@ class Writer {
     });
     this.y -= opts.after ?? 2;
   }
+
+  // Two columns of short items, the left half beside the right, on one shared baseline.
+  columns(left: string[], right: string[], opts: TextOptions = {}) {
+    const font = opts.font || this.fonts.regular;
+    const size = opts.size || 10.5;
+    const color = opts.color || INK;
+    const lineHeight = size * (opts.lineGap || 1.35);
+    const columnWidth = (this.width - 16) / 2;
+    const rows = Math.max(left.length, right.length);
+    for (let index = 0; index < rows; index += 1) {
+      const leftLines = left[index] ? this.wrap(left[index], font, size, columnWidth) : [];
+      const rightLines = right[index] ? this.wrap(right[index], font, size, columnWidth) : [];
+      const height = Math.max(leftLines.length, rightLines.length, 1) * lineHeight;
+      this.ensure(height);
+      const top = this.y;
+      leftLines.forEach((line, lineIndex) => {
+        this.page.drawText(line, {
+          x: this.margin.left,
+          y: top - size - lineIndex * lineHeight,
+          size,
+          font,
+          color
+        });
+      });
+      rightLines.forEach((line, lineIndex) => {
+        this.page.drawText(line, {
+          x: this.margin.left + columnWidth + 16,
+          y: top - size - lineIndex * lineHeight,
+          size,
+          font,
+          color
+        });
+      });
+      this.y = top - height;
+    }
+    this.y -= opts.after ?? 4;
+  }
 }
 
 async function open(margin: Margins) {
@@ -253,15 +290,18 @@ export async function buildResumePdf({
   profile,
   resume,
   template,
-  layout
+  layout,
+  overrides
 }: {
   profile: any;
   resume: any;
   template?: string;
   layout?: any;
+  overrides?: any;
 }) {
-  // The style's own placement and section order, with the candidate's adjustments on top.
-  const theme = applyLayoutToTheme(resolveDocxTheme(template), layout);
+  // The style's own placement and section order, with the candidate's adjustments and the
+  // parts they restyled by clicking them in the preview on top.
+  const theme = applyStyleOverrides(applyLayoutToTheme(resolveDocxTheme(template), layout), overrides);
   const config = resolveDocxConfig(template, layout);
   // The same two-page fit the Word file applies, so both carry identical content.
   const data: any = fitResumeToPages(resume || {}, template);
@@ -387,13 +427,21 @@ export async function buildResumePdf({
       const skills = (Array.isArray(data.skills) ? data.skills : []).filter(Boolean).map((s: unknown) => safe(s));
       if (!skills.length) return;
       const separator = safe(theme.skillsSeparator) || '\u00B7';
-      w.text(skills.join(' ' + separator + ' '), {
-        font: pick(theme.skillsFont)[theme.skillsBold ? 'bold' : 'regular'],
-        size: halfPoints(theme.skillsSize, bodySize),
-        color: ink(theme.skillsColor, bodyColor),
-        lineGap: bodyGap,
-        after: 4
-      });
+      const font = pick(theme.skillsFont)[theme.skillsBold ? 'bold' : 'regular'];
+      const size = halfPoints(theme.skillsSize, bodySize);
+      const color = ink(theme.skillsColor, bodyColor);
+      // The list reads as one designed line, one skill per line, or two columns.
+      if (theme.skillsLayout === 'lines') {
+        for (const item of skills) w.text(item, { font, size, color, lineGap: bodyGap, after: 2 });
+        w.y -= 3;
+        return;
+      }
+      if (theme.skillsLayout === 'columns') {
+        const half = Math.ceil(skills.length / 2);
+        w.columns(skills.slice(0, half), skills.slice(half), { font, size, color, lineGap: bodyGap, after: 4 });
+        return;
+      }
+      w.text(skills.join(' ' + separator + ' '), { font, size, color, lineGap: bodyGap, after: 4 });
     },
     experience: () => {
       const roles = (Array.isArray(data.experience) ? data.experience : []).filter(

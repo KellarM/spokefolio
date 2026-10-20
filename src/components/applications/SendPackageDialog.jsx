@@ -26,6 +26,7 @@ export default function SendPackageDialog({
   coverLetter,
   template,
   layout,
+  styleOverrides,
   onBeforeSend,
   onSent
 }) {
@@ -68,7 +69,8 @@ export default function SendPackageDialog({
         resume,
         cover_letter: coverLetter,
         template,
-        layout
+        layout,
+        style_overrides: styleOverrides
       });
       const data = response?.data || {};
       toast({
