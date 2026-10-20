@@ -1,4 +1,5 @@
 import { buildResumePdf } from '../../shared/pdf.ts';
+import { sanitizeResumeLayout } from '../../shared/resumeTemplates.ts';
 
 // Draws the tailored résumé on the server, in the style that application uses, and hands
 // the bytes back for download. The PDF is built from the application's own résumé object,
@@ -25,8 +26,11 @@ export default async function (req) {
 
     const profile = body?.profile && typeof body.profile === 'object' ? body.profile : {};
     const template = typeof body?.template === 'string' ? body.template : '';
+    // The manual adjustments made on the style panel: heading placement, the sections kept,
+    // and whether the portrait is used.
+    const layout = sanitizeResumeLayout(body?.layout);
 
-    const { bytes, filename, pages } = await buildResumePdf({ profile, resume, template });
+    const { bytes, filename, pages } = await buildResumePdf({ profile, resume, template, layout });
 
     return Response.json({ base64: toBase64(bytes), filename, pages });
   } catch (error) {

@@ -3,15 +3,17 @@ import { Image } from '@/components/ui/image';
 import useSignedFile from '@/hooks/useSignedFile';
 import DocumentSection from '@/components/resume/DocumentSection';
 import { getTemplate, RESUME_SECTIONS } from '@/lib/resumeTemplates';
+import { layoutPhoto, layoutSections, readLayout } from '@/lib/resumeLayout';
 
 // The finished document, read-only: the same style tokens and section order the Word
 // download uses, drawn without the editing fields.
-export default function PreviewDocument({ profile, resume, template }) {
+export default function PreviewDocument({ profile, resume, template, layout }) {
   const { preview: style, config } = getTemplate(template);
+  const { placement } = readLayout(layout);
   const contact = [profile.email, profile.phone, profile.location, profile.linkedin, profile.website]
     .filter(Boolean)
     .join('   •   ');
-  const portrait = useSignedFile(config.photo ? profile.photo_uri : '');
+  const portrait = useSignedFile(layoutPhoto(config, layout) ? profile.photo_uri : '');
 
   const bullets = (items) => (
     <ul className="list-disc space-y-1.5 pl-5">
@@ -90,9 +92,15 @@ export default function PreviewDocument({ profile, resume, template }) {
         )}
       </header>
 
-      {config.sections.map((id) =>
+      {layoutSections(config, layout).map((id) =>
         blocks[id] ? (
-          <DocumentSection key={id} title={RESUME_SECTIONS[id]} rowClass={style.sectionRow} titleClass={style.sectionTitle}>
+          <DocumentSection
+            key={id}
+            title={RESUME_SECTIONS[id]}
+            rowClass={style.sectionRow}
+            titleClass={style.sectionTitle}
+            placement={placement}
+          >
             {blocks[id]}
           </DocumentSection>
         ) : null

@@ -9,7 +9,7 @@
 // file readable by applicant tracking systems.
 
 import { PDFDocument, StandardFonts, rgb } from 'npm:pdf-lib@1.17.1';
-import { resolveDocxConfig, resolveDocxTheme } from './resumeTemplates.ts';
+import { applyLayoutToTheme, resolveDocxConfig, resolveDocxTheme } from './resumeTemplates.ts';
 import { fitResumeToPages } from './resumeFit.ts';
 
 const PAGE = { width: 612, height: 792 }; // US Letter, points
@@ -249,9 +249,20 @@ function cleanFilename(parts: unknown[], fallback: string) {
   return (name || fallback) + '.pdf';
 }
 
-export async function buildResumePdf({ profile, resume, template }: { profile: any; resume: any; template?: string }) {
-  const theme = resolveDocxTheme(template);
-  const config = resolveDocxConfig(template);
+export async function buildResumePdf({
+  profile,
+  resume,
+  template,
+  layout
+}: {
+  profile: any;
+  resume: any;
+  template?: string;
+  layout?: any;
+}) {
+  // The style's own placement and section order, with the candidate's adjustments on top.
+  const theme = applyLayoutToTheme(resolveDocxTheme(template), layout);
+  const config = resolveDocxConfig(template, layout);
   // The same two-page fit the Word file applies, so both carry identical content.
   const data: any = fitResumeToPages(resume || {}, template);
 
@@ -322,13 +333,21 @@ export async function buildResumePdf({ profile, resume, template }: { profile: a
   const heading = (id: string) => {
     const label = SECTION_LABELS[id] || id;
     const text = theme.sectionUpper === false ? label : label.toUpperCase();
+    // The heading sits where the candidate placed it: the style's own alignment by default.
+    const headingAlign: 'left' | 'center' | 'right' = theme.sectionAlign || 'left';
     w.y -= sectionBefore;
     if (theme.sectionFill) {
       const height = sectionSize * 1.9 + 8;
       w.band(ink(theme.sectionFill), height);
       const top = w.y + height;
+      const textWidth = sectionFont.widthOfTextAtSize(safe(text), sectionSize);
+      const x = headingAlign === 'center'
+        ? (PAGE.width - textWidth) / 2
+        : headingAlign === 'right'
+          ? PAGE.width - w.margin.right - textWidth - 6
+          : w.margin.left + 6;
       w.page.drawText(safe(text), {
-        x: w.margin.left + 6,
+        x,
         y: top - 4 - sectionSize,
         size: sectionSize,
         font: sectionFont,
@@ -336,7 +355,7 @@ export async function buildResumePdf({ profile, resume, template }: { profile: a
       });
       w.y -= sectionAfter;
     } else {
-      w.text(text, { font: sectionFont, size: sectionSize, color: sectionColor, after: 1 });
+      w.text(text, { font: sectionFont, size: sectionSize, color: sectionColor, align: headingAlign, after: 1 });
       if (theme.sectionRule) {
         w.rule(ink(theme.sectionRule, MUTED), Math.max(0.6, twips(theme.sectionRuleSize, 0.6)), w.width, theme.sectionAlign || 'left');
       } else if (theme.sectionBar) {

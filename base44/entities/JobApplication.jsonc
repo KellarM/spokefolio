@@ -68,6 +68,36 @@
     "resume_template": {
       "type": "string"
     },
+    "resume_layout": {
+      "type": "object",
+      "properties": {
+        "placement": {
+          "type": "string",
+          "enum": [
+            "style",
+            "left",
+            "center"
+          ],
+          "default": "style"
+        },
+        "hidden_sections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "photo": {
+          "type": "string",
+          "enum": [
+            "style",
+            "on",
+            "off"
+          ],
+          "default": "style"
+        }
+      }
+    },
     "notes": {
       "type": "string"
     },

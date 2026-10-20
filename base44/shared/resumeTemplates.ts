@@ -612,7 +612,41 @@ const CONFIGS: Record<string, Partial<DocxConfig>> = {
   'classic-navy': { sections: ['summary', 'experience', 'education', 'skills', 'certifications', 'keywords'] }
 };
 
-export function resolveDocxConfig(id?: string): DocxConfig {
+// The manual adjustments a candidate makes on the Résumé style panel, saved on the
+// application. Mirrored in the app (src/lib/resumeLayout.js) so the preview and both
+// exports follow the same choices.
+export interface ResumeLayout {
+  placement: 'style' | 'left' | 'center';
+  hidden_sections: string[];
+  photo: 'style' | 'on' | 'off';
+}
+
+const ALL_SECTIONS = ['summary', 'skills', 'experience', 'education', 'certifications', 'keywords'];
+
+export function sanitizeResumeLayout(value: unknown): ResumeLayout {
+  const raw: any = value && typeof value === 'object' ? value : {};
+  const placement: ResumeLayout['placement'] =
+    raw.placement === 'left' || raw.placement === 'center' ? raw.placement : 'style';
+  const photo: ResumeLayout['photo'] = raw.photo === 'on' || raw.photo === 'off' ? raw.photo : 'style';
+  const hidden = Array.isArray(raw.hidden_sections)
+    ? raw.hidden_sections.filter((id: unknown) => typeof id === 'string' && ALL_SECTIONS.includes(id as string))
+    : [];
+  return { placement, hidden_sections: hidden, photo };
+}
+
+// Where the identity block and the section headings sit, when the candidate has moved them.
+export function applyLayoutToTheme(theme: DocxTheme, layout?: ResumeLayout): DocxTheme {
+  if (!layout || layout.placement === 'style') return theme;
+  const align: 'left' | 'center' = layout.placement === 'center' ? 'center' : 'left';
+  return { ...theme, nameAlign: align, headlineAlign: align, contactAlign: align, sectionAlign: align };
+}
+
+export function resolveDocxConfig(id?: string, layout?: ResumeLayout): DocxConfig {
   const override = id ? CONFIGS[id] : undefined;
-  return override ? { ...BASE_CONFIG, ...override } : BASE_CONFIG;
+  const base = override ? { ...BASE_CONFIG, ...override } : BASE_CONFIG;
+  if (!layout) return base;
+  return {
+    photo: layout.photo === 'on' ? true : layout.photo === 'off' ? false : base.photo,
+    sections: base.sections.filter((section) => !layout.hidden_sections.includes(section))
+  };
 }

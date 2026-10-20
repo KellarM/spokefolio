@@ -1,7 +1,7 @@
 // Dependency-free .docx writer.
 // Builds a valid Word package (OOXML) and stores it as an uncompressed ZIP.
 
-import { resolveDocxConfig, resolveDocxTheme } from './resumeTemplates.ts';
+import { applyLayoutToTheme, resolveDocxConfig, resolveDocxTheme } from './resumeTemplates.ts';
 import { fitResumeToPages } from './resumeFit.ts';
 
 const encoder = new TextEncoder();
@@ -442,9 +442,10 @@ function safeFilename(base, fallback = 'document') {
 
 const packStyle = (t) => ({ margin: t.margin, font: t.bodyFont, size: t.bodySize, line: t.bodyLine });
 
-export function buildResumeDocx({ profile, resume, label, template, photo }) {
-  const theme = resolveDocxTheme(template);
-  const config = resolveDocxConfig(template);
+export function buildResumeDocx({ profile, resume, label, template, photo, layout }) {
+  // The style's own placement and section order, with the candidate's adjustments on top.
+  const theme = applyLayoutToTheme(resolveDocxTheme(template), layout);
+  const config = resolveDocxConfig(template, layout);
   const portrait = config.photo && photo ? photo : null;
   const person = (profile && profile.full_name) || 'Resume';
   // However long the content grew, the file prints as two full pages.

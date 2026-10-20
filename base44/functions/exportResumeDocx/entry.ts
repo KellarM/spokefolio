@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { buildResumeDocx } from '../../shared/docx.ts';
-import { resolveDocxConfig } from '../../shared/resumeTemplates.ts';
+import { resolveDocxConfig, sanitizeResumeLayout } from '../../shared/resumeTemplates.ts';
 import { loadPhoto } from '../../shared/photo.ts';
 
 export default async function (req) {
@@ -20,10 +20,13 @@ export default async function (req) {
     const profile = body?.profile && typeof body.profile === 'object' ? body.profile : {};
     const label = typeof body?.label === 'string' ? body.label : '';
     const template = typeof body?.template === 'string' ? body.template : '';
+    // The manual adjustments made on the style panel: heading placement, the sections kept,
+    // and whether the portrait is used.
+    const layout = sanitizeResumeLayout(body?.layout);
 
     // A style that sets a portrait needs the real image, signed and read here so the
     // document can carry it. A portrait that cannot be read just leaves the résumé plain.
-    const config = resolveDocxConfig(template);
+    const config = resolveDocxConfig(template, layout);
     let photo = null;
     if (config.photo && typeof profile.photo_uri === 'string' && profile.photo_uri) {
       try {
@@ -41,7 +44,7 @@ export default async function (req) {
       }
     }
 
-    const { base64, filename } = buildResumeDocx({ profile, resume, label, template, photo });
+    const { base64, filename } = buildResumeDocx({ profile, resume, label, template, photo, layout });
 
     return Response.json({ base64, filename });
   } catch (error) {

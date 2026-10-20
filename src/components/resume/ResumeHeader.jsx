@@ -2,8 +2,9 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
 import useSignedFile from '@/hooks/useSignedFile';
+import { alignClass } from '@/lib/resumeLayout';
 
-export default function ResumeHeader({ profile, resume, style, showPhoto, onChange }) {
+export default function ResumeHeader({ profile, resume, style, showPhoto, placement = 'style', onChange }) {
   const contact = [profile.email, profile.phone, profile.location, profile.linkedin, profile.website]
     .filter(Boolean)
     .join('   •   ');
@@ -13,16 +14,18 @@ export default function ResumeHeader({ profile, resume, style, showPhoto, onChan
   return (
     <header className={`${style.header}${portrait ? ' flex flex-wrap items-start justify-between gap-6' : ''}`}>
       <div className="min-w-0 flex-1">
-        <h1 className={style.name}>{profile.full_name || 'Your name'}</h1>
+        <h1 className={alignClass(style.name, placement)}>{profile.full_name || 'Your name'}</h1>
         <div className="mt-3">
           <Input
             value={resume.headline || ''}
             onChange={(event) => onChange({ ...resume, headline: event.target.value })}
             placeholder="Target headline — for example “Operations leader, cost and process improvement”"
-            className={style.headline}
+            className={alignClass(style.headline, placement)}
           />
         </div>
-        <p className={style.contact}>{contact || 'Add your email, phone and location on the Overview page.'}</p>
+        <p className={alignClass(style.contact, placement)}>
+          {contact || 'Add your email, phone and location on the Overview page.'}
+        </p>
       </div>
 
       {portrait && (

@@ -10,7 +10,7 @@ import DefaultOrderButton from '@/components/resume/DefaultOrderButton';
 import { RESUME_SECTIONS } from '@/lib/resumeTemplates';
 
 // Renders the résumé body in the order the chosen style's configuration gives.
-export default function ResumeSections({ resume, style, sections, onChange, onSetDefaultOrder, onSuggestBullets }) {
+export default function ResumeSections({ resume, style, sections, placement = 'style', onChange, onSetDefaultOrder, onSuggestBullets }) {
   const set = (patch) => onChange({ ...resume, ...patch });
 
   const content = {
@@ -79,6 +79,7 @@ export default function ResumeSections({ resume, style, sections, onChange, onSe
             title={RESUME_SECTIONS[id]}
             rowClass={style.sectionRow}
             titleClass={style.sectionTitle}
+            placement={placement}
             action={id === 'experience' && onSetDefaultOrder ? <DefaultOrderButton onClick={onSetDefaultOrder} /> : null}
           >
             {content[id]}

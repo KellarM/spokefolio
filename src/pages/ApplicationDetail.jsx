@@ -18,6 +18,7 @@ import ResumeDocument from '@/components/resume/ResumeDocument';
 import PreviewDocument from '@/components/resume/PreviewDocument';
 import ResumeDownloadButtons from '@/components/resume/ResumeDownloadButtons';
 import ResumeTailoringPanel from '@/components/resume/ResumeTailoringPanel';
+import ResumeStyleControls from '@/components/resume/ResumeStyleControls';
 import CoverLetterSection from '@/components/resume/CoverLetterSection';
 import { downloadDocxFile } from '@/lib/downloadDocx';
 import TemplatePicker from '@/components/resume/TemplatePicker';
@@ -57,6 +58,7 @@ export default function ApplicationDetail() {
   const [writingLetter, setWritingLetter] = useState(false);
   const [rewriting, setRewriting] = useState(false);
   const [pickedTemplate, setPickedTemplate] = useState('');
+  const [layout, setLayout] = useState(null);
   const [previewMode, setPreviewMode] = useState(false);
   const [sendOpen, setSendOpen] = useState(false);
 
@@ -74,6 +76,7 @@ export default function ApplicationDetail() {
         setResume(record.resume || {});
         setCoverLetter(record.cover_letter || '');
         setNotes(record.notes || '');
+        setLayout(record.resume_layout || null);
       } catch (error) {
         if (!cancelled) setNotFound(true);
       }
@@ -289,6 +292,18 @@ export default function ApplicationDetail() {
     }
   };
 
+  // The manual adjustments on the style panel: where the heading block sits, which sections
+  // this résumé keeps, and the portrait. Saved as they are chosen, so the downloads follow.
+  const changeLayout = async (next) => {
+    setLayout(next);
+    try {
+      const updated = await base44.entities.JobApplication.update(application.id, { resume_layout: next });
+      setApplication(updated);
+    } catch (error) {
+      reportError('Could not save the layout', error);
+    }
+  };
+
   // The order on screen becomes the order every newly written résumé starts from. This
   // application keeps its own order either way, so a posting can differ from the default.
   const makeDefaultOrder = async () => {
@@ -442,6 +457,7 @@ export default function ApplicationDetail() {
         <div className="mt-3">
           <TemplatePicker value={template} onChange={changeTemplate} className="max-w-[380px]" />
         </div>
+        <ResumeStyleControls config={getTemplate(template).config} layout={layout} onChange={changeLayout} />
       </section>
 
       <div className="mt-7">
@@ -459,6 +475,7 @@ export default function ApplicationDetail() {
               profile={profile}
               resume={resume}
               template={template}
+              layout={layout}
               label={`${application?.company || 'Resume'}_${application?.job_title || ''}`}
             />
             <div className="flex items-center gap-1.5">
@@ -482,13 +499,14 @@ export default function ApplicationDetail() {
           </div>
         </div>
         {previewMode ? (
-          <PreviewDocument profile={profile} resume={resume} template={template} />
+          <PreviewDocument profile={profile} resume={resume} template={template} layout={layout} />
         ) : (
           <ResumeDocument
             profile={profile}
             resume={resume}
             onChange={handleResumeChange}
             template={template}
+            layout={layout}
             onSetDefaultOrder={makeDefaultOrder}
             onSuggestBullets={suggestBullets}
           />
@@ -552,6 +570,7 @@ export default function ApplicationDetail() {
         resume={resume}
         coverLetter={coverLetter}
         template={template}
+        layout={layout}
         onBeforeSend={persist}
         onSent={(data) =>
           setApplication((prev) => ({ ...prev, last_sent_to: data.sent_to, last_sent_at: data.sent_at }))
