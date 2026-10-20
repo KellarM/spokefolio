@@ -21,6 +21,7 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Welcome from '@/pages/Welcome';
+import Landing from '@/pages/Landing';
 import Profile from '@/pages/Profile';
 import ProfileGate from '@/components/ProfileGate';
 
@@ -55,7 +56,7 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/welcome" element={<Welcome />} />
-      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/welcome" replace />} />}>
+      <Route element={<ProtectedRoute unauthenticatedElement={<Landing />} />}>
         <Route element={<Layout />}>
           <Route path="/profile" element={<Profile />} />
           {/* Everything else waits until the profile carries a name, email, phone and location. */}
