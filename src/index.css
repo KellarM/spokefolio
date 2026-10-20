@@ -1700,12 +1700,19 @@
 .lnd-brand {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 14px;
 }
 
 .lnd-phone {
-  width: 30px;
-  height: 30px;
+  width: 56px;
+  height: 56px;
   color: #D4AF37;
   flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .lnd-phone {
+    width: 44px;
+    height: 44px;
+  }
 }
