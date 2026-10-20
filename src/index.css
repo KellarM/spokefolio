@@ -25,7 +25,7 @@
     --destructive: 0 62% 48%;
     --destructive-foreground: 210 20% 98%;
     --border: 46 65% 52%;
-    --input: 220 25% 24%;
+    --input: 220 22% 42%;
     --ring: 46 65% 52%;
     --chart-1: 46 65% 52%;
     --chart-2: 148 26% 42%;
@@ -67,7 +67,7 @@
     --destructive: 0 58% 46%;
     --destructive-foreground: 26 30% 10%;
     --border: 26 18% 24%;
-    --input: 26 18% 26%;
+    --input: 26 14% 40%;
     --ring: 22 52% 52%;
     --resume-navy: 30 40% 72%;
     --resume-brass: 32 55% 58%;
@@ -90,7 +90,7 @@
     --accent: 46 65% 52%;
     --accent-foreground: 220 35% 7%;
     --border: 46 45% 28%;
-    --input: 220 25% 24%;
+    --input: 220 22% 42%;
     --ring: 46 65% 52%;
     --resume-navy: 215 35% 75%;
     --resume-brass: 46 65% 52%;
@@ -112,7 +112,7 @@
     --accent: 145 22% 52%;
     --accent-foreground: 26 30% 10%;
     --border: 26 18% 24%;
-    --input: 26 18% 26%;
+    --input: 26 14% 40%;
     --ring: 22 52% 50%;
     --resume-navy: 30 40% 70%;
     --resume-brass: 34 55% 58%;
@@ -1655,5 +1655,43 @@
 @media (max-width: 900px) {
   .lnd-features {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   App fields — entry prominence (mobile visibility fix)
+   Fields must read as boxes: real fill, brighter outline,
+   gold focus, taller touch targets on phones.
+   ============================================================ */
+
+.sf-field {
+  background: hsl(220 30% 21%);
+  border-color: hsl(220 22% 42%);
+}
+
+.sf-field::placeholder {
+  color: hsl(220 16% 62%);
+  opacity: 1;
+}
+
+.sf-field:focus-visible,
+.sf-field:focus {
+  border-color: var(--primary);
+}
+
+.dark .sf-field {
+  background: hsl(26 26% 21%);
+  border-color: hsl(26 14% 40%);
+}
+
+/* Phones: taller touch targets and a heavier outline */
+@media (max-width: 640px) {
+  input.sf-field,
+  button.sf-field {
+    min-height: 46px;
+  }
+
+  .sf-field {
+    border-width: 1.5px;
   }
 }
