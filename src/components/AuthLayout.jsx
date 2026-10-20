@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 export default function AuthLayout({ icon: Icon, title, subtitle, footer, children }) {
   return (
@@ -17,6 +19,15 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, childr
         {footer && (
           <p className="text-center text-sm text-muted-foreground mt-6">{footer}</p>
         )}
+        <div className="text-center mt-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            Back to the Spokefolio home page
+          </Link>
+        </div>
       </div>
     </div>
   );
