@@ -10,51 +10,51 @@ import { Check } from 'lucide-react';
 // backslash-u escape sequences in JSX text: JSX renders them literally.
 
 const DONT_LIST = [
-  'No fee at the download screen',
-  'No trial that turns into a subscription',
-  'No auto-renewal of any kind, ever',
-  'No template maze: one résumé, tailored, done',
-  'No re-typing your history every time you visit',
-  'No AI-invented experience: if it says you did it, you told us you did it'
-];
+'No fee at the download screen',
+'No trial that turns into a subscription',
+'No auto-renewal of any kind, ever',
+'No template maze: one résumé, tailored, done',
+'No re-typing your history every time you visit',
+'No AI-invented experience: if it says you did it, you told us you did it'];
+
 
 const CONTRAST = [
-  ['You build one document, once', 'You build one knowledge base, forever'],
-  ['Re-type your history every session', 'Your history is already there'],
-  ['Price appears at the download gate', 'Price on the front door'],
-  ['Trial that renews every 4 weeks', '$15 a year. Flat. No auto-renewal'],
-  ['650 templates to agonize over', 'One résumé that’s already right'],
-  ['Generic AI phrases anyone could have', 'Every line comes from your real career']
-];
+['You build one document, once', 'You build one knowledge base, forever'],
+['Re-type your history every session', 'Your history is already there'],
+['Price appears at the download gate', 'Price on the front door'],
+['Trial that renews every 4 weeks', '$15 a year. Flat. No auto-renewal'],
+['650 templates to agonize over', 'One résumé that’s already right'],
+['Generic AI phrases anyone could have', 'Every line comes from your real career']];
+
 
 const FAQ = [
-  {
-    q: 'Is this free, or “free”?',
-    a: 'Free. Full stop, through 2026. In 2027 it’s $15 a year, flat, and we told you before you typed anything.'
-  },
-  {
-    q: 'Do I pay to download my résumé?',
-    a: 'No. Exports are free. That question exists because you’ve been burned before. We know.'
-  },
-  {
-    q: 'Will it auto-renew?',
-    a: 'There is nothing to auto-renew. $15 a year. You choose to pay it again, or you don’t.'
-  },
-  {
-    q: 'Is it actually tailored, or just generic AI text?',
-    a: 'Every line traces back to your own captured history. If you didn’t say it, we don’t write it.'
-  },
-  {
-    q: 'What if my career isn’t fancy?',
-    a: 'Then you’re the audience. Most of our users run warehouses, drive trucks, fix things, and run crews. Résumés for real jobs, written from real work.'
-  }
-];
+{
+  q: 'Is this free, or “free”?',
+  a: 'Free. Full stop, through 2026. In 2027 it’s $15 a year, flat, and we told you before you typed anything.'
+},
+{
+  q: 'Do I pay to download my résumé?',
+  a: 'No. Exports are free. That question exists because you’ve been burned before. We know.'
+},
+{
+  q: 'Will it auto-renew?',
+  a: 'There is nothing to auto-renew. $15 a year. You choose to pay it again, or you don’t.'
+},
+{
+  q: 'Is it actually tailored, or just generic AI text?',
+  a: 'Every line traces back to your own captured history. If you didn’t say it, we don’t write it.'
+},
+{
+  q: 'What if my career isn’t fancy?',
+  a: 'Then you’re the audience. Most of our users run warehouses, drive trucks, fix things, and run crews. Résumés for real jobs, written from real work.'
+}];
+
 
 const PERSONAS = [
-  'Forklift operator shifting to dispatch',
-  'Warehouse supervisor targeting operations manager',
-  'Career changer who’s earned more than one résumé admits'
-];
+'Forklift operator shifting to dispatch',
+'Warehouse supervisor targeting operations manager',
+'Career changer who’s earned more than one résumé admits'];
+
 
 export default function Landing() {
   return (
@@ -76,7 +76,7 @@ export default function Landing() {
           <h1 className="lnd-h1">
             This is <em>not</em> a résumé builder.
           </h1>
-          <p className="lnd-tagline">Your career, told once. Tailored everywhere.</p>
+          <p className="lnd-tagline text-xs">Your career, told once. Tailored everywhere.</p>
           <p className="lnd-lede">
             Spokefolio is a career knowledge base. Tell it your history once, and it writes a
             résumé tailored to each job you apply for. No wizard. No gate. No subscription trap.
@@ -158,12 +158,12 @@ export default function Landing() {
                 </tr>
               </thead>
               <tbody>
-                {CONTRAST.map(([them, us]) => (
-                  <tr key={them}>
+                {CONTRAST.map(([them, us]) =>
+                <tr key={them}>
                     <td>{them}</td>
                     <td className="lnd-td-us">{us}</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -176,11 +176,11 @@ export default function Landing() {
           <p className="mec-eyebrow">Honesty</p>
           <h2 className="lnd-h2">Read this part twice.</h2>
           <div className="lnd-dont-grid">
-            {DONT_LIST.map((item) => (
-              <div className="lnd-dont" key={item}>
+            {DONT_LIST.map((item) =>
+            <div className="lnd-dont" key={item}>
                 <Check size={17} strokeWidth={2.4} /> {item}
               </div>
-            ))}
+            )}
           </div>
           <p className="lnd-confession">
             Everything on this list is a standard feature of our industry. We consider that a
@@ -228,9 +228,9 @@ export default function Landing() {
             Career changers welcome. Your history is bigger than your last job title.
           </p>
           <div className="lnd-chips">
-            {PERSONAS.map((chip) => (
-              <span className="lnd-chip" key={chip}>{chip}</span>
-            ))}
+            {PERSONAS.map((chip) =>
+            <span className="lnd-chip" key={chip}>{chip}</span>
+            )}
           </div>
         </div>
       </section>
@@ -241,12 +241,12 @@ export default function Landing() {
           <p className="mec-eyebrow">Fair questions</p>
           <h2 className="lnd-h2">The questions you’ve learned to ask.</h2>
           <div className="lnd-faq">
-            {FAQ.map(({ q, a }) => (
-              <div className="lnd-qa" key={q}>
+            {FAQ.map(({ q, a }) =>
+            <div className="lnd-qa" key={q}>
                 <h3>{q}</h3>
                 <p>{a}</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -269,6 +269,6 @@ export default function Landing() {
           <p>The career knowledge base · Made by XFH Game Studio</p>
         </div>
       </footer>
-    </div>
-  );
+    </div>);
+
 }
