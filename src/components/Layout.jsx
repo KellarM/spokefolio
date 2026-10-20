@@ -42,15 +42,6 @@ export default function Layout() {
           ))}
         </nav>
 
-        {!isHome && (
-          <div className="mec-cta">
-            <Link to="/new-application" className="mec-btn mec-gold">
-              Tailor a résumé
-            </Link>
-            <small>Paste any job posting and get a résumé written for it.</small>
-          </div>
-        )}
-
         <AccountMenu />
       </header>
 
