@@ -28,6 +28,8 @@ export default function DeleteApplicationButton({ application, onDeleted }) {
     try {
       const linked = await base44.entities.JobPosting.filter({ application_id: application.id }, { limit: 20 });
       await base44.entities.JobApplication.delete(application.id);
+      // The scored runs belong to this application, so they go with it.
+      await base44.entities.ResumeRun.deleteMany({ application_id: application.id }).catch(() => {});
       await Promise.all(
         linked.items.map((posting) =>
           base44.entities.JobPosting.update(posting.id, { application_id: '', status: 'saved' })

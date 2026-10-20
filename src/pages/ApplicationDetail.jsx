@@ -14,6 +14,7 @@ import JobPostingPanel from '@/components/applications/JobPostingPanel';
 import CompanyBrief from '@/components/applications/CompanyBrief';
 import SendPackageDialog from '@/components/applications/SendPackageDialog';
 import InterviewPanel from '@/components/applications/InterviewPanel';
+import ResumeRunPanel from '@/components/applications/ResumeRunPanel';
 import ResumeDocument from '@/components/resume/ResumeDocument';
 import PreviewDocument from '@/components/resume/PreviewDocument';
 import ResumeDownloadButtons from '@/components/resume/ResumeDownloadButtons';
@@ -63,18 +64,22 @@ export default function ApplicationDetail() {
   const [styleOverrides, setStyleOverrides] = useState({});
   const [previewMode, setPreviewMode] = useState(false);
   const [sendOpen, setSendOpen] = useState(false);
+  const [runs, setRuns] = useState([]);
+  const [running, setRunning] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [record, entryRecords] = await Promise.all([
+        const [record, entryRecords, runPage] = await Promise.all([
           base44.entities.JobApplication.get(id),
-          base44.entities.CareerEntry.list('-created_date', 200).catch(() => [])
+          base44.entities.CareerEntry.list('-created_date', 200).catch(() => []),
+          base44.entities.ResumeRun.filter({ application_id: id }, { sort: '-created_date', limit: 12 }).catch(() => ({ items: [] }))
         ]);
         if (cancelled) return;
         setApplication(record);
         setEntries(entryRecords || []);
+        setRuns(runPage?.items || []);
         setResume(record.resume || {});
         setCoverLetter(record.cover_letter || '');
         setNotes(record.notes || '');
@@ -359,6 +364,22 @@ export default function ApplicationDetail() {
     return (response.data || {}).suggestions || [];
   };
 
+  // One scored pass over the résumé as it stands. Each run is kept, so the marks can be
+  // compared as the résumé changes.
+  const runCheck = async () => {
+    setRunning(true);
+    try {
+      const response = await base44.functions.invoke('gradeResume', { application_id: application.id });
+      const run = response.data?.run;
+      if (!run) throw new Error('The run came back empty. Try again in a moment.');
+      setRuns((current) => [run, ...current].slice(0, 12));
+      toast({ title: `Résumé Run: ${run.score}/100 — ${run.band}` });
+    } catch (error) {
+      reportError('Could not run the check', error);
+    }
+    setRunning(false);
+  };
+
   if (loading || loadingProfile) {
     return (
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -467,6 +488,8 @@ export default function ApplicationDetail() {
           )}
         </div>
       )}
+
+      <ResumeRunPanel run={runs[0] || null} history={runs} onRun={runCheck} running={running} />
 
       <section className="mt-7 rounded-2xl border border-border/70 bg-card p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">

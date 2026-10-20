@@ -7,6 +7,7 @@ import StatusBadge from '@/components/applications/StatusBadge';
 import SalaryPill from '@/components/applications/SalaryPill';
 import JobLocation from '@/components/applications/JobLocation';
 import DeleteApplicationButton from '@/components/applications/DeleteApplicationButton';
+import RunScoreBadge from '@/components/applications/RunScoreBadge';
 
 const FILTERS = [
   { value: 'all', label: 'All' },
@@ -26,10 +27,23 @@ export default function Applications() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [locating, setLocating] = useState(false);
+  const [scores, setScores] = useState({});
 
   const load = useCallback(async () => {
-    const records = await base44.entities.JobApplication.list('-created_date', 100);
+    const [records, runRecords] = await Promise.all([
+      base44.entities.JobApplication.list('-created_date', 100),
+      base44.entities.ResumeRun.list('-created_date', 100).catch(() => [])
+    ]);
     setApplications(records || []);
+    // The badge shows the newest run of each application. The runs arrive newest first, so
+    // the first one seen for an application is the one that counts.
+    const latest = {};
+    for (const run of runRecords || []) {
+      if (run.application_id && !latest[run.application_id]) {
+        latest[run.application_id] = { score: run.score, band: run.band };
+      }
+    }
+    setScores(latest);
     setLoading(false);
     return records || [];
   }, []);
@@ -152,7 +166,8 @@ export default function Applications() {
                     </p>
                   )}
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <RunScoreBadge score={scores[application.id]?.score} band={scores[application.id]?.band} />
                   <StatusBadge status={application.status} />
                   <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </div>
