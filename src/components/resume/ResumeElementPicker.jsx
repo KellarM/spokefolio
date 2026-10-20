@@ -69,8 +69,10 @@ export default function ResumeElementPicker({
           onClick={
             surface
               ? (event) => {
-                  // Anything already interactive inside keeps its own click.
+                  // Anything already interactive inside keeps its own click, and a part
+                  // sitting inside another part opens only its own controls.
                   if (event.target.closest('button, input, textarea, select, a')) return;
+                  event.stopPropagation();
                   setOpen(true);
                 }
               : undefined

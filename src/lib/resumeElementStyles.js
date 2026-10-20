@@ -1,6 +1,7 @@
-// The parts of a résumé a candidate can restyle by clicking them in the editable preview:
-// the name, the headline, the contact line, every section heading, the separation line
-// under the headings, and the skills list.
+// The parts of a résumé a candidate can restyle by clicking them: the name, the headline,
+// the contact line, every section heading, the separation line under the headings, the
+// skills list, the entry lines, the dates and places, the body text and the screening
+// keywords.
 //
 // One setting covers every instance of an element, so restyling one section heading
 // restyles all of them. The choices are stored on the application
@@ -37,6 +38,26 @@ export const ELEMENTS = {
     label: 'Skills',
     hint: 'The whole skills list follows this one setting.',
     options: ['color', 'font', 'size', 'display']
+  },
+  role: {
+    label: 'Job titles',
+    hint: 'Every job title, company, degree and certification line follows this one setting.',
+    options: ['color', 'font', 'case', 'size']
+  },
+  meta: {
+    label: 'Dates & places',
+    hint: 'The dates and locations beside each entry.',
+    options: ['color', 'font', 'size']
+  },
+  body: {
+    label: 'Body text',
+    hint: 'Your summary, the bullets under each role, and the other words in the document.',
+    options: ['color', 'font', 'size']
+  },
+  keywords: {
+    label: 'Screening keywords',
+    hint: 'The keyword list at the foot of the résumé.',
+    options: ['color', 'font', 'size']
   }
 };
 

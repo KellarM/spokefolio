@@ -415,6 +415,10 @@ export async function buildResumePdf({
   const metaFont = pick(theme.metaFont)[theme.metaItalic ? 'italic' : 'regular'];
   const metaSize = halfPoints(theme.metaSize, 9.5);
   const metaColor = ink(theme.metaColor, MUTED);
+  // The keyword line follows the meta treatment unless it was restyled on its own.
+  const keywordFont = theme.keywordFont ? pick(theme.keywordFont)[theme.metaItalic ? 'italic' : 'regular'] : metaFont;
+  const keywordSize = halfPoints(theme.keywordSize ?? theme.metaSize, metaSize);
+  const keywordColor = ink(theme.keywordColor ?? theme.metaColor, metaColor);
   const bulletSize = halfPoints(theme.bulletSize, bodySize);
   const bulletColor = ink(theme.bulletColor, bodyColor);
   const marker = theme.bulletMarker || '\u2022';
@@ -499,7 +503,13 @@ export async function buildResumePdf({
     keywords: () => {
       const keywords = (Array.isArray(data.keywords) ? data.keywords : []).filter(Boolean).map((k: unknown) => safe(k));
       if (keywords.length) {
-        w.text(keywords.join('   \u00B7   '), { font: metaFont, size: metaSize, color: metaColor, lineGap: bodyGap, after: 4 });
+        w.text(keywords.join('   \u00B7   '), {
+          font: keywordFont,
+          size: keywordSize,
+          color: keywordColor,
+          lineGap: bodyGap,
+          after: 4
+        });
       }
     }
   };

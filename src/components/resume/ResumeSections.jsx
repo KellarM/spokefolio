@@ -11,8 +11,9 @@ import ResumeElementPicker from '@/components/resume/ResumeElementPicker';
 import { RESUME_SECTIONS } from '@/lib/resumeTemplates';
 
 // Renders the résumé body in the order the chosen style's configuration gives. Each section
-// heading and the line it carries are restyleable in edit mode; the skills list is restyled
-// from the chip beside its heading, since its body is an editing field rather than text.
+// heading and the line it carries are restyleable in edit mode, and so are the parts whose
+// body here is an editing field rather than document text — the skills list, the summary and
+// the screening keywords — from the chip beside their heading. The preview restyles the rest.
 export default function ResumeSections({
   resume,
   style,
@@ -87,6 +88,12 @@ export default function ResumeSections({
     if (id === 'experience' && onSetDefaultOrder) return <DefaultOrderButton onClick={onSetDefaultOrder} />;
     if (id === 'skills' && onUpdate) {
       return <ResumeElementPicker elementId="skills" token={style.body} overrides={overrides} onUpdate={onUpdate} />;
+    }
+    if (id === 'summary' && onUpdate) {
+      return <ResumeElementPicker elementId="body" token={style.body} overrides={overrides} onUpdate={onUpdate} />;
+    }
+    if (id === 'keywords' && onUpdate) {
+      return <ResumeElementPicker elementId="keywords" token={style.roleMeta} overrides={overrides} onUpdate={onUpdate} />;
     }
     return null;
   };

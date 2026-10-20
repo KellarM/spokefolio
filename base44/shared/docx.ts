@@ -408,7 +408,14 @@ function buildBody(profile, resume, t, config, photo) {
   const keywords = Array.isArray(resume.keywords) ? resume.keywords.filter(Boolean) : [];
   if (keywords.length) {
     blocks.keywords = [
-      para(run(keywords.join('   \u00B7   '), { size: t.metaSize, color: t.metaColor, font: t.bodyFont }), { after: 60 })
+      para(
+        run(keywords.join('   \u00B7   '), {
+          size: t.keywordSize ?? t.metaSize,
+          color: t.keywordColor ?? t.metaColor,
+          font: t.keywordFont ?? t.bodyFont
+        }),
+        { after: 60 }
+      )
     ];
   }
 

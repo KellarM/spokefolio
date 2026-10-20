@@ -527,6 +527,7 @@ export default function ApplicationDetail() {
             template={template}
             layout={layout}
             overrides={styleOverrides}
+            onUpdateOverride={changeElementStyle}
           />
         ) : (
           <ResumeDocument

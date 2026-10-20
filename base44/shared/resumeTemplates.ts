@@ -72,6 +72,10 @@ export interface DocxTheme {
   // How the skills list reads in the finished document: one designed line, one skill per
   // line, or two columns.
   skillsLayout: 'line' | 'lines' | 'columns';
+  // The screening keyword line: the style's own meta treatment unless a candidate restyled it.
+  keywordFont?: string;
+  keywordSize?: number;
+  keywordColor?: string;
 }
 
 // The original editorial style: the profile default and the fallback for anything unknown.
@@ -666,10 +670,11 @@ export function resolveDocxConfig(id?: string, layout?: ResumeLayout): DocxConfi
 
 // ---- Restyling one part of the résumé ----
 //
-// In the editable preview a candidate can click a part of the document — the name, the
-// headline, the contact line, every section heading, the separation line, the skills list —
-// and change how it prints. One setting covers every instance of that part, and the Word
-// export, the PDF and the read-only preview all draw from it. Mirrored in the app
+// In the preview a candidate can click a part of the document — the name, the headline, the
+// contact line, every section heading, the separation line, the skills list, the entry
+// lines, the dates and places, the body text and the screening keywords — and change how it
+// prints. One setting covers every instance of that part, and the Word export, the PDF and
+// the app's preview all draw from it. Mirrored in the app
 // (src/lib/resumeElementStyles.js).
 
 export interface ResumeElementStyle {
@@ -690,7 +695,11 @@ const ELEMENT_KEYS: Record<string, string[]> = {
   contact: ['color', 'font', 'size'],
   heading: ['color', 'font', 'case', 'size'],
   rule: ['color', 'rule'],
-  skills: ['color', 'font', 'size', 'display']
+  skills: ['color', 'font', 'size', 'display'],
+  role: ['color', 'font', 'case', 'size'],
+  meta: ['color', 'font', 'size'],
+  body: ['color', 'font', 'size'],
+  keywords: ['color', 'font', 'size']
 };
 
 const CHOICES: Record<string, string[]> = {
@@ -799,6 +808,31 @@ export function applyStyleOverrides(theme: DocxTheme, overrides?: ResumeStyleOve
   if (family(skills.font)) next.skillsFont = family(skills.font) as string;
   next.skillsSize = sized(next.skillsSize, skills.size);
   if (skills.display) next.skillsLayout = skills.display;
+
+  // The entry lines: job titles and companies, degrees and certifications.
+  const role = overrides.role || {};
+  if (hex(role.color)) next.roleColor = hex(role.color) as string;
+  if (family(role.font)) next.roleFont = family(role.font) as string;
+  if (role.case === 'upper') next.roleUpper = true;
+  next.roleSize = sized(next.roleSize, role.size);
+
+  // The dates and locations beside each entry.
+  const meta = overrides.meta || {};
+  if (hex(meta.color)) next.metaColor = hex(meta.color) as string;
+  if (family(meta.font)) next.metaFont = family(meta.font) as string;
+  next.metaSize = sized(next.metaSize, meta.size);
+
+  // The words: the summary, the bullets under each role, and the rest of the text.
+  const body = overrides.body || {};
+  if (hex(body.color)) next.bodyColor = hex(body.color) as string;
+  if (family(body.font)) next.bodyFont = family(body.font) as string;
+  next.bodySize = sized(next.bodySize, body.size);
+
+  // The screening keyword line.
+  const keyword = overrides.keywords || {};
+  if (hex(keyword.color)) next.keywordColor = hex(keyword.color) as string;
+  if (family(keyword.font)) next.keywordFont = family(keyword.font) as string;
+  next.keywordSize = sized(next.keywordSize ?? next.metaSize, keyword.size);
 
   return next;
 }

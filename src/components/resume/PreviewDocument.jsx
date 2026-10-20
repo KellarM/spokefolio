@@ -2,34 +2,43 @@ import React from 'react';
 import { Image } from '@/components/ui/image';
 import useSignedFile from '@/hooks/useSignedFile';
 import DocumentSection from '@/components/resume/DocumentSection';
+import RestyleablePart from '@/components/resume/RestyleablePart';
 import { getTemplate, RESUME_SECTIONS } from '@/lib/resumeTemplates';
 import { layoutPhoto, layoutSections, readLayout } from '@/lib/resumeLayout';
-import { elementStyle, skillsDisplay } from '@/lib/resumeElementStyles';
+import { skillsDisplay } from '@/lib/resumeElementStyles';
 
 // The finished document, read-only: the same style tokens, section order and restyled parts
-// the Word download and the PDF use, drawn without the editing fields.
-export default function PreviewDocument({ profile, resume, template, layout, overrides }) {
+// the Word download and the PDF use, drawn without the editing fields. Every part of it can
+// still be clicked to restyle it, exactly as in edit mode.
+export default function PreviewDocument({
+  profile,
+  resume,
+  template,
+  layout,
+  overrides,
+  onUpdateOverride
+}) {
   const { preview: style, config } = getTemplate(template);
   const { placement } = readLayout(layout);
   const contact = [profile.email, profile.phone, profile.location, profile.linkedin, profile.website]
     .filter(Boolean)
     .join('   •   ');
   const portrait = useSignedFile(layoutPhoto(config, layout) ? profile.photo_uri : '');
-
-  const name = elementStyle(style.name, 'name', overrides);
-  const headline = elementStyle(style.headline, 'headline', overrides);
-  const contactLook = elementStyle(style.contact, 'contact', overrides);
-  const skillsLook = elementStyle(style.body, 'skills', overrides);
   const display = skillsDisplay(overrides);
 
-  const bullets = (items) => (
-    <ul className="list-disc space-y-1.5 pl-5">
+  const bullets = (items, className = 'list-disc space-y-1.5 pl-5') => (
+    <RestyleablePart
+      id="body"
+      token={style.body}
+      overrides={overrides}
+      onUpdate={onUpdateOverride}
+      as="ul"
+      className={className}
+    >
       {items.map((item, index) => (
-        <li key={index} className={style.body}>
-          {item}
-        </li>
+        <li key={index}>{item}</li>
       ))}
-    </ul>
+    </RestyleablePart>
   );
 
   const roles = (resume.experience || []).filter(
@@ -44,42 +53,75 @@ export default function PreviewDocument({ profile, resume, template, layout, ove
     ? null
     : display === 'lines'
       ? (
-          <ul className="space-y-1">
+          <RestyleablePart
+            id="skills"
+            token={style.body}
+            overrides={overrides}
+            onUpdate={onUpdateOverride}
+            as="ul"
+            className="space-y-1"
+          >
             {skills.map((item, index) => (
-              <li key={index} className={skillsLook.className} style={skillsLook.style}>
-                {item}
-              </li>
+              <li key={index}>{item}</li>
             ))}
-          </ul>
+          </RestyleablePart>
         )
       : display === 'columns'
         ? (
-            <div className="grid grid-cols-2 gap-x-6 gap-y-1">
+            <RestyleablePart
+              id="skills"
+              token={style.body}
+              overrides={overrides}
+              onUpdate={onUpdateOverride}
+              as="div"
+              className="grid grid-cols-2 gap-x-6 gap-y-1"
+            >
               {skills.map((item, index) => (
-                <p key={index} className={skillsLook.className} style={skillsLook.style}>
-                  {item}
-                </p>
+                <p key={index}>{item}</p>
               ))}
-            </div>
+            </RestyleablePart>
           )
         : (
-            <p className={skillsLook.className} style={skillsLook.style}>
+            <RestyleablePart id="skills" token={style.body} overrides={overrides} onUpdate={onUpdateOverride}>
               {skills.join('   •   ')}
-            </p>
+            </RestyleablePart>
           );
 
   const blocks = {
-    summary: resume.summary ? <p className={`whitespace-pre-line ${style.body}`}>{resume.summary}</p> : null,
+    summary: resume.summary ? (
+      <RestyleablePart
+        id="body"
+        token={style.body}
+        overrides={overrides}
+        onUpdate={onUpdateOverride}
+        className="whitespace-pre-line"
+      >
+        {resume.summary}
+      </RestyleablePart>
+    ) : null,
     skills: skillsBlock,
     experience: roles.length ? (
       <div className="space-y-5">
         {roles.map((role, index) => (
           <div key={index}>
-            <p className={style.roleTitle}>{[role.title, role.organization].filter(Boolean).join(', ')}</p>
+            <RestyleablePart
+              id="role"
+              token={style.roleTitle}
+              overrides={overrides}
+              onUpdate={onUpdateOverride}
+            >
+              {[role.title, role.organization].filter(Boolean).join(', ')}
+            </RestyleablePart>
             {(role.dates || role.location) && (
-              <p className={`mt-1 ${style.roleMeta}`}>
+              <RestyleablePart
+                id="meta"
+                token={style.roleMeta}
+                overrides={overrides}
+                onUpdate={onUpdateOverride}
+                className="mt-1"
+              >
                 {[role.dates, role.location].filter(Boolean).join('   •   ')}
-              </p>
+              </RestyleablePart>
             )}
             {(role.bullets || []).filter(Boolean).length > 0 && (
               <div className="mt-2">{bullets((role.bullets || []).filter(Boolean))}</div>
@@ -92,17 +134,49 @@ export default function PreviewDocument({ profile, resume, template, layout, ove
       <div className="space-y-4">
         {education.map((item, index) => (
           <div key={index}>
-            <p className={style.roleTitle}>
-              {[item.degree, item.institution].filter(Boolean).join(', ')}
-              {item.dates ? <span className={`ml-2 ${style.roleMeta}`}>{item.dates}</span> : null}
-            </p>
-            {item.detail && <p className={`mt-1 ${style.body}`}>{item.detail}</p>}
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <RestyleablePart
+                id="role"
+                token={style.roleTitle}
+                overrides={overrides}
+                onUpdate={onUpdateOverride}
+                as="span"
+              >
+                {[item.degree, item.institution].filter(Boolean).join(', ')}
+              </RestyleablePart>
+              {item.dates ? (
+                <RestyleablePart
+                  id="meta"
+                  token={style.roleMeta}
+                  overrides={overrides}
+                  onUpdate={onUpdateOverride}
+                  as="span"
+                >
+                  {item.dates}
+                </RestyleablePart>
+              ) : null}
+            </div>
+            {item.detail ? (
+              <RestyleablePart
+                id="body"
+                token={style.body}
+                overrides={overrides}
+                onUpdate={onUpdateOverride}
+                className="mt-1"
+              >
+                {item.detail}
+              </RestyleablePart>
+            ) : null}
           </div>
         ))}
       </div>
     ) : null,
     certifications: certifications.length ? bullets(certifications) : null,
-    keywords: keywords.length ? <p className={style.roleMeta}>{keywords.join('   ·   ')}</p> : null
+    keywords: keywords.length ? (
+      <RestyleablePart id="keywords" token={style.roleMeta} overrides={overrides} onUpdate={onUpdateOverride}>
+        {keywords.join('   ·   ')}
+      </RestyleablePart>
+    ) : null
   };
 
   return (
@@ -111,17 +185,23 @@ export default function PreviewDocument({ profile, resume, template, layout, ove
     >
       <header className={`${style.header}${portrait ? ' flex flex-wrap items-start justify-between gap-6' : ''}`}>
         <div className="min-w-0 flex-1">
-          <h1 className={name.className} style={name.style}>
+          <RestyleablePart id="name" token={style.name} overrides={overrides} onUpdate={onUpdateOverride} as="h1">
             {profile.full_name || 'Your name'}
-          </h1>
-          {resume.headline && (
-            <p className={`mt-3 ${headline.className}`} style={headline.style}>
+          </RestyleablePart>
+          {resume.headline ? (
+            <RestyleablePart
+              id="headline"
+              token={style.headline}
+              overrides={overrides}
+              onUpdate={onUpdateOverride}
+              className="mt-3"
+            >
               {resume.headline}
-            </p>
-          )}
-          <p className={contactLook.className} style={contactLook.style}>
+            </RestyleablePart>
+          ) : null}
+          <RestyleablePart id="contact" token={style.contact} overrides={overrides} onUpdate={onUpdateOverride}>
             {contact || 'Add your email, phone and location on the Overview page.'}
-          </p>
+          </RestyleablePart>
         </div>
         {portrait && (
           <Image
@@ -144,6 +224,7 @@ export default function PreviewDocument({ profile, resume, template, layout, ove
             titleClass={style.sectionTitle}
             placement={placement}
             overrides={overrides}
+            onUpdate={onUpdateOverride}
           >
             {blocks[id]}
           </DocumentSection>
