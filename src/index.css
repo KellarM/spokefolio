@@ -444,8 +444,10 @@
 .mec-tk {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 10px;
-  padding: 28px 34px;
+  padding: 24px 18px;
   border-right: 1px solid rgba(212, 175, 55, 0.18);
 }
 
@@ -462,8 +464,10 @@
 }
 
 .mec-tk span {
-  font: 600 15px system-ui, sans-serif;
-  letter-spacing: 0.18em;
+  /* 2x the original 15px label on a normal desktop (30px); fluid below that so
+     long labels such as CONFIRMED never overflow a narrow window or phone column. */
+  font: 600 clamp(17px, 2.2vw, 30px) system-ui, sans-serif;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #aab3c5;
 }
@@ -840,6 +844,9 @@
   .mec-ticker {
     margin: 0 24px;
     grid-template-columns: repeat(2, 1fr);
+  }
+  .mec-tk {
+    padding: 22px 14px;
   }
   .mec-work {
     padding: 40px 24px 60px;
