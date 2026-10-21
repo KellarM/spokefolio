@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 // Admin activity dashboard for Spokefolio.
 // Gated server-side by password: env var ADMIN_STATS_PASSWORD wins if set,
 // otherwise the SHA-256 constant below (hash of the studio-chosen password).
-const FALLBACK_PASSWORD_SHA256 = '38a948146c53151969ccc22f9a835920e0c58b6ed1e7f13a460ae69179954b4e';
+const FALLBACK_PASSWORD_SHA256 = '82d3042b941378bc994b8c2596fa69e4370bd2cb5400c4c043c996dc197fda7c';
 
 async function sha256Hex(text) {
   const data = new TextEncoder().encode(text);
@@ -39,10 +39,13 @@ export default async function (req) {
     const body = await req.json().catch(() => ({}));
     const password = String(body.password || '');
 
+    // Normalize: trim stray whitespace and compare case-insensitively, so
+    // phone keyboards (which do not autocapitalize password fields) work.
+    const normalized = password.trim().toLowerCase();
     const envPassword = Deno.env.get('ADMIN_STATS_PASSWORD');
     const matches = envPassword
-      ? password === envPassword
-      : await sha256Hex(password) === FALLBACK_PASSWORD_SHA256;
+      ? password === envPassword || normalized === String(envPassword).trim().toLowerCase()
+      : await sha256Hex(normalized) === FALLBACK_PASSWORD_SHA256;
 
     if (!password || !matches) {
       return Response.json({ error: 'Wrong admin password.' }, { status: 401 });

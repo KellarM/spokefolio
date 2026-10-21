@@ -38,7 +38,7 @@ export default function Admin() {
     setError('');
     setStats(null);
     try {
-      const response = await base44.functions.invoke('getAdminStats', { password });
+      const response = await base44.functions.invoke('getAdminStats', { password: password.trim() });
       const payload = response.data || null;
       if (!payload || !Array.isArray(payload.daily)) {
         throw new Error(payload?.error || 'Stats unavailable. Try again in a moment.');
