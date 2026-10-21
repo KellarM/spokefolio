@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, KeyRound, LogOut, UserRound } from 'lucide-react';
+import { ChevronDown, KeyRound, LogOut, ShieldCheck, UserRound } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { cn } from '@/lib/utils';
 import {
@@ -57,6 +57,14 @@ export default function AccountMenu({ className }) {
               <UserRound className="mr-2 h-4 w-4" /> Profile
             </Link>
           </DropdownMenuItem>
+
+          {user?.role === 'admin' && (
+            <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2 text-[15px]">
+              <Link to="/admin">
+                <ShieldCheck className="mr-2 h-4 w-4" /> Studio admin
+              </Link>
+            </DropdownMenuItem>
+          )}
 
           <DropdownMenuItem
             onSelect={() => setPasswordHelp(true)}
