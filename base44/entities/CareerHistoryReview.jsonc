@@ -2,6 +2,11 @@
   "name": "CareerHistoryReview",
   "type": "object",
   "properties": {
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional short note about this review, up to 1000 characters."
+    },
     "anchor_id": {
       "type": "string"
     },

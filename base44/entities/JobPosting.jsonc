@@ -2,6 +2,11 @@
   "name": "JobPosting",
   "type": "object",
   "properties": {
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional short note about this saved posting, up to 1000 characters."
+    },
     "job_title": {
       "type": "string"
     },

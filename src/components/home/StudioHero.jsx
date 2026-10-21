@@ -18,7 +18,7 @@ export default function StudioHero({ draftCount = 0 }) {
         </p>
 
         <div className="mec-btns">
-          <Link to="/new-application" className="mec-btn mec-gold">
+          <Link to="/tailor-application" className="mec-btn mec-gold">
             Tailor a résumé
           </Link>
           <Link to="/history" className="mec-btn mec-ghost">

@@ -87,7 +87,7 @@ export default function Applications() {
           </p>
         </div>
         <Button asChild className="rounded-full">
-          <Link to="/new-application">
+          <Link to="/tailor-application">
             <Plus className="mr-2 h-4 w-4" /> Tailor a résumé
           </Link>
         </Button>
@@ -127,7 +127,7 @@ export default function Applications() {
             Paste a job posting and you will get a résumé written for that role, saved here with its status.
           </p>
           <Button asChild className="mt-5 rounded-full">
-            <Link to="/new-application">
+            <Link to="/tailor-application">
               Tailor your first résumé <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>

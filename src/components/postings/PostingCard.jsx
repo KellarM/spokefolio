@@ -61,7 +61,7 @@ export default function PostingCard({ posting, onDelete }) {
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <Button asChild size="sm" className="rounded-full">
-          <Link to={`/new-application?posting=${posting.id}`}>
+          <Link to={`/tailor-application?posting=${posting.id}`}>
             <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Tailor a résumé
           </Link>
         </Button>

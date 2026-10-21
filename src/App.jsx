@@ -13,7 +13,7 @@ import HistoryCapture from '@/pages/HistoryCapture';
 import Postings from '@/pages/Postings';
 import Documents from '@/pages/Documents';
 import Applications from '@/pages/Applications';
-import NewApplication from '@/pages/NewApplication';
+import TailorApplication from '@/pages/TailorApplication';
 import ApplicationDetail from '@/pages/ApplicationDetail';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -21,6 +21,8 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Landing from '@/pages/Landing';
+import About from '@/pages/About';
+import Contact from '@/pages/Contact';
 import Profile from '@/pages/Profile';
 import ProfileGate from '@/components/ProfileGate';
 
@@ -54,6 +56,8 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Landing />} />}>
         <Route element={<Layout />}>
           <Route path="/profile" element={<Profile />} />
@@ -64,7 +68,7 @@ const AuthenticatedApp = () => {
             <Route path="/postings" element={<Postings />} />
             <Route path="/documents" element={<Documents />} />
             <Route path="/applications" element={<Applications />} />
-            <Route path="/new-application" element={<NewApplication />} />
+            <Route path="/tailor-application" element={<TailorApplication />} />
             <Route path="/application/:id" element={<ApplicationDetail />} />
           </Route>
         </Route>

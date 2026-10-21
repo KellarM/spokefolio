@@ -90,6 +90,8 @@ export default function Landing() {
             <span className="lnd-wordmark">SPOKEFOLIO</span>
           </span>
           <div className="lnd-nav-links">
+            <Link to="/about" className="lnd-signin">About</Link>
+            <Link to="/contact" className="lnd-signin">Contact</Link>
             <Link to="/login" className="lnd-signin">Sign in</Link>
             <Link to="/register" className="lnd-btn">Create your account</Link>
           </div>
@@ -376,7 +378,11 @@ export default function Landing() {
             <SpeakOPhone />
             <span className="lnd-wordmark">SPOKEFOLIO</span>
           </span>
-          <p>The career knowledge base · Made by XFH Game Studio</p>
+          <p>
+            <Link to="/about" className="lnd-signin">About</Link> ·{' '}
+            <Link to="/contact" className="lnd-signin">Contact</Link> · The career knowledge base ·
+            Made by XFH Game Studio
+          </p>
         </div>
       </footer>
     </div>);

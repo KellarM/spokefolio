@@ -55,10 +55,12 @@ export default function Layout() {
         </main>
       )}
 
-      <footer className="border-t border-[#D4AF37]/20 px-6 py-5 lg:px-[80px]">
-        <span className="font-body text-[15px] tracking-wider text-[#8a94a8]">
-          Spokefolio Personal Resume Studio
-        </span>
+      <footer className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-[#D4AF37]/20 px-6 py-5 font-body text-[15px] tracking-wider text-[#8a94a8] lg:px-[80px]">
+        <span>Spokefolio Personal Resume Studio</span>
+        <span aria-hidden="true">·</span>
+        <Link to="/about" className="hover:text-[#D4AF37]">About</Link>
+        <span aria-hidden="true">·</span>
+        <Link to="/contact" className="hover:text-[#D4AF37]">Contact</Link>
       </footer>
     </div>
   );

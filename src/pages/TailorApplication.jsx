@@ -20,7 +20,7 @@ const STEPS = [
   'Writing your tailored résumé and cover letter'
 ];
 
-export default function NewApplication() {
+export default function TailorApplication() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { profile, loadingProfile, save } = useProfile();

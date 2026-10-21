@@ -182,7 +182,7 @@ export default function Postings() {
 
   const tailorResult = async (result) => {
     const kept = await keepResult(result);
-    if (kept) navigate(`/new-application?posting=${kept.id}`);
+    if (kept) navigate(`/tailor-application?posting=${kept.id}`);
   };
 
   const tailored = postings.filter((posting) => posting.status === 'tailored').length;

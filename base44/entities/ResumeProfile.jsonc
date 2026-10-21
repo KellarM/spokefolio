@@ -2,6 +2,11 @@
   "name": "ResumeProfile",
   "type": "object",
   "properties": {
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional short note about this profile, up to 1000 characters."
+    },
     "full_name": {
       "type": "string"
     },
