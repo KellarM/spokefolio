@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, Lock } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Eye, EyeOff, Loader2, Lock } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 
@@ -28,6 +28,16 @@ function StatTile({ label, value, hint }) {
 
 export default function Admin() {
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+
+  const goBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -63,14 +73,24 @@ export default function Admin() {
           </div>
           <h1 className="text-xl font-bold text-foreground">Studio admin</h1>
           <p className="mt-1 text-sm text-muted-foreground">Enter the admin password to see activity stats.</p>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="sf-field mt-5 w-full rounded-lg px-3 py-2.5 text-sm"
-            placeholder="Admin password"
-            autoFocus
-          />
+          <div className="relative mt-5">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="sf-field w-full rounded-lg px-3 py-2.5 pr-11 text-sm"
+              placeholder="Admin password"
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute inset-y-0 right-0 flex items-center justify-center w-11 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
+            </button>
+          </div>
           {error && (
             <p className="mt-3 text-sm text-destructive">{error}</p>
           )}
@@ -78,6 +98,14 @@ export default function Admin() {
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />}
             Unlock stats
           </Button>
+          <button
+            type="button"
+            onClick={goBack}
+            className="mt-4 w-full inline-flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            Back
+          </button>
         </form>
       </div>
     );
