@@ -84,6 +84,47 @@ export default async function (req) {
     const openUsers = new Set();
     openEvents.forEach((e) => distinct(openUsers, e.created_by_id));
 
+    // Per-account usage detail for the signups table.
+    // events are sorted newest first, so the first hit per user is the latest.
+    const lastOpen = new Map();
+    const lastAction = new Map();
+    const totalOpens = new Map();
+    for (const e of events) {
+      const id = e.created_by_id;
+      if (!id) continue;
+      if (e.event_type === 'app_open') {
+        if (!lastOpen.has(id)) lastOpen.set(id, e.created_date);
+        totalOpens.set(id, (totalOpens.get(id) || 0) + 1);
+      } else if (!lastAction.has(id)) {
+        lastAction.set(id, e.created_date);
+      }
+    }
+    const resumesByUser = new Map();
+    const appsByUser = new Map();
+    for (const a of applications) {
+      const id = a.created_by_id;
+      if (!id) continue;
+      appsByUser.set(id, (appsByUser.get(id) || 0) + 1);
+      if (a.status && a.status !== 'draft' && a.resume) {
+        resumesByUser.set(id, (resumesByUser.get(id) || 0) + 1);
+      }
+    }
+
+    const signups = users
+      .map((u) => ({
+        id: u.id,
+        name: u.full_name || '',
+        email: u.email || '',
+        role: u.role || 'user',
+        created: u.created_date || null,
+        lastOpen: lastOpen.get(u.id) || null,
+        lastAction: lastAction.get(u.id) || null,
+        opens: totalOpens.get(u.id) || 0,
+        resumes: resumesByUser.get(u.id) || 0,
+        applications: appsByUser.get(u.id) || 0
+      }))
+      .sort((a, b) => String(b.created || '').localeCompare(String(a.created || '')));
+
     return Response.json({
       signups: users.length,
       totalResumes: resumes.length,
@@ -92,6 +133,7 @@ export default async function (req) {
       appOpenUsers: openUsers.size,
       usedApp: usedUsers.size,
       daily: countByDay(events, 14),
+      accounts: signups,
       countsCapped: capped.value,
       eventsFrom: events.length ? null : '2026-10-21'
     });

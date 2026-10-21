@@ -6,6 +6,14 @@ import { Button } from '@/components/ui/button';
 
 const DAY_LABEL = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+const fmt = (iso) => {
+  if (!iso) return '\u2014';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '\u2014';
+  return d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' }) +
+    ' \u00b7 ' + d.toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit' });
+};
+
 function StatTile({ label, value, hint }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
@@ -73,7 +81,8 @@ export default function Admin() {
     );
   }
 
-  const maxDaily = Math.max(1, ...stats.daily.map((d) => d.opens + d.actions));
+  const daily = Array.isArray(stats.daily) ? stats.daily : [];
+  const maxDaily = Math.max(1, ...daily.map((d) => (d.opens || 0) + (d.actions || 0)));
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -101,8 +110,8 @@ export default function Admin() {
           <p className="text-xs text-muted-foreground">opens + actions per day</p>
         </div>
         <div className="flex items-end gap-2 mt-4 h-32">
-          {stats.daily.map((d) => {
-            const total = d.opens + d.actions;
+          {daily.map((d) => {
+            const total = (d.opens || 0) + (d.actions || 0);
             const height = total ? Math.max(8, Math.round((total / maxDaily) * 100)) : 3;
             const date = new Date(d.date + 'T00:00:00Z');
             return (
@@ -118,6 +127,41 @@ export default function Admin() {
           })}
         </div>
       </div>
+
+      {(stats.accounts || []).length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-5 mt-5 overflow-x-auto">
+          <div className="flex items-baseline justify-between mb-4">
+            <h2 className="font-semibold text-foreground">Signups</h2>
+            <p className="text-xs text-muted-foreground">{stats.accounts.length} {stats.accounts.length === 1 ? 'account' : 'accounts'}</p>
+          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
+                <th className="py-2 pr-4 font-medium">Name</th>
+                <th className="py-2 pr-4 font-medium">Email</th>
+                <th className="py-2 pr-4 font-medium">Signed up</th>
+                <th className="py-2 pr-4 font-medium">Last open</th>
+                <th className="py-2 pr-4 font-medium">Last activity</th>
+                <th className="py-2 pr-4 font-medium text-right">R\u00e9sum\u00e9s</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(stats.accounts || []).map((u) => (
+                <tr key={u.id} className="border-b border-border/40 last:border-0">
+                  <td className="py-2.5 pr-4 text-foreground whitespace-nowrap">
+                    {u.name || '\u2014'}{u.role === 'admin' && <span className="ml-1.5 text-[10px] uppercase text-muted-foreground">admin</span>}
+                  </td>
+                  <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{u.email || '\u2014'}</td>
+                  <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{fmt(u.created)}</td>
+                  <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{u.opens ? `${fmt(u.lastOpen)} (${u.opens})` : '\u2014'}</td>
+                  <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{fmt(u.lastAction)}</td>
+                  <td className="py-2.5 pr-4 text-right text-foreground whitespace-nowrap">{u.resumes}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <p className="text-xs text-muted-foreground mt-5">
         Event tracking began 2026-10-21; earlier activity is reconstructed from accounts, résumés, and applications.
