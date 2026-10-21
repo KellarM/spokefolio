@@ -110,6 +110,13 @@ export default async function (req) {
       }
     }
 
+    const locationByUser = new Map();
+    for (const p of resumeProfiles) {
+      if (p.location && p.created_by_id && !locationByUser.has(p.created_by_id)) {
+        locationByUser.set(p.created_by_id, String(p.location).slice(0, 80));
+      }
+    }
+
     // Funnel stages: distinct users who reached each stage.
     const intakeUsers = new Set(
       resumeProfiles.filter((p) => p.history_complete === true).map((p) => p.created_by_id)
@@ -148,6 +155,7 @@ export default async function (req) {
         name: u.full_name || '',
         email: u.email || '',
         role: u.role || 'user',
+        location: locationByUser.get(u.id) || null,
         created: u.created_date || null,
         lastOpen: lastOpen.get(u.id) || null,
         lastAction: lastAction.get(u.id) || null,

@@ -170,6 +170,7 @@ export default function Admin() {
               <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
                 <th className="py-2 pr-4 font-medium">Name</th>
                 <th className="py-2 pr-4 font-medium">Email</th>
+                <th className="py-2 pr-4 font-medium">Location</th>
                 <th className="py-2 pr-4 font-medium">Signed up</th>
                 <th className="py-2 pr-4 font-medium">Last open</th>
                 <th className="py-2 pr-4 font-medium">Last activity</th>
@@ -184,6 +185,7 @@ export default function Admin() {
                     {u.name || '\u2014'}{u.role === 'admin' && <span className="ml-1.5 text-[10px] uppercase text-muted-foreground">admin</span>}
                   </td>
                   <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{u.email || '\u2014'}</td>
+                  <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{u.location || '\u2014'}</td>
                   <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{fmt(u.created)}</td>
                   <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{u.opens ? `${fmt(u.lastOpen)} (${u.opens})` : '\u2014'}</td>
                   <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{fmt(u.lastAction)}</td>
