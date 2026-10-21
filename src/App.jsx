@@ -56,8 +56,6 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/contact" element={<Contact />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Landing />} />}>
         <Route element={<Layout />}>
           <Route path="/profile" element={<Profile />} />
@@ -86,7 +84,11 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
-          <AuthenticatedApp />
+          <Routes>
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="*" element={<AuthenticatedApp />} />
+          </Routes>
         </Router>
         <Toaster />
       </QueryClientProvider>

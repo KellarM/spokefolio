@@ -9,9 +9,9 @@ export default function Contact() {
     <div className="lnd">
       <PublicNav />
 
-      <section className="mx-auto w-full max-w-[860px] px-6 py-16 lg:py-20">
-        <p className="mec-eyebrow">Contact</p>
-        <h1 className="lnd-h1">Talk to a person.</h1>
+      <main className="mx-auto w-full max-w-[860px] px-6 py-16 lg:py-20">
+        <p className="mec-eyebrow">Talk to a person</p>
+        <h1 className="lnd-h1">Contact Spokefolio</h1>
         <p className="mt-5 text-[19px] leading-[1.75] text-[#c3cad8]">
           Questions about your account, a résumé that came out wrong, or anything about how
           Spokefolio handles your information: write to us or call. It reaches the studio directly,
@@ -53,7 +53,7 @@ export default function Contact() {
         <p className="mt-8 font-heading text-[19px] italic text-[#c3cad8]">
           Spokefolio is made by XFH Game Studio.
         </p>
-      </section>
+      </main>
 
       <PublicFooter />
     </div>

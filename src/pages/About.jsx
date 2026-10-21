@@ -10,9 +10,9 @@ export default function About() {
     <div className="lnd">
       <PublicNav />
 
-      <section className="mx-auto w-full max-w-[860px] px-6 py-16 lg:py-20">
-        <p className="mec-eyebrow">About</p>
-        <h1 className="lnd-h1">A résumé studio built on what you actually did.</h1>
+      <main className="mx-auto w-full max-w-[860px] px-6 py-16 lg:py-20">
+        <p className="mec-eyebrow">Your career, told once</p>
+        <h1 className="lnd-h1">About Spokefolio</h1>
 
         <div className="mt-6 space-y-5 text-[19px] leading-[1.75] text-[#c3cad8]">
           <p>
@@ -50,7 +50,7 @@ export default function About() {
             Contact us
           </Link>
         </div>
-      </section>
+      </main>
 
       <PublicFooter />
     </div>
