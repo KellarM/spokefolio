@@ -15,6 +15,7 @@ import Documents from '@/pages/Documents';
 import Applications from '@/pages/Applications';
 import TailorApplication from '@/pages/TailorApplication';
 import ApplicationDetail from '@/pages/ApplicationDetail';
+import Admin from '@/pages/Admin';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -56,6 +57,7 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/admin" element={<Admin />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Landing />} />}>
         <Route element={<Layout />}>
           <Route path="/profile" element={<Profile />} />

@@ -1,0 +1,33 @@
+{
+  "name": "AppEvent",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "app_open",
+        "resume_created",
+        "tailoring_run",
+        "application_tracked",
+        "intake_completed"
+      ]
+    },
+    "metadata": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_type"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import useProfile from '@/hooks/useProfile';
+import { trackAppOpen } from '@/lib/analytics';
 import StudioHero from '@/components/home/StudioHero';
 import RecentApplications from '@/components/home/RecentApplications';
 
@@ -30,6 +31,10 @@ export default function Home() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    trackAppOpen();
+  }, []);
 
   const historyComplete = !!profile.history_complete;
   const confirmed = entries.filter((entry) => entry.status === 'confirmed');

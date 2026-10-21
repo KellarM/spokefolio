@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Loader2, Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { trackEvent } from '@/lib/analytics';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -154,6 +155,8 @@ export default function TailorApplication() {
         resume_template: template || DEFAULT_TEMPLATE_ID
       });
       await save({ headline: resume.headline }).catch(() => {});
+      trackEvent('application_tracked', [form.company, form.job_title].filter(Boolean).join(' - '));
+      trackEvent('resume_created');
       if (postingId) {
         // The saved posting now points at the résumé written from it.
         await base44.entities.JobPosting

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Download, Eye, Loader2, Mail, Pencil, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { trackEvent } from '@/lib/analytics';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -209,6 +210,7 @@ export default function ApplicationDetail() {
         entries: (entryRecords || []).filter((entry) => entry.title && entry.title.trim()),
         documents: (documentRecords || []).filter((doc) => doc.extracted_summary)
       });
+      trackEvent('tailoring_run', 'cover-letter');
       const letter = (response.data || {}).cover_letter || '';
       if (!letter) throw new Error('Nothing came back for this posting. Try again in a moment.');
       const updated = await base44.entities.JobApplication.update(application.id, { cover_letter: letter });
@@ -238,6 +240,7 @@ export default function ApplicationDetail() {
         documents: (documentRecords || []).filter((doc) => doc.extracted_summary),
         template: resolveTemplateId(pickedTemplate || application.resume_template, profile.resume_template)
       });
+      trackEvent('tailoring_run', 'rewrite');
       const data = response.data || {};
       const nextResume = {
         headline: data.headline || '',
