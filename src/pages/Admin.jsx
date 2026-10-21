@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 
 const DAY_LABEL = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+const STAGES = ['', 'Signed up', 'Intake done', 'Resume generated', 'Sent', 'Applied', 'Interviewing'];
+
 const fmt = (iso) => {
   if (!iso) return '\u2014';
   const d = new Date(iso);
@@ -128,6 +130,35 @@ export default function Admin() {
         </div>
       </div>
 
+      {Array.isArray(stats.funnel) && stats.funnel.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-5 mt-5">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-semibold text-foreground">Funnel</h2>
+            <p className="text-xs text-muted-foreground">distinct people reaching each stage</p>
+          </div>
+          <div className="mt-4 space-y-2.5">
+            {stats.funnel.map((stage, i) => {
+              const base = stats.funnel[0].users || 1;
+              const prev = i > 0 ? stats.funnel[i - 1].users : null;
+              const width = Math.max(2, Math.round((stage.users / base) * 100));
+              const conv = prev ? (prev ? Math.round((stage.users / prev) * 100) : 0) : 100;
+              return (
+                <div key={stage.key} className="flex items-center gap-3">
+                  <span className="w-36 shrink-0 text-sm text-muted-foreground">{stage.label}</span>
+                  <div className="flex-1 h-7 rounded bg-muted overflow-hidden">
+                    <div className="h-full rounded bg-primary" style={{ width: `${width}%` }} />
+                  </div>
+                  <span className="w-10 text-right text-sm font-semibold text-foreground">{stage.users}</span>
+                  <span className="w-12 text-right text-xs text-muted-foreground">
+                    {i > 0 && prev > 0 ? `${conv}%` : i === 0 ? '100%' : '\u2014'}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {(stats.accounts || []).length > 0 && (
         <div className="rounded-xl border border-border bg-card p-5 mt-5 overflow-x-auto">
           <div className="flex items-baseline justify-between mb-4">
@@ -142,6 +173,7 @@ export default function Admin() {
                 <th className="py-2 pr-4 font-medium">Signed up</th>
                 <th className="py-2 pr-4 font-medium">Last open</th>
                 <th className="py-2 pr-4 font-medium">Last activity</th>
+                <th className="py-2 pr-4 font-medium">Stage</th>
                 <th className="py-2 pr-4 font-medium text-right">R\u00e9sum\u00e9s</th>
               </tr>
             </thead>
@@ -155,6 +187,7 @@ export default function Admin() {
                   <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{fmt(u.created)}</td>
                   <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{u.opens ? `${fmt(u.lastOpen)} (${u.opens})` : '\u2014'}</td>
                   <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{fmt(u.lastAction)}</td>
+                  <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{STAGES[u.stage] || '\u2014'}</td>
                   <td className="py-2.5 pr-4 text-right text-foreground whitespace-nowrap">{u.resumes}</td>
                 </tr>
               ))}

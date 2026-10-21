@@ -110,6 +110,38 @@ export default async function (req) {
       }
     }
 
+    // Funnel stages: distinct users who reached each stage.
+    const intakeUsers = new Set(
+      resumeProfiles.filter((p) => p.history_complete === true).map((p) => p.created_by_id)
+    );
+    const sentByUser = new Map();
+    const appliedUsers = new Set();
+    const interviewUsers = new Set();
+    for (const a of applications) {
+      const id = a.created_by_id;
+      if (!id) continue;
+      if (a.last_sent_at) sentByUser.set(id, (sentByUser.get(id) || 0) + 1);
+      if (['applied', 'contacted', 'interviewing', 'offer'].includes(a.status)) appliedUsers.add(id);
+      if (['interviewing', 'offer'].includes(a.status)) interviewUsers.add(id);
+    }
+    const funnel = [
+      { key: 'signup', label: 'Signed up', users: users.length },
+      { key: 'intake', label: 'Intake completed', users: intakeUsers.size },
+      { key: 'resume', label: 'Resume generated', users: [...resumesByUser.keys()].length },
+      { key: 'sent', label: 'Sent to employer', users: [...sentByUser.keys()].length },
+      { key: 'applied', label: 'Applied or beyond', users: appliedUsers.size },
+      { key: 'interview', label: 'Interviewing or offer', users: interviewUsers.size }
+    ];
+    const stageOf = (userId) => {
+      let stage = 1;
+      if (intakeUsers.has(userId)) stage = 2;
+      if (resumesByUser.get(userId)) stage = 3;
+      if (sentByUser.has(userId)) stage = 4;
+      if (appliedUsers.has(userId)) stage = 5;
+      if (interviewUsers.has(userId)) stage = 6;
+      return stage;
+    };
+
     const signups = users
       .map((u) => ({
         id: u.id,
@@ -121,7 +153,8 @@ export default async function (req) {
         lastAction: lastAction.get(u.id) || null,
         opens: totalOpens.get(u.id) || 0,
         resumes: resumesByUser.get(u.id) || 0,
-        applications: appsByUser.get(u.id) || 0
+        applications: appsByUser.get(u.id) || 0,
+        stage: stageOf(u.id)
       }))
       .sort((a, b) => String(b.created || '').localeCompare(String(a.created || '')));
 
@@ -133,6 +166,7 @@ export default async function (req) {
       appOpenUsers: openUsers.size,
       usedApp: usedUsers.size,
       daily: countByDay(events, 14),
+      funnel,
       accounts: signups,
       countsCapped: capped.value,
       eventsFrom: events.length ? null : '2026-10-21'
