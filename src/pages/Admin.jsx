@@ -29,7 +29,11 @@ export default function Admin() {
     setStats(null);
     try {
       const response = await base44.functions.invoke('getAdminStats', { password });
-      setStats(response.data || null);
+      const payload = response.data || null;
+      if (!payload || !Array.isArray(payload.daily)) {
+        throw new Error(payload?.error || 'Stats unavailable. Try again in a moment.');
+      }
+      setStats(payload);
     } catch (err) {
       setError(err.message || 'Wrong admin password.');
     }

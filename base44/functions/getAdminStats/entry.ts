@@ -85,17 +85,15 @@ export default async function (req) {
     openEvents.forEach((e) => distinct(openUsers, e.created_by_id));
 
     return Response.json({
-      data: {
-        signups: users.length,
-        totalResumes: resumes.length,
-        applicationsTracked: applications.length,
-        appOpens: openEvents.length,
-        appOpenUsers: openUsers.size,
-        usedApp: usedUsers.size,
-        daily: countByDay(events, 14),
-        countsCapped: capped.value,
-        eventsFrom: events.length ? null : '2026-10-21'
-      }
+      signups: users.length,
+      totalResumes: resumes.length,
+      applicationsTracked: applications.length,
+      appOpens: openEvents.length,
+      appOpenUsers: openUsers.size,
+      usedApp: usedUsers.size,
+      daily: countByDay(events, 14),
+      countsCapped: capped.value,
+      eventsFrom: events.length ? null : '2026-10-21'
     });
   } catch (error) {
     return Response.json({ error: error.message || 'Stats unavailable.' }, { status: 500 });
