@@ -46,7 +46,7 @@ export default function Profile() {
         </div>
       ) : (
         <>
-          <div className="mec-deck mt-7">
+          <div className="mec-deck mec-profile-deck mt-7">
             <div className="mec-col">
               <ContactForm profile={details} onSave={save} />
             </div>
@@ -54,6 +54,37 @@ export default function Profile() {
               <TemplateCard profile={profile} onSave={save} />
             </div>
           </div>
+          <section className="mec-panel mt-9">
+            <div className="mec-eyebrow">Master history</div>
+            {profile.history_complete && profile.master_summary ? (
+              <div>
+                <p className="mt-3 font-body text-[17px] leading-relaxed text-[#F9FAFB]/90">
+                  {profile.master_summary}
+                </p>
+                {Array.isArray(profile.core_skills) && profile.core_skills.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {profile.core_skills.slice(0, 14).map((skill) => (
+                      <span
+                        key={skill}
+                        className="rounded-full border border-[#D4AF37]/30 bg-[#0B0F17] px-3 py-1 font-body text-[14px] text-[#D4AF37]"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {Array.isArray(profile.target_titles) && profile.target_titles.length > 0 && (
+                  <p className="mt-4 font-body text-[16px] text-[#aab3c5]">
+                    Best fit roles: {profile.target_titles.join(' · ')}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="mt-3 font-body text-[15.5px] leading-relaxed text-muted-foreground">
+                Complete and lock in your career history to generate your master summary.
+              </p>
+            )}
+          </section>
           {complete && (
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Link to="/" className="mec-btn mec-gold">

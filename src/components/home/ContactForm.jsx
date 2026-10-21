@@ -61,12 +61,6 @@ export default function ContactForm({ profile, onSave }) {
         ))}
       </div>
 
-      <div className="mec-hl">
-        <label className="mec-eyebrow">Headline</label>
-        <p>{form.headline || 'Written for you when you tailor your first résumé'}</p>
-        <small>Updates automatically with every résumé you tailor to a job.</small>
-      </div>
-
       <div className="mec-save">
         <button
           type="button"

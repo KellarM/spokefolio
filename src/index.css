@@ -627,6 +627,17 @@
   gap: 36px;
 }
 
+/* Profile: the details card stretches to match the résumé-style card. */
+.mec-profile-deck .mec-col > .mec-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.mec-profile-deck .mec-save {
+  margin-top: auto;
+}
+
 .mec-fields {
   margin-top: 28px;
   display: grid;
