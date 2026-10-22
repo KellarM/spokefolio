@@ -85,6 +85,9 @@ export default function JobSearchPanel({ onResults }) {
               ? "Search Canada's Job Bank and the job sites by category, place, distance and pay."
               : 'Your career history, experience and location are read to find the roles that fit you.'}
           </p>
+          <p className="mt-1.5 text-[11px] text-muted-foreground/80">
+            Coverage: Canadian postings (Job Bank and the major job sites). More regions as we grow.
+          </p>
         </div>
         <div className="flex gap-1.5">
           {MODES.map((item) => {

@@ -32,6 +32,8 @@ export default async function (req) {
 
 Build the master reference sheet a resume writer would use.
 
+LANGUAGE: detect the majority language of the entries below and write master_summary, core_skills, target_titles and highlight_accomplishments in that same language. Only write in English when the entries themselves are in English. Keep the person's own wording for skills, employer names and titles.
+
 - master_summary: 4-6 factual sentences describing who this person is professionally: the arc of their career, the industries and roles, the scale they have worked at, and the strengths their history actually demonstrates. Only what the entries support.
 - core_skills: 12-20 of the most marketable and transferable skills, ordered by strength. Use the person's own wording where possible, and include tools and methods they named.
 - target_titles: 3-5 job titles this history best supports, most likely first.
