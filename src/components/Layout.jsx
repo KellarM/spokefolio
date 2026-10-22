@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import AccountMenu from '@/components/AccountMenu';
 import { StudioLanguageProvider, useStudioLanguage } from '@/lib/StudioLanguage';
+import { ProfileProvider } from '@/hooks/useProfile';
 
 const LOGO = 'https://media.base44.com/images/public/6ac71edebc00261f3487fa3e/9f96553a6_logo.png';
 
@@ -72,8 +73,10 @@ function Nav() {
 
 export default function Layout() {
   return (
-    <StudioLanguageProvider>
-      <Nav />
-    </StudioLanguageProvider>
+    <ProfileProvider>
+      <StudioLanguageProvider>
+        <Nav />
+      </StudioLanguageProvider>
+    </ProfileProvider>
   );
 }
