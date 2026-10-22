@@ -10,7 +10,13 @@ const STAGES = ['', 'Signed up', 'Intake done', 'Resume generated', 'Sent', 'App
 
 const fmt = (iso) => {
   if (!iso) return '\u2014';
-  const d = new Date(iso);
+  // Timestamps are stored in UTC without a timezone designator. Without
+  // appending Z, the browser parses them as local time and every entry
+  // displays six hours into the future (America/Edmonton, UTC-6).
+  const stamp = typeof iso === 'string' && !/(Z|[+-]\d{2}:?\d{2})$/.test(iso.trim())
+    ? `${iso.trim()}Z`
+    : iso;
+  const d = new Date(stamp);
   if (isNaN(d.getTime())) return '\u2014';
   return d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' }) +
     ' \u00b7 ' + d.toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit' });
