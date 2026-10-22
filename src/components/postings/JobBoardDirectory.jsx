@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { detectCountry } from '@/lib/geo';
 import { ExternalLink, Globe, Hand, Loader2, Plus, Search } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -8,10 +9,12 @@ import { pillClass } from '@/components/postings/JobSearchFilters';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import useProfile from '@/hooks/useProfile';
 
-// The starter directory: boards that cover Canada and Alberta. Each account
+// The starter directory, region-aware: an account seeds the set that covers
+// where the profile says the person lives. Canada keeps the original twelve;
+// a United States profile gets the US twelve instead.
 // gets its own copy on first visit, so a person can add their own without
 // touching anyone else's list.
-const STARTER_BOARDS = [
+const STARTER_BOARDS_CA = [
   { name: 'Job Bank — Guichet-Emplois', url: 'https://www.jobbank.gc.ca/jobsearch', kind: 'government', coverage: 'Canada', notes: 'The federal job board. A direct source for searches here.' },
   { name: 'Indeed Canada', url: 'https://ca.indeed.com/', kind: 'national', coverage: 'Canada', notes: 'The largest aggregator of Canadian postings.' },
   { name: 'LinkedIn Jobs', url: 'https://www.linkedin.com/jobs/', kind: 'national', coverage: 'Canada', notes: 'Strong for professional and management roles.' },
@@ -24,6 +27,21 @@ const STARTER_BOARDS = [
   { name: 'Alberta government careers', url: 'https://www.alberta.ca/jobs', kind: 'government', coverage: 'Alberta', notes: 'Alberta Public Service and agency postings.' },
   { name: 'City of Edmonton careers', url: 'https://www.edmonton.ca/city_government/jobs', kind: 'government', coverage: 'Edmonton', notes: 'City of Edmonton positions.' },
   { name: 'Government of Canada jobs', url: 'https://jobs-emplois.gc.ca/', kind: 'government', coverage: 'Canada', notes: 'Federal public service postings.' }
+];
+
+const STARTER_BOARDS_US = [
+  { name: 'USAJOBS', url: 'https://www.usajobs.gov/', kind: 'government', coverage: 'United States', notes: 'Federal government postings.' },
+  { name: 'CareerOneStop', url: 'https://www.careeronestop.org/', kind: 'government', coverage: 'United States', notes: 'The US Department of Labor job search.' },
+  { name: 'Indeed', url: 'https://www.indeed.com/', kind: 'national', coverage: 'United States', notes: 'The largest aggregator of US postings.' },
+  { name: 'LinkedIn Jobs', url: 'https://www.linkedin.com/jobs/', kind: 'national', coverage: 'United States', notes: 'Strong for professional and management roles.' },
+  { name: 'Glassdoor', url: 'https://www.glassdoor.com/Job/', kind: 'national', coverage: 'United States', notes: 'Postings plus salary and employer reviews.' },
+  { name: 'ZipRecruiter', url: 'https://www.ziprecruiter.com/', kind: 'national', coverage: 'United States', notes: 'Broad aggregator, popular with trades and services.' },
+  { name: 'Monster', url: 'https://www.monster.com/', kind: 'national', coverage: 'United States', notes: 'Long-standing US job board.' },
+  { name: 'CareerBuilder', url: 'https://www.careerbuilder.com/', kind: 'national', coverage: 'United States', notes: 'Large general-purpose board.' },
+  { name: 'Talent.com', url: 'https://www.talent.com/', kind: 'national', coverage: 'United States', notes: 'Aggregates postings from many employer sites.' },
+  { name: 'Snagajob', url: 'https://www.snagajob.com/', kind: 'national', coverage: 'United States', notes: 'Strong on hourly and shift work.' },
+  { name: 'EmployNV', url: 'https://www.employnv.com/', kind: 'government', coverage: 'Nevada · United States', notes: "Nevada's state job connection system." },
+  { name: 'Casino Careers', url: 'https://www.casinocareers.com/', kind: 'regional', coverage: 'Nevada · United States', notes: 'Dedicated to gaming and casino industry roles.' }
 ];
 
 // Friendly names for the domains that show up in results.
@@ -40,7 +58,14 @@ const DOMAIN_LABELS = {
   'ca.talent.com': 'Talent.com',
   'eluta.ca': 'Eluta.ca',
   'wowjobs.ca': 'WOWjobs',
-  'jobillico.com': 'Jobillico'
+  'jobillico.com': 'Jobillico',
+  'usajobs.gov': 'USAJOBS',
+  'careeronestop.org': 'CareerOneStop',
+  'monster.com': 'Monster',
+  'careerbuilder.com': 'CareerBuilder',
+  'snagajob.com': 'Snagajob',
+  'employnv.gov': 'EmployNV',
+  'casinocareers.com': 'Casino Careers'
 };
 
 const hostOf = (url) => {
@@ -61,7 +86,7 @@ const labelFor = (url) => {
 // person opens and imports from by hand. Derived from the URL, so
 // user-added boards label themselves correctly too.
 const DIRECT_HOSTS = ['jobbank.gc.ca'];
-const WEB_HOSTS = ['ca.indeed.com', 'indeed.com', 'linkedin.com', 'glassdoor.ca', 'glassdoor.com'];
+const WEB_HOSTS = ['ca.indeed.com', 'indeed.com', 'linkedin.com', 'glassdoor.ca', 'glassdoor.com', 'ziprecruiter.com', 'ziprecruiter.ca'];
 
 const tierOf = (url) => {
   const host = hostOf(url);
@@ -121,8 +146,11 @@ export default function JobBoardDirectory({ postings, search }) {
       try {
         let records = await loadBoards();
         if (!records.length) {
-          // First visit: this account gets its own copy of the starter list.
-          await Promise.all(STARTER_BOARDS.map((board) => base44.entities.JobBoard.create(board)));
+          // First visit: this account gets its own copy of the starter list —
+          // the Canada set, or the US set when the profile lives there.
+          const country = detectCountry(profile?.location);
+          const starters = country === 'US' ? STARTER_BOARDS_US : STARTER_BOARDS_CA;
+          await Promise.all(starters.map((board) => base44.entities.JobBoard.create(board)));
           records = await loadBoards();
         }
         if (!cancelled) setBoards(records);

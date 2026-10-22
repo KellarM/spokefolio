@@ -149,11 +149,10 @@ export default {
   // Job postings.
   'postings.title': 'Job postings',
   'postings.lede':
-    "Search by category and location — Canada's Job Bank and the job sites are both scanned — or let it read your history and find the roles that fit you. Anything you like can be kept here — brought in from a link, pasted, or found by a search — and tailored into a résumé without pasting a word twice.",
-  'postings.findPostings': 'Find postings',
-  'postings.criteriaDesc': "Search Canada's Job Bank and the job sites by category, place, distance and pay.",
+    "Search by category and location — job sites and employer career pages are both scanned — or let it read your history and find the roles that fit you. Anything you like can be kept here — brought in from a link, pasted, or found by a search — and tailored into a résumé without pasting a word twice.",  'postings.findPostings': 'Find postings',
+  'postings.criteriaDesc': 'Search the job sites and employer career pages by category, place, distance and pay.',
   'postings.profileDesc': 'Your career history, experience and location are read to find the roles that fit you.',
-  'postings.coverage': 'Coverage: Canadian postings (Job Bank and the major job sites). More regions as we grow.',
+  'postings.coverage': 'Coverage: postings across Canada and the United States — national boards and the major job sites.',
   'postings.modeCriteria': 'Search by category',
   'postings.modeProfile': 'Jobs that fit me',
   'postings.categoryPlaceholder': 'Category — e.g. operations manager, welder, bookkeeper',

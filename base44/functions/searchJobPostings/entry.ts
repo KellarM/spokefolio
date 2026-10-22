@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { cleanText } from '../../shared/career.ts';
 import { matchesLocationFilter, searchJobBank } from '../../shared/jobBank.ts';
+import { detectCountry } from '../../shared/geo.ts';
 import { estimateCommutes } from '../../shared/commute.ts';
 
 const MAX_RESULTS = 8;
@@ -328,6 +329,11 @@ export default async function (req) {
         `Strict city match: only postings located in ${location}. Leave out postings in any other city.`
       );
     }
+    if (detectCountry(location) === 'US' || detectCountry(homeLocation) === 'US') {
+      limits.push(
+        'This location is in the United States: search US job sites — indeed.com, linkedin.com, ziprecruiter.com, glassdoor.com, monster.com, usajobs.gov and employer career pages. Do not use Canadian job boards like Job Bank or ca.indeed.com.'
+      );
+    }
     if (minPay) {
       limits.push(payLine(minPay, payPeriod));
       limits.push(
@@ -355,16 +361,19 @@ export default async function (req) {
       const attempts = await Promise.allSettled(
         titles.map((title) =>
           Promise.all([
-            searchJobBank({
-              keywords: title,
-              location,
-              homeLocation,
-              distanceKm,
-              minPay,
-              payPeriod,
-              limit: BANK_PER_TERM,
-              language
-            }).catch(() => []),
+            // Job Bank covers Canada; a US location gets only the web pass.
+            detectCountry(location) === 'US' || detectCountry(homeLocation) === 'US'
+              ? []
+              : searchJobBank({
+                  keywords: title,
+                  location,
+                  homeLocation,
+                  distanceKm,
+                  minPay,
+                  payPeriod,
+                  limit: BANK_PER_TERM,
+                  language
+                }).catch(() => []),
             searchOnce(base44, title, location, homeLocation, distanceKm, limits)
           ])
         )
@@ -380,18 +389,22 @@ export default async function (req) {
         });
       });
     } else {
-      // The national board and the wider web search run together, Job Bank postings first.
+      // Canada's national board only covers Canadian locations; the wider web
+      // search carries the United States on its own.
+      const inCanada = detectCountry(location) !== 'US' && detectCountry(homeLocation) !== 'US';
       const [bank, found] = await Promise.all([
-        searchJobBank({
-          keywords: category,
-          location,
-          homeLocation,
-          distanceKm,
-          minPay,
-          payPeriod,
-          limit: BANK_PER_TERM,
-          language
-        }).catch(() => []),
+        inCanada
+          ? searchJobBank({
+              keywords: category,
+              location,
+              homeLocation,
+              distanceKm,
+              minPay,
+              payPeriod,
+              limit: BANK_PER_TERM,
+              language
+            }).catch(() => [])
+          : Promise.resolve([]),
         searchOnce(base44, category, location, homeLocation, distanceKm, limits)
       ]);
       results = [...bank, ...found.results].slice(0, MAX_RESULTS);
@@ -432,7 +445,9 @@ export default async function (req) {
       // A line is shown only when there is something to explain: an empty list, and what to try instead.
       note: results.length
         ? ''
-        : `No single posting came back from Canada's Job Bank or the job sites for ${searched}. Some job sites will only show a search page to an automatic search. Try a broader category, a wider distance, or a nearby city or region.`
+        : detectCountry(location) === 'US' || detectCountry(homeLocation) === 'US'
+          ? `No single posting came back from the US job sites for ${searched}. Some job sites will only show a search page to an automatic search. Try a broader category, a wider distance, or a nearby city or region.`
+          : `No single posting came back from Canada's Job Bank or the job sites for ${searched}. Some job sites will only show a search page to an automatic search. Try a broader category, a wider distance, or a nearby city or region.`
     });
   } catch (error) {
     return Response.json({ error: error.message || 'The job search did not go through.' }, { status: 500 });

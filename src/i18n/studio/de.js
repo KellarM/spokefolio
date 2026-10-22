@@ -140,11 +140,10 @@ export default {
 
   'postings.title': 'Stellenangebote',
   'postings.lede':
-    'Suche nach Kategorie und Ort — Kanadas Job Bank und die Jobportale werden beide durchsucht — oder lass deine Historie lesen und die passenden Rollen finden. Alles, was dir gefällt, bleibt hier — aus einem Link geholt, eingefügt oder per Suche gefunden — und wird ohne zweimaliges Einfügen zu einem Résumé zugeschnitten.',
-  'postings.findPostings': 'Stellenangebote finden',
-  'postings.criteriaDesc': 'Durchsuche Kanadas Job Bank und die Jobportale nach Kategorie, Ort, Entfernung und Gehalt.',
+    "Suche nach Kategorie und Ort — Jobportale und Karriereseiten der Arbeitgeber werden beide durchsucht — oder lass deine Historie lesen und die passenden Rollen finden. Alles, was dir gefällt, bleibt hier — aus einem Link geholt, eingefügt oder per Suche gefunden — und wird ohne zweimaliges Einfügen zu einem Résumé zugeschnitten.",  'postings.findPostings': 'Stellenangebote finden',
+  'postings.criteriaDesc': 'Durchsuche die Jobportale und Karriereseiten der Arbeitgeber nach Kategorie, Ort, Entfernung und Gehalt.',
   'postings.profileDesc': 'Deine Berufshistorie, deine Erfahrung und dein Wohnort werden gelesen, um die Rollen zu finden, die zu dir passen.',
-  'postings.coverage': 'Abdeckung: kanadische Stellenangebote (Job Bank und die großen Jobportale). Weitere Regionen, wenn wir wachsen.',
+  'postings.coverage': 'Abdeckung: Stellenangebote in Kanada und den USA — nationale Börsen und die großen Jobportale.',
   'postings.modeCriteria': 'Nach Kategorie suchen',
   'postings.modeProfile': 'Jobs, die zu mir passen',
   'postings.categoryPlaceholder': 'Kategorie — z. B. Betriebsleiter, Schweißer, Buchhalter',

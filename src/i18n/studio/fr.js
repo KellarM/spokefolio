@@ -140,11 +140,10 @@ export default {
 
   'postings.title': "Offres d'emploi",
   'postings.lede':
-    "Cherchez par catégorie et par lieu — le Guichet-Emplois du Canada et les sites d'emploi sont tous deux balayés — ou laissez-le lire votre parcours pour trouver les rôles qui vous conviennent. Tout ce qui vous plaît peut être conservé ici — importé d'un lien, collé ou trouvé par une recherche — et adapté en curriculum sans coller deux fois le même texte.",
-  'postings.findPostings': "Trouver des offres",
-  'postings.criteriaDesc': "Cherchez dans le Guichet-Emplois du Canada et les sites d'emploi par catégorie, lieu, distance et salaire.",
+    "Cherchez par catégorie et par lieu — les sites d'emploi et les pages carrières des employeurs sont tous deux balayés — ou laissez-le lire votre parcours pour trouver les rôles qui vous conviennent. Tout ce qui vous plaît peut être conservé ici — importé d'un lien, collé ou trouvé par une recherche — et adapté en curriculum sans coller deux fois le même texte.",  'postings.findPostings': "Trouver des offres",
+  'postings.criteriaDesc': 'Cherchez dans les sites d\'emploi et les pages carrières des employeurs par catégorie, lieu, distance et salaire.',
   'postings.profileDesc': "Votre parcours, votre expérience et votre lieu de résidence sont lus pour trouver les rôles qui vous conviennent.",
-  'postings.coverage': "Couverture : offres canadiennes (Guichet-Emplois et les principaux sites d'emploi). D'autres régions au fil de notre croissance.",
+  'postings.coverage': 'Couverture : offres au Canada et aux États-Unis — banques nationales et les principaux sites d\'emploi.',
   'postings.modeCriteria': "Chercher par catégorie",
   'postings.modeProfile': "Des emplois qui me conviennent",
   'postings.categoryPlaceholder': "Catégorie — p. ex. directeur des opérations, soudeur, comptable",
