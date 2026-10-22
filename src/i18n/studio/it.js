@@ -278,5 +278,6 @@ export default {
   'sources.addBtn': 'Aggiungi bacheca',
   'sources.toastAdded': 'Bacheca aggiunta',
   'sources.toastAddedDesc': 'Aprila dalla tua lista quando vuoi.',
-  'sources.toastFailed': 'Impossibile aggiungere questa bacheca'
+  'sources.toastFailed': 'Impossibile aggiungere questa bacheca',
+  'postings.capturedCount': '{count} offerte acquisite',
 };

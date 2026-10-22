@@ -315,5 +315,6 @@ export default {
   'sources.addBtn': 'Add board',
   'sources.toastAdded': 'Board added',
   'sources.toastAddedDesc': 'Open it from your list any time.',
-  'sources.toastFailed': 'This board could not be added'
+  'sources.toastFailed': 'This board could not be added',
+  'postings.capturedCount': '{count} postings captured',
 };

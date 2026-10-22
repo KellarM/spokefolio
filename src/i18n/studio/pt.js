@@ -278,5 +278,6 @@ export default {
   'sources.addBtn': 'Adicionar site',
   'sources.toastAdded': 'Site adicionado',
   'sources.toastAddedDesc': 'Abra da sua lista quando quiser.',
-  'sources.toastFailed': 'Não foi possível adicionar este site'
+  'sources.toastFailed': 'Não foi possível adicionar este site',
+  'postings.capturedCount': '{count} ofertas capturadas',
 };

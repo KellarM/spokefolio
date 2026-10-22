@@ -278,5 +278,6 @@ export default {
   'sources.addBtn': 'Añadir bolsa',
   'sources.toastAdded': 'Bolsa añadida',
   'sources.toastAddedDesc': 'Ábrela desde tu lista cuando quieras.',
-  'sources.toastFailed': 'Esta bolsa no pudo añadirse'
+  'sources.toastFailed': 'Esta bolsa no pudo añadirse',
+  'postings.capturedCount': '{count} ofertas capturadas',
 };

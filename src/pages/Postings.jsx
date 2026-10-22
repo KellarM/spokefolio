@@ -203,6 +203,17 @@ export default function Postings() {
         </p>
       </header>
 
+      <div className="mt-5 flex flex-wrap items-center gap-2">
+        <span className={pillClass(false)}>
+          {t('postings.capturedCount', { count: postings.length })}
+        </span>
+        {tailored > 0 && (
+          <span className={pillClass(false)}>
+            {t('postings.withResume', { count: tailored })}
+          </span>
+        )}
+      </div>
+
       <div className="mt-6 flex flex-wrap gap-2">
         <button type="button" className={pillClass(tab === 'search')} onClick={() => setTab('search')}>
           <Search className="h-3.5 w-3.5" /> {t('sources.tabSearch')}

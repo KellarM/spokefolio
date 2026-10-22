@@ -301,5 +301,6 @@ export default {
   'sources.addBtn': 'Börse hinzufügen',
   'sources.toastAdded': 'Börse hinzugefügt',
   'sources.toastAddedDesc': 'Öffne sie jederzeit aus deiner Liste.',
-  'sources.toastFailed': 'Diese Börse konnte nicht hinzugefügt werden'
+  'sources.toastFailed': 'Diese Börse konnte nicht hinzugefügt werden',
+  'postings.capturedCount': '{count} Anzeigen erfasst',
 };
