@@ -19,6 +19,12 @@
     "location": {
       "type": "string"
     },
+    "location_full": {
+      "type": "string"
+    },
+    "content_language": {
+      "type": "string"
+    },
     "linkedin": {
       "type": "string"
     },

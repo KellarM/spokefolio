@@ -361,13 +361,15 @@ export default function HistoryCapture() {
     }
     setBusy(true);
     try {
-      const response = await base44.functions.invoke('finalizeHistory', { entries: confirmed });
+      const response = await base44.functions.invoke('finalizeHistory', { entries: confirmed, location: profile.location || '' });
       const data = response.data || {};
       await save({
         history_complete: true,
         master_summary: data.master_summary || profile.master_summary || '',
         core_skills: data.core_skills || [],
-        target_titles: data.target_titles || []
+        target_titles: data.target_titles || [],
+        content_language: data.language || '',
+        location_full: data.home_location && data.home_location !== 'unknown' ? data.home_location : ''
       });
       toast({ title: 'Career history complete', description: 'Your master history is locked in and ready to tailor.' });
     } catch (error) {
@@ -391,7 +393,9 @@ export default function HistoryCapture() {
       master_summary: '',
       core_skills: [],
       target_titles: [],
-      experience_order: []
+      experience_order: [],
+      content_language: '',
+      location_full: ''
     });
     await loadEntries();
   };

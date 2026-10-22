@@ -124,7 +124,7 @@ ${jobDescription}
 """
 
 CANDIDATE CONTACT DETAILS
-${JSON.stringify({ name: cleanText(profile.full_name, 120), headline: cleanText(profile.headline, 200), location: cleanText(profile.location, 120), summary_of_history: cleanText(profile.master_summary, 2000), core_skills: cleanList(profile.core_skills, 25, 80), target_titles: cleanList(profile.target_titles, 8, 120) }, null, 2)}
+${JSON.stringify({ name: cleanText(profile.full_name, 120), headline: cleanText(profile.headline, 200), location: cleanText(profile.location_full || profile.location, 160), summary_of_history: cleanText(profile.master_summary, 2000), core_skills: cleanList(profile.core_skills, 25, 80), target_titles: cleanList(profile.target_titles, 8, 120) }, null, 2)}
 
 CANDIDATE'S REAL CAREER HISTORY (the only source of truth)
 ${JSON.stringify(entries, null, 2)}

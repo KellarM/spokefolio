@@ -86,7 +86,7 @@ export default function DraftEntryEditor({ entry, busy, onChange, onAnswer, onSa
               <Input value={entry.organization || ''} onChange={(e) => set({ organization: e.target.value })} />
             </Field>
             <Field label="Location">
-              <Input value={entry.location || ''} onChange={(e) => set({ location: e.target.value })} placeholder="Toronto, ON · Remote" />
+              <Input value={entry.location || ''} onChange={(e) => set({ location: e.target.value })} placeholder="City, Region, Country · e.g. Edmonton, Alberta, Canada" />
             </Field>
             <Field label="Start">
               <Input value={entry.start_date || ''} onChange={(e) => set({ start_date: e.target.value })} placeholder="Mar 2019" />

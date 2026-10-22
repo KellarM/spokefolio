@@ -35,7 +35,7 @@ export default function JobSearchPanel({ onResults }) {
         mode,
         category: category.trim(),
         location: place.trim(),
-        homeLocation: (profile.location || place || '').trim(),
+        homeLocation: (profile.location_full || profile.location || place || '').trim(),
         distanceKm: distance,
         minPay,
         payPeriod: period

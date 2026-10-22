@@ -55,7 +55,14 @@ export default function Profile() {
             </div>
           </div>
           <section className="mec-panel mt-9">
-            <div className="mec-eyebrow">Master history</div>
+            <div className="flex items-center justify-between gap-3">
+              <div className="mec-eyebrow">Master history</div>
+              {profile.content_language && (
+                <span className="rounded-full border border-[#D4AF37]/30 bg-[#0B0F17] px-3 py-1 font-body text-[12px] text-[#D4AF37]">
+                  {profile.content_language}
+                </span>
+              )}
+            </div>
             {profile.history_complete && profile.master_summary ? (
               <div>
                 <p className="mt-3 font-body text-[17px] leading-relaxed text-[#F9FAFB]/90">

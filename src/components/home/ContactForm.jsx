@@ -5,7 +5,7 @@ const FIELDS = [
   { key: 'full_name', label: 'Full name', placeholder: 'Jane Doe', required: true },
   { key: 'email', label: 'Email', placeholder: 'jane@email.com', required: true },
   { key: 'phone', label: 'Phone', placeholder: '(555) 010-2233', required: true },
-  { key: 'location', label: 'Location', placeholder: 'Toronto, ON', required: true },
+  { key: 'location', label: 'Location', placeholder: 'Edmonton, Alberta, Canada', required: true },
   { key: 'linkedin', label: 'LinkedIn', placeholder: 'linkedin.com/in/janedoe' },
   { key: 'website', label: 'Website', placeholder: 'janedoe.com' }
 ];
@@ -57,6 +57,11 @@ export default function ContactForm({ profile, onSave }) {
               onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
               className="mec-v"
             />
+            {field.key === 'location' && profile?.location_full && (
+              <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
+                Identified as {profile.location_full}
+              </p>
+            )}
           </div>
         ))}
       </div>
