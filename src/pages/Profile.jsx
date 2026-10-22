@@ -8,8 +8,8 @@ import { useAuth } from '@/lib/AuthContext';
 import { missingProfileFields, profileIsComplete } from '@/lib/profileGate';
 
 // The profile: the details that head every résumé, the portrait, and the house style. A new
-// client arrives here first, and the rest of the studio stays closed until the four details
-// that head every résumé are saved.
+// client arrives here first, and the rest of the studio stays closed until the five details
+// that head every résumé, including the language, are saved.
 export default function Profile() {
   const { user } = useAuth();
   const { profile, loadingProfile, save } = useProfile();
@@ -34,7 +34,7 @@ export default function Profile() {
         <div className="mt-6 rounded-2xl border border-accent/30 bg-accent/5 px-5 py-4">
           <p className="mec-eyebrow">Before the overview opens</p>
           <p className="mt-2 text-[14.5px] leading-relaxed text-foreground/90">
-            Every résumé heads with your name, email, phone number and location, so those four come first.
+            Every résumé heads with your name, email, phone number and location, and you choose the language the studio speaks, so those five come first.
             {missing.length ? ` Still to add: ${missing.join(', ')}.` : ''}
           </p>
         </div>
@@ -98,7 +98,7 @@ export default function Profile() {
                 Continue to your overview <ArrowRight className="h-4 w-4" />
               </Link>
               <p className="text-[13.5px] text-muted-foreground">
-                All four details are in — the rest of the studio is open to you.
+                All five details are in — the rest of the studio is open to you.
               </p>
             </div>
           )}

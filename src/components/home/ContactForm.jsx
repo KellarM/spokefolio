@@ -7,7 +7,7 @@ const FIELDS = [
   { key: 'email', label: 'Email', placeholder: 'jane@email.com', required: true },
   { key: 'phone', label: 'Phone', placeholder: '(555) 010-2233', required: true },
   { key: 'location', label: 'Location', placeholder: 'Edmonton, Alberta, Canada', required: true },
-  { key: 'preferred_language', label: 'Language', placeholder: 'Choose your language', language: true },
+  { key: 'preferred_language', label: 'Language', placeholder: 'Choose your language', language: true, required: true },
   { key: 'linkedin', label: 'LinkedIn', placeholder: 'linkedin.com/in/janedoe' },
   { key: 'website', label: 'Website', placeholder: 'janedoe.com' }
 ];
@@ -45,7 +45,7 @@ export default function ContactForm({ profile, onSave }) {
     <div className="mec-panel">
       <h3 className="mec-h3-top">Your details</h3>
       <p className="mec-lede">
-        These sit at the top of every résumé you generate. The four starred details are needed before the overview opens.
+        These sit at the top of every résumé you generate. The five starred details are needed before the overview opens.
       </p>
 
       <div className="mec-fields">
