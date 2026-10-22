@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import DictateButton from '@/components/common/DictateButton';
 import { appendLine } from '@/hooks/useDictation';
 
-export default function CoverLetterSection({ value, onChange, company, onDownload, downloading, onGenerate, generating }) {
+export default function CoverLetterSection({ value, onChange, company, onDownload, onDownloadPdf, downloading, downloadingPdf, onGenerate, generating }) {
   const hasLetter = Boolean((value || '').trim());
 
   return (
@@ -17,14 +17,20 @@ export default function CoverLetterSection({ value, onChange, company, onDownloa
             Cover letter
           </Label>
           <p className="mt-1.5 text-[12.5px] text-muted-foreground">
-            Written for {company || 'this employer'} from your history. Edit it here, then send it as Word.
+            Written for {company || 'this employer'} from your history. Edit it here, then download it as Word or PDF.
           </p>
         </div>
         {hasLetter ? (
-          <Button variant="secondary" className="rounded-full" onClick={onDownload} disabled={downloading}>
-            {downloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-            Download cover letter
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" className="rounded-full" onClick={onDownload} disabled={downloading}>
+              {downloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              Word
+            </Button>
+            <Button variant="secondary" className="rounded-full" onClick={onDownloadPdf} disabled={downloadingPdf}>
+              {downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              PDF
+            </Button>
+          </div>
         ) : (
           <Button className="rounded-full" onClick={onGenerate} disabled={generating}>
             {generating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PenLine className="mr-2 h-4 w-4" />}

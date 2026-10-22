@@ -23,6 +23,7 @@ import ResumeTailoringPanel from '@/components/resume/ResumeTailoringPanel';
 import ResumeStyleControls from '@/components/resume/ResumeStyleControls';
 import CoverLetterSection from '@/components/resume/CoverLetterSection';
 import { downloadDocxFile } from '@/lib/downloadDocx';
+import { downloadPdfFile } from '@/lib/downloadPdf';
 import TemplatePicker from '@/components/resume/TemplatePicker';
 import { getTemplate, resolveTemplateId } from '@/lib/resumeTemplates';
 import { readElementOverrides } from '@/lib/resumeElementStyles';
@@ -59,6 +60,7 @@ export default function ApplicationDetail() {
   const [saving, setSaving] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [downloadingLetter, setDownloadingLetter] = useState(false);
+  const [downloadingLetterPdf, setDownloadingLetterPdf] = useState(false);
   const [writingLetter, setWritingLetter] = useState(false);
   const [rewriting, setRewriting] = useState(false);
   const [pickedTemplate, setPickedTemplate] = useState('');
@@ -193,6 +195,24 @@ export default function ApplicationDetail() {
       reportError('Could not build the cover letter', error);
     }
     setDownloadingLetter(false);
+  };
+
+  const downloadLetterPdf = async () => {
+    setDownloadingLetterPdf(true);
+    try {
+      const saved = await persist();
+      const response = await base44.functions.invoke('exportCoverLetterPdf', {
+        profile,
+        cover_letter: saved.cover_letter || coverLetter,
+        recipient: { company: saved.company, job_title: saved.job_title }
+      });
+      const { base64, filename } = response.data || {};
+      downloadPdfFile(base64, filename, 'cover-letter.pdf');
+      toast({ title: 'Cover letter PDF downloaded', description: filename });
+    } catch (error) {
+      reportError('Could not build the cover letter PDF', error);
+    }
+    setDownloadingLetterPdf(false);
   };
 
   const writeLetter = async () => {
@@ -617,6 +637,8 @@ export default function ApplicationDetail() {
         company={application.company}
         onDownload={downloadLetter}
         downloading={downloadingLetter}
+        onDownloadPdf={downloadLetterPdf}
+        downloadingPdf={downloadingLetterPdf}
         onGenerate={writeLetter}
         generating={writingLetter}
       />
