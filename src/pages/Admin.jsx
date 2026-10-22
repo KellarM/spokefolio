@@ -158,6 +158,43 @@ export default function Admin() {
         </div>
       </div>
 
+      {Array.isArray(stats.recentOpens) && (
+        <div className="rounded-xl border border-border bg-card p-5 mt-5 overflow-x-auto">
+          <div className="flex items-baseline justify-between mb-4">
+            <h2 className="font-semibold text-foreground">Most recent app opens</h2>
+            <p className="text-xs text-muted-foreground">
+              the latest {stats.recentOpens.length} of {stats.appOpens}
+            </p>
+          </div>
+          {stats.recentOpens.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No app opens recorded yet.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
+                  <th className="py-2 pr-4 font-medium">#</th>
+                  <th className="py-2 pr-4 font-medium">Opened</th>
+                  <th className="py-2 pr-4 font-medium">Name</th>
+                  <th className="py-2 pr-4 font-medium">Email</th>
+                  <th className="py-2 pr-4 font-medium">Location</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.recentOpens.map((o, i) => (
+                  <tr key={o.id || i} className="border-b border-border/40 last:border-0">
+                    <td className="py-2.5 pr-4 text-muted-foreground">{i + 1}</td>
+                    <td className="py-2.5 pr-4 text-foreground whitespace-nowrap">{fmt(o.at)}</td>
+                    <td className="py-2.5 pr-4 text-foreground whitespace-nowrap">{o.name || '\u2014'}</td>
+                    <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{o.email || '\u2014'}</td>
+                    <td className="py-2.5 pr-4 text-muted-foreground whitespace-nowrap">{o.location || '\u2014'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
       {Array.isArray(stats.funnel) && stats.funnel.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-5 mt-5">
           <div className="flex items-baseline justify-between">

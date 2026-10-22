@@ -120,6 +120,19 @@ export default async function (req) {
       }
     }
 
+    // The latest app opens, newest first, so the dashboard can list the most recent ones.
+    const userById = new Map(users.map((u) => [u.id, u]));
+    const recentOpens = openEvents.slice(0, 15).map((e) => {
+      const u = userById.get(e.created_by_id);
+      return {
+        id: e.id,
+        at: e.created_date || null,
+        name: u?.full_name || '',
+        email: u?.email || '',
+        location: locationByUser.get(e.created_by_id) || null
+      };
+    });
+
     // Funnel stages: distinct users who reached each stage.
     const intakeUsers = new Set(
       resumeProfiles.filter((p) => p.history_complete === true).map((p) => p.created_by_id)
@@ -177,6 +190,7 @@ export default async function (req) {
       appOpenUsers: openUsers.size,
       usedApp: usedUsers.size,
       daily: countByDay(events, 14),
+      recentOpens,
       funnel,
       accounts: signups,
       countsCapped: capped.value,
