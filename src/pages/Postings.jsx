@@ -8,7 +8,10 @@ import PostingCard from '@/components/postings/PostingCard';
 import PostingImportForm from '@/components/postings/PostingImportForm';
 import JobSearchPanel from '@/components/postings/JobSearchPanel';
 import JobSearchResults from '@/components/postings/JobSearchResults';
+import JobBoardDirectory from '@/components/postings/JobBoardDirectory';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
+import { pillClass } from '@/components/postings/JobSearchFilters';
+import { Search, FolderSearch } from 'lucide-react';
 
 export default function Postings() {
   const { t } = useStudioLanguage();
@@ -19,6 +22,7 @@ export default function Postings() {
   const [locating, setLocating] = useState(false);
   const [search, setSearch] = useState(null);
   const [savingKey, setSavingKey] = useState('');
+  const [tab, setTab] = useState('search');
 
   const load = useCallback(async () => {
     const records = await base44.entities.JobPosting.list('-created_date', 100);
@@ -199,6 +203,19 @@ export default function Postings() {
         </p>
       </header>
 
+      <div className="mt-6 flex flex-wrap gap-2">
+        <button type="button" className={pillClass(tab === 'search')} onClick={() => setTab('search')}>
+          <Search className="h-3.5 w-3.5" /> {t('sources.tabSearch')}
+        </button>
+        <button type="button" className={pillClass(tab === 'sources')} onClick={() => setTab('sources')}>
+          <FolderSearch className="h-3.5 w-3.5" /> {t('sources.tab')}
+        </button>
+      </div>
+
+      {tab === 'sources' ? (
+        <JobBoardDirectory postings={postings} search={search} />
+      ) : (
+      <>
       <div className="mt-7 space-y-6">
         <JobSearchPanel onResults={setSearch} />
 
@@ -262,6 +279,8 @@ export default function Postings() {
             ))}
           </ul>
         </>
+      )}
+      </>
       )}
     </div>
   );
