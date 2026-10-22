@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import LanguageSelect, { getStoredLanguage } from '@/components/LanguageSelect';
+import LanguageSelect, { getStoredLanguage, normalizeLanguage } from '@/components/LanguageSelect';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 const FIELDS = [
@@ -27,7 +27,7 @@ export default function ContactForm({ profile, onSave }) {
     // picked on the intro page, so the choice follows them into the app.
     setForm({
       ...profile,
-      preferred_language: profile?.preferred_language || getStoredLanguage()
+      preferred_language: normalizeLanguage(profile?.preferred_language || getStoredLanguage())
     });
   }, [profile]);
 
@@ -64,7 +64,6 @@ export default function ContactForm({ profile, onSave }) {
               <LanguageSelect
                 id={field.key}
                 value={form[field.key] || ''}
-                placeholder={t(field.placeholder)}
                 className="mec-v"
                 onChange={(value) => setForm({ ...form, [field.key]: value })}
               />

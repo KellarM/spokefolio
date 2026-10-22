@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
-import LanguageSelect, { getStoredLanguage, storeLanguage } from '@/components/LanguageSelect';
+import LanguageSelect, { getStoredLanguage, storeLanguage, normalizeLanguage } from '@/components/LanguageSelect';
 import { landingStrings } from '@/i18n/landing';
 
 // Public front door. Logged-out visitors land here from "/" (see ProtectedRoute in
@@ -40,7 +40,7 @@ const SpeakOPhone = () => (
 );
 
 export default function Landing() {
-  const [language, setLanguage] = React.useState(getStoredLanguage());
+  const [language, setLanguage] = React.useState(normalizeLanguage(getStoredLanguage()));
 
   const t = landingStrings(language);
 

@@ -1,8 +1,7 @@
 import React from 'react';
 
-// Languages the app currently carries a full dictionary for, each named in
-// its own language so it is readable to the person choosing it. Anything
-// else can still be typed freely; an unknown language falls back to English.
+// Languages the app carries a full dictionary for, each named in its own
+// language so it is readable to the person choosing it.
 export const LANGUAGES = [
   'English',
   'Español',
@@ -14,11 +13,16 @@ export const LANGUAGES = [
 
 const LS_KEY = 'sf_preferred_language';
 
+// Any stored value that predates the dropdown (a typed language) falls back
+// to English — the UI only ever shows the six supported choices.
+export const normalizeLanguage = (language) =>
+  LANGUAGES.includes(language) ? language : 'English';
+
 export const getStoredLanguage = () => {
   try {
-    return localStorage.getItem(LS_KEY) || '';
+    return normalizeLanguage(localStorage.getItem(LS_KEY));
   } catch {
-    return '';
+    return 'English';
   }
 };
 
@@ -31,25 +35,20 @@ export const storeLanguage = (language) => {
   }
 };
 
-// Dropdown you can also type into. Native combobox: shows the list on focus,
-// accepts any typed language. No dependencies, works on every browser.
-export default function LanguageSelect({ id, value, onChange, className, placeholder }) {
+// Plain dropdown. No typing: the six supported languages, nothing else.
+export default function LanguageSelect({ id, value, onChange, className }) {
   return (
-    <>
-      <input
-        id={id}
-        type="text"
-        list={`${id}-options`}
-        value={value || ''}
-        placeholder={placeholder || 'Choose your language'}
-        onChange={(event) => onChange && onChange(event.target.value)}
-        className={className || 'mec-v'}
-      />
-      <datalist id={`${id}-options`}>
-        {LANGUAGES.map((language) => (
-          <option key={language} value={language} />
-        ))}
-      </datalist>
-    </>
+    <select
+      id={id}
+      value={normalizeLanguage(value)}
+      onChange={(event) => onChange && onChange(event.target.value)}
+      className={className || 'mec-v'}
+    >
+      {LANGUAGES.map((language) => (
+        <option key={language} value={language}>
+          {language}
+        </option>
+      ))}
+    </select>
   );
 }
