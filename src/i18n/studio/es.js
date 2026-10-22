@@ -76,7 +76,7 @@ export default {
   'profile.completeHistory': 'Completa y confirma tu historial laboral para generar tu resumen principal.',
   'profile.dangerEyebrow': 'Zona de riesgo',
   'profile.deleteTitle': 'Eliminar perfil',
-  'profile.deleteLede': 'Esto borra todo lo que tienes en Spokefolio: tus datos, historial profesional, postulaciones, currículums, ofertas guardadas y tu lista de bolsas de empleo. Tu identidad de acceso queda en el servicio de inicio de sesión, así que puedes crear una cuenta nueva en cualquier momento. No se puede deshacer.',
+  'profile.deleteLede': 'Esto borra todo lo que tienes en Spokefolio: tus datos, historial profesional, postulaciones, currículums, ofertas guardadas y tu lista de bolsas de empleo. Tu acceso queda en el servicio de inicio de sesión: la próxima vez que inicies sesión con los mismos datos, el estudio está vacío y empiezas de cero. No se puede deshacer.',
   'profile.deleteButton': 'Eliminar perfil',
   'profile.deleteConfirmTitle': '¿Eliminar tu perfil?',
   'profile.deleteConfirmDesc': 'Todo queda borrado: perfil, historial profesional, postulaciones, currículums, ofertas y tu lista de bolsas. No hay forma de deshacerlo.',

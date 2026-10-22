@@ -76,7 +76,7 @@ export default {
   'profile.completeHistory': 'Conclua e confirme seu histórico profissional para gerar seu resumo principal.',
   'profile.dangerEyebrow': 'Zona de risco',
   'profile.deleteTitle': 'Excluir perfil',
-  'profile.deleteLede': 'Isso apaga tudo o que você tem no Spokefolio: seus dados, histórico profissional, candidaturas, currículos, vagas salvas e sua lista de sites de emprego. Sua identidade de login permanece no serviço de acesso, então você pode criar uma conta nova a qualquer momento. Não é possível desfazer.',
+  'profile.deleteLede': 'Isso apaga tudo o que você tem no Spokefolio: seus dados, histórico profissional, candidaturas, currículos, vagas salvas e sua lista de sites de emprego. Seu acesso permanece no serviço de login: na próxima vez que você entrar com os mesmos dados, o estúdio está vazio e você começa de novo. Não é possível desfazer.',
   'profile.deleteButton': 'Excluir perfil',
   'profile.deleteConfirmTitle': 'Excluir seu perfil?',
   'profile.deleteConfirmDesc': 'Tudo é apagado: perfil, histórico profissional, candidaturas, currículos, vagas e sua lista de sites de emprego. Não há como desfazer.',

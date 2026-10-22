@@ -83,7 +83,7 @@ export default {
   'profile.completeHistory': "Complétez et verrouillez votre parcours professionnel pour générer votre résumé maître.",
   'profile.dangerEyebrow': 'Zone à risque',
   'profile.deleteTitle': 'Supprimer le profil',
-  'profile.deleteLede': 'Cela efface tout ce que vous avez dans Spokefolio : vos coordonnées, votre parcours, vos candidatures, vos curriculum vitæ, les offres enregistrées et votre liste de sites d\'emploi. Votre identité de connexion reste auprès du service de connexion, donc vous pouvez recréer un compte à tout moment. Impossible d\'annuler.',
+  'profile.deleteLede': 'Cela efface tout ce que vous avez dans Spokefolio : vos coordonnées, votre parcours, vos candidatures, vos curriculum vitæ, les offres enregistrées et votre liste de sites d\'emploi. Votre connexion reste auprès du service de connexion : à votre prochaine connexion avec les mêmes identifiants, l\'atelier est vide et vous repartez de zéro. Impossible d\'annuler.',
   'profile.deleteButton': 'Supprimer le profil',
   'profile.deleteConfirmTitle': 'Supprimer votre profil ?',
   'profile.deleteConfirmDesc': 'Tout est effacé : profil, parcours, candidatures, curriculum vitæ, offres et votre liste de sites d\'emploi. Il n\'y a pas de retour arrière.',

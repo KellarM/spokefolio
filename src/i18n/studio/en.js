@@ -90,7 +90,7 @@ export default {
   'profile.completeHistory': 'Complete and lock in your career history to generate your master summary.',
   'profile.dangerEyebrow': 'Danger zone',
   'profile.deleteTitle': 'Delete profile',
-  'profile.deleteLede': 'This erases everything you have in Spokefolio: your details, career history, applications, résumés, saved postings and board list. Your sign-in identity stays with the login service, so you can create a new account again at any time. This cannot be undone.',
+  'profile.deleteLede': 'This erases everything you have in Spokefolio: your details, career history, applications, résumés, saved postings and board list. Your sign-in stays with the login service — the next time you log in with the same details, the studio is empty and you start fresh. This cannot be undone.',
   'profile.deleteButton': 'Delete profile',
   'profile.deleteConfirmTitle': 'Delete your profile?',
   'profile.deleteConfirmDesc': 'Everything is erased: your profile, career history, applications, résumés, postings and your board list. There is no undo.',

@@ -76,7 +76,7 @@ export default {
   'profile.completeHistory': 'Completa e blocca la tua storia lavorativa per generare il tuo riepilogo principale.',
   'profile.dangerEyebrow': 'Zona di rischio',
   'profile.deleteTitle': 'Elimina profilo',
-  'profile.deleteLede': 'Questo cancella tutto ciò che hai su Spokefolio: i tuoi dati, la storia professionale, le candidature, i curriculum, le offerte salvate e la tua lista di bacheche. La tua identità di accesso resta nel servizio di accesso, quindi puoi ricreare un account in qualsiasi momento. Non si può annullare.',
+  'profile.deleteLede': 'Questo cancella tutto ciò che hai su Spokefolio: i tuoi dati, la storia professionale, le candidature, i curriculum, le offerte salvate e la tua lista di bacheche. Il tuo accesso resta nel servizio di accesso: al prossimo accesso con le stesse credenziali, lo studio è vuoto e ricominci da zero. Non si può annullare.',
   'profile.deleteButton': 'Elimina profilo',
   'profile.deleteConfirmTitle': 'Eliminare il tuo profilo?',
   'profile.deleteConfirmDesc': 'Tutto viene cancellato: profilo, storia professionale, candidature, curriculum, offerte e la tua lista di bacheche. Non c’è modo di annullare.',

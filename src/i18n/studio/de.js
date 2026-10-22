@@ -83,7 +83,7 @@ export default {
   'profile.completeHistory': 'Schließe deine Berufshistorie ab, um deine Master-Zusammenfassung zu erstellen.',
   'profile.dangerEyebrow': 'Gefahrenzone',
   'profile.deleteTitle': 'Profil löschen',
-  'profile.deleteLede': 'Damit wird alles gelöscht, was du in Spokefolio hast: deine Angaben, dein Werdegang, deine Bewerbungen, deine Lebensläufe, gespeicherte Stellenangebote und deine Jobbörsen-Liste. Deine Anmelde-Identität bleibt beim Login-Dienst, du kannst also jederzeit ein neues Konto erstellen. Dies lässt sich nicht rückgängig machen.',
+  'profile.deleteLede': 'Damit wird alles gelöscht, was du in Spokefolio hast: deine Angaben, dein Werdegang, deine Bewerbungen, deine Lebensläufe, gespeicherte Stellenangebote und deine Jobbörsen-Liste. Deine Anmeldung bleibt beim Login-Dienst: Beim nächsten Login mit denselben Daten ist das Studio leer und du startest von vorn. Dies lässt sich nicht rückgängig machen.',
   'profile.deleteButton': 'Profil löschen',
   'profile.deleteConfirmTitle': 'Dein Profil löschen?',
   'profile.deleteConfirmDesc': 'Alles wird gelöscht: Profil, Werdegang, Bewerbungen, Lebensläufe, Angebote und deine Jobbörsen-Liste. Es gibt kein Zurück.',
