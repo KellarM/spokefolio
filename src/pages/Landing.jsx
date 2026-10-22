@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
+import LanguageSelect, { getStoredLanguage, storeLanguage } from '@/components/LanguageSelect';
 
 // Public front door. Logged-out visitors land here from "/" (see ProtectedRoute in
 // App.jsx: unauthenticated visitors see this page at the root URL.)
@@ -81,6 +82,8 @@ const SpeakOPhone = () => (
 );
 
 export default function Landing() {
+  const [language, setLanguage] = React.useState(getStoredLanguage());
+
   return (
     <div className="lnd">
       <nav className="lnd-nav">
@@ -89,6 +92,20 @@ export default function Landing() {
             <SpeakOPhone />
             <span className="lnd-wordmark">SPOKEFOLIO</span>
           </span>
+          <div className="lnd-lang">
+            <label htmlFor="landing-language" className="lnd-lang-label">
+              Language
+            </label>
+            <LanguageSelect
+              id="landing-language"
+              value={language}
+              onChange={(value) => {
+                setLanguage(value);
+                storeLanguage(value);
+              }}
+              className="lnd-lang-input"
+            />
+          </div>
           <div className="lnd-nav-links">
             <Link to="/about" className="lnd-signin">About</Link>
             <Link to="/contact" className="lnd-signin">Contact</Link>

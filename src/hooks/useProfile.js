@@ -8,7 +8,8 @@ const EMPTY = {
   location: '',
   linkedin: '',
   website: '',
-  headline: ''
+  headline: '',
+  preferred_language: ''
 };
 
 export default function useProfile() {

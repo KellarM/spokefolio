@@ -954,6 +954,38 @@
   gap: 22px;
 }
 
+.lnd-lang {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lnd-lang-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8b93a5;
+}
+
+.lnd-lang-input {
+  width: 150px;
+  padding: 7px 10px;
+  font-size: 13.5px;
+  color: #F9FAFB;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 8px;
+  outline: none;
+}
+
+.lnd-lang-input:focus {
+  border-color: rgba(212, 175, 55, 0.6);
+}
+
+.lnd-lang-input::placeholder {
+  color: #6b7385;
+}
+
 .lnd-signin {
   font-size: 18px;
   color: #c3cad8;
@@ -1370,6 +1402,10 @@
 
   .lnd-nav-links {
     gap: 14px;
+  }
+
+  .lnd-lang-label {
+    display: none;
   }
 }
 

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import LanguageSelect, { getStoredLanguage } from '@/components/LanguageSelect';
 
 const FIELDS = [
   { key: 'full_name', label: 'Full name', placeholder: 'Jane Doe', required: true },
   { key: 'email', label: 'Email', placeholder: 'jane@email.com', required: true },
   { key: 'phone', label: 'Phone', placeholder: '(555) 010-2233', required: true },
   { key: 'location', label: 'Location', placeholder: 'Edmonton, Alberta, Canada', required: true },
+  { key: 'preferred_language', label: 'Language', placeholder: 'Choose your language', language: true },
   { key: 'linkedin', label: 'LinkedIn', placeholder: 'linkedin.com/in/janedoe' },
   { key: 'website', label: 'Website', placeholder: 'janedoe.com' }
 ];
@@ -16,7 +18,12 @@ export default function ContactForm({ profile, onSave }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setForm(profile || {});
+    // An existing profile without a language yet adopts whatever the person
+    // picked on the intro page, so the choice follows them into the app.
+    setForm({
+      ...profile,
+      preferred_language: profile?.preferred_language || getStoredLanguage()
+    });
   }, [profile]);
 
   const submit = async () => {
@@ -48,15 +55,25 @@ export default function ContactForm({ profile, onSave }) {
               {field.label}
               {field.required && <span className="text-accent"> *</span>}
             </label>
-            <input
-              id={field.key}
-              type="text"
-              value={form[field.key] || ''}
-              placeholder={field.placeholder}
-              aria-required={field.required ? 'true' : undefined}
-              onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
-              className="mec-v"
-            />
+            {field.language ? (
+              <LanguageSelect
+                id={field.key}
+                value={form[field.key] || ''}
+                placeholder={field.placeholder}
+                className="mec-v"
+                onChange={(value) => setForm({ ...form, [field.key]: value })}
+              />
+            ) : (
+              <input
+                id={field.key}
+                type="text"
+                value={form[field.key] || ''}
+                placeholder={field.placeholder}
+                aria-required={field.required ? 'true' : undefined}
+                onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+                className="mec-v"
+              />
+            )}
             {field.key === 'location' && profile?.location_full && (
               <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
                 Identified as {profile.location_full}
