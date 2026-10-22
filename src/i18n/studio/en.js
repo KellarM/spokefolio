@@ -317,4 +317,8 @@ export default {
   'sources.toastAddedDesc': 'Open it from your list any time.',
   'sources.toastFailed': 'This board could not be added',
   'postings.capturedCount': '{count} postings captured',
+  'sources.statusDirect': 'Searched directly',
+  'sources.statusWeb': 'Found by web search',
+  'sources.statusManual': 'Open & import',
+  'sources.statusLede': 'Boards marked \'Searched directly\' or \'Found by web search\' are scanned automatically when you search. The rest: open the board from here, find a posting, and paste its link into the importer above the kept list.'
 };

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ExternalLink, Loader2, Plus } from 'lucide-react';
+import { ExternalLink, Globe, Hand, Loader2, Plus, Search } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,6 +54,28 @@ const hostOf = (url) => {
 const labelFor = (url) => {
   const host = hostOf(url);
   return DOMAIN_LABELS[host] || host || '—';
+};
+
+// What the app actually searches. Job Bank is called directly by API; the
+// web-search pass surfaces the web tier organically; everything else the
+// person opens and imports from by hand. Derived from the URL, so
+// user-added boards label themselves correctly too.
+const DIRECT_HOSTS = ['jobbank.gc.ca'];
+const WEB_HOSTS = ['ca.indeed.com', 'indeed.com', 'linkedin.com', 'glassdoor.ca', 'glassdoor.com'];
+
+const tierOf = (url) => {
+  const host = hostOf(url);
+  if (DIRECT_HOSTS.some((h) => host === h || host.endsWith('.' + h))) return 'direct';
+  if (WEB_HOSTS.some((h) => host === h || host.endsWith('.' + h))) return 'web';
+  return 'manual';
+};
+
+const TIER_ORDER = { direct: 0, web: 1, manual: 2 };
+
+const TIER_KEYS = {
+  direct: 'sources.statusDirect',
+  web: 'sources.statusWeb',
+  manual: 'sources.statusManual'
 };
 
 const KIND_KEYS = {
@@ -203,17 +225,26 @@ export default function JobBoardDirectory({ postings, search }) {
       <div className="mec-panel">
         <h3 className="mec-h3-top">{place ? t('sources.directoryFor', { place }) : t('sources.directoryTitle')}</h3>
         <p className="mec-lede">{t('sources.directoryLede')}</p>
+        <p className="text-[13px] leading-relaxed text-muted-foreground">{t('sources.statusLede')}</p>
         {seeding ? (
           <p className="mt-4 flex items-center gap-2 text-[13px] text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('sources.seeding')}
           </p>
         ) : (
           <div className="mt-4 divide-y divide-border/70">
-            {boards.map((board) => (
+            {[...boards]
+              .sort((a, b) => (TIER_ORDER[tierOf(a.url)] ?? 9) - (TIER_ORDER[tierOf(b.url)] ?? 9))
+              .map((board) => (
               <div key={board.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="truncate text-[14px] font-medium text-foreground">{board.name}</span>
+                    <span className={pillClass(tierOf(board.url) === 'direct')}>
+                      {tierOf(board.url) === 'direct' && <Search className="h-3 w-3" />}
+                      {tierOf(board.url) === 'web' && <Globe className="h-3 w-3" />}
+                      {tierOf(board.url) === 'manual' && <Hand className="h-3 w-3" />}
+                      {t(TIER_KEYS[tierOf(board.url)])}
+                    </span>
                     <span className={pillClass(false)}>{t(KIND_KEYS[board.kind] || KIND_KEYS.user)}</span>
                     {board.coverage && (
                       <span className="text-[12px] text-muted-foreground">{board.coverage}</span>

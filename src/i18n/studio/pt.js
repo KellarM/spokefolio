@@ -280,4 +280,8 @@ export default {
   'sources.toastAddedDesc': 'Abra da sua lista quando quiser.',
   'sources.toastFailed': 'Não foi possível adicionar este site',
   'postings.capturedCount': '{count} ofertas capturadas',
+  'sources.statusDirect': 'Pesquisado diretamente',
+  'sources.statusWeb': 'Encontrado pela pesquisa na web',
+  'sources.statusManual': 'Abrir e importar',
+  'sources.statusLede': 'Os sites marcados como \'Pesquisado diretamente\' ou \'Encontrado pela pesquisa na web\' são verificados automaticamente quando você pesquisa. Os demais: abra daqui, encontre uma oferta e cole o link no importador.'
 };

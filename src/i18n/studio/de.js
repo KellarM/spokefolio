@@ -303,4 +303,8 @@ export default {
   'sources.toastAddedDesc': 'Öffne sie jederzeit aus deiner Liste.',
   'sources.toastFailed': 'Diese Börse konnte nicht hinzugefügt werden',
   'postings.capturedCount': '{count} Anzeigen erfasst',
+  'sources.statusDirect': 'Direkt durchsucht',
+  'sources.statusWeb': 'Über die Websuche gefunden',
+  'sources.statusManual': 'Öffnen und importieren',
+  'sources.statusLede': 'Als \'Direkt durchsucht\' oder \'Über die Websuche gefunden\' markierte Börsen werden bei der Suche automatisch geprüft. Die übrigen: von hier öffnen, eine Stelle finden und ihren Link im Import einfügen.'
 };

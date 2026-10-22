@@ -303,4 +303,8 @@ export default {
   'sources.toastAddedDesc': 'Ouvrez-le depuis votre liste quand vous voulez.',
   'sources.toastFailed': "Ce site n'a pas pu être ajouté",
   'postings.capturedCount': '{count} offres capturées',
+  'sources.statusDirect': 'Recherché directement',
+  'sources.statusWeb': 'Trouvé par la recherche web',
+  'sources.statusManual': 'Ouvrir et importer',
+  'sources.statusLede': 'Les sites marqués \'Recherché directement\' ou \'Trouvé par la recherche web\' sont analysés automatiquement quand vous cherchez. Les autres : ouvrez-les d\'ici, trouvez une offre et collez son lien dans l\'importateur.'
 };

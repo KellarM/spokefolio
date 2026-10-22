@@ -280,4 +280,8 @@ export default {
   'sources.toastAddedDesc': 'Aprila dalla tua lista quando vuoi.',
   'sources.toastFailed': 'Impossibile aggiungere questa bacheca',
   'postings.capturedCount': '{count} offerte acquisite',
+  'sources.statusDirect': 'Ricercata direttamente',
+  'sources.statusWeb': 'Trovata dalla ricerca web',
+  'sources.statusManual': 'Apri e importa',
+  'sources.statusLede': 'Le bacheche contrassegnate come \'Ricercata direttamente\' o \'Trovata dalla ricerca web\' vengono esaminate automaticamente durante la ricerca. Le altre: aprile da qui, trova un\'offerta e incolla il suo link nell\'importatore.'
 };

@@ -280,4 +280,8 @@ export default {
   'sources.toastAddedDesc': 'Ábrela desde tu lista cuando quieras.',
   'sources.toastFailed': 'Esta bolsa no pudo añadirse',
   'postings.capturedCount': '{count} ofertas capturadas',
+  'sources.statusDirect': 'Búsqueda directa',
+  'sources.statusWeb': 'Aparece en la búsqueda web',
+  'sources.statusManual': 'Abrir e importar',
+  'sources.statusLede': 'Las bolsas marcadas como \'Búsqueda directa\' o \'Aparece en la búsqueda web\' se examinan automáticamente al buscar. Las demás: ábrelas desde aquí, encuentra una oferta y pega su enlace en el importador.'
 };
