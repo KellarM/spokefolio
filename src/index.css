@@ -1763,3 +1763,12 @@
     height: 44px;
   }
 }
+
+/* Native select popups paint a light system list. Options inherit the
+   select's light text color and vanish on it, so force dark-on-light
+   for every option in every dropdown (landing nav, signup, profile,
+   history trays, review workspace). */
+select option {
+  color: #1f2430;
+  background: #ffffff;
+}
