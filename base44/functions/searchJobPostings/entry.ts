@@ -8,6 +8,84 @@ const MAX_HISTORY = 10;
 const MAX_TITLES = 2;
 const BANK_PER_TERM = 5;
 
+const TRANSLATION_SCHEMA = {
+  type: 'object',
+  properties: {
+    translations: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          job_title: { type: 'string' },
+          summary: { type: 'string' },
+          pay: { type: 'string' },
+          posted: { type: 'string' }
+        },
+        required: ['id', 'job_title', 'summary', 'pay', 'posted']
+      }
+    }
+  },
+  required: ['translations']
+};
+
+// The board itself serves French natively; everything else (partner sites,
+// wider web search) arrives in whatever language it was posted in. Those
+// fields the client actually reads are translated into their language in one
+// call. Company names, addresses and links stay exactly as they are.
+async function translateResults(base44, results, language) {
+  if (language === 'English' || !Array.isArray(results) || !results.length) return results;
+
+  const targets = results
+    .map((item, index) => ({ index, item }))
+    .filter(({ item }) => (item.native_language || 'English') !== language && (item.job_title || item.summary));
+  if (!targets.length) return results;
+
+  const input = targets.map(({ index, item }) => ({
+    id: String(index),
+    job_title: cleanText(item.job_title, 200),
+    summary: cleanText(item.summary, 500),
+    pay: cleanText(item.pay, 120),
+    posted: cleanText(item.posted, 60)
+  }));
+
+  try {
+    const response = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt: [
+        'You translate job postings for a job seeker.',
+        `Translate every value into this language: ${language}.`,
+        'Keep company names, place names, URLs, currencies and numbers exactly as written.',
+        'Translate the job title, the summary, the pay line and the posted date naturally in that language.',
+        'Keep translations short and plain. Return exactly one translation object per input id.',
+        'Input postings as JSON:',
+        JSON.stringify(input)
+      ].join('\n'),
+      response_json_schema: TRANSLATION_SCHEMA
+    });
+
+    const translations = Array.isArray(response?.translations) ? response.translations : [];
+    const byId = new Map(
+      translations
+        .map((t) => [String(t.id), t])
+        .filter(([, t]) => t && (cleanText(t.job_title, 200) || cleanText(t.summary, 500)))
+    );
+
+    return results.map((item, index) => {
+      const t = byId.get(String(index));
+      if (!t) return item;
+      const merged = { ...item };
+      if (cleanText(t.job_title, 200)) merged.job_title = cleanText(t.job_title, 200);
+      if (cleanText(t.summary, 500)) merged.summary = cleanText(t.summary, 500);
+      if (cleanText(t.pay, 120)) merged.pay = cleanText(t.pay, 120);
+      if (cleanText(t.posted, 60)) merged.posted = cleanText(t.posted, 60);
+      merged.native_language = language;
+      return merged;
+    });
+  } catch (error) {
+    return results;
+  }
+}
+
 const asList = (values, max, width) =>
   (Array.isArray(values) ? values : [])
     .map((value) => cleanText(value, width))
@@ -216,6 +294,9 @@ export default async function (req) {
     }
 
     const mode = body?.mode === 'profile' ? 'profile' : 'criteria';
+    // The person's chosen language, falling back to English. body.language wins
+    // so a caller can pass it explicitly.
+    const language = cleanText(body?.language || body?.profile?.preferred_language || '', 40) || 'English';
     const category = cleanText(body?.category, 120);
     const homeLocation = cleanText(body?.homeLocation || body?.profile?.location, 160);
     const location = cleanText(body?.location, 120) || homeLocation;
@@ -281,7 +362,8 @@ export default async function (req) {
               distanceKm,
               minPay,
               payPeriod,
-              limit: BANK_PER_TERM
+              limit: BANK_PER_TERM,
+              language
             }).catch(() => []),
             searchOnce(base44, title, location, homeLocation, distanceKm, limits)
           ])
@@ -307,12 +389,16 @@ export default async function (req) {
           distanceKm,
           minPay,
           payPeriod,
-          limit: BANK_PER_TERM
+          limit: BANK_PER_TERM,
+          language
         }).catch(() => []),
         searchOnce(base44, category, location, homeLocation, distanceKm, limits)
       ]);
       results = [...bank, ...found.results].slice(0, MAX_RESULTS);
     }
+
+    // Postings that did not arrive in the person's language are translated into it.
+    results = await translateResults(base44, results, language);
 
     // Calculate driving distance and drive time from Home to each workplace so every search result shows it immediately.
     if (results.length > 0) {

@@ -3,6 +3,11 @@ import { cleanText } from './career.ts';
 // Canada's national job board. Its search pages list live postings with the employer, the place,
 // the pay and the date, and every posting has its own page the app can read in full.
 const JOB_BANK = 'https://www.jobbank.gc.ca';
+// The same national board in French. Postings exist on both mirrors under the
+// same id, so a French client sees natively French postings, not translations.
+const JOB_BANK_FR = 'https://www.guichet-emplois.gc.ca';
+
+const jobBankBase = (language) => (language === 'Français' ? JOB_BANK_FR : JOB_BANK);
 const PER_PAGE = 25;
 const HOURS_A_YEAR = 2080;
 const USER_AGENT =
@@ -333,13 +338,16 @@ function readPostings(html) {
     .filter(Boolean);
 }
 
-async function listingPage(keywords, province, page) {
+async function listingPage(keywords, province, page, language) {
   const term = encodeURIComponent(keywords).replace(/%20/g, '+');
-  const url = `${JOB_BANK}/jobsearch/jobsearch?searchstring=${term}&sort=D${province ? `&fprov=${province}` : ''}${
+  const url = `${jobBankBase(language)}/jobsearch/jobsearch?searchstring=${term}&sort=D${province ? `&fprov=${province}` : ''}${
     page > 1 ? `&page=${page}` : ''
   }`;
   const response = await fetch(url, {
-    headers: { 'User-Agent': USER_AGENT, 'Accept-Language': 'en-CA,en;q=0.9' },
+    headers: {
+      'User-Agent': USER_AGENT,
+      'Accept-Language': language === 'Français' ? 'fr-CA,fr;q=0.9' : 'en-CA,en;q=0.9'
+    },
     signal: AbortSignal.timeout(12000)
   });
   if (!response.ok) return [];
@@ -347,14 +355,17 @@ async function listingPage(keywords, province, page) {
 }
 
 // Reads a Job Bank detail page to extract the partner's original posting link (e.g., Indeed, Talent.com) and the embedded full job description.
-export async function inspectJobBankPosting(jobBankIdOrUrl) {
+export async function inspectJobBankPosting(jobBankIdOrUrl, language) {
   const idMatch = String(jobBankIdOrUrl || '').match(/(\d{6,})/);
   if (!idMatch) return null;
-  const jobBankUrl = `${JOB_BANK}/jobsearch/jobposting/${idMatch[1]}`;
+  const jobBankUrl = `${jobBankBase(language)}/jobsearch/jobposting/${idMatch[1]}`;
 
   try {
     const response = await fetch(jobBankUrl, {
-      headers: { 'User-Agent': USER_AGENT, 'Accept-Language': 'en-CA,en;q=0.9' },
+      headers: {
+        'User-Agent': USER_AGENT,
+        'Accept-Language': language === 'Français' ? 'fr-CA,fr;q=0.9' : 'en-CA,en;q=0.9'
+      },
       signal: AbortSignal.timeout(10000)
     });
     if (!response.ok) return null;
@@ -410,23 +421,31 @@ export async function inspectJobBankPosting(jobBankIdOrUrl) {
 // The pay a posting states, worked out for a year, so a minimum pay can be applied to it.
 function annualPay(pay) {
   const text = fold(pay);
-  const amounts = (cleanText(pay, 120).match(/\d[\d,]*(?:\.\d+)?/g) || [])
-    .map((amount) => Number(amount.replace(/,/g, '')))
+  // French pay strings write decimals with a comma ("25,00 $ a l heure");
+  // English ones use the comma as a thousands separator.
+  const french = /heure|semaine|mois|jour\b|annuel|annee\b/.test(text);
+  const amounts = (cleanText(pay, 120).match(/\d[\d,\s]*(?:[.,]\d+)?/g) || [])
+    .map((raw) => {
+      let value = raw.replace(/\s/g, '');
+      if (french) value = value.replace(/,(\d{1,2})$/, '.$1').replace(/,/g, '');
+      else value = value.replace(/,/g, '');
+      return Number(value);
+    })
     .filter((amount) => amount > 0);
   if (!amounts.length) return 0;
   const amount = Math.max(...amounts);
-  if (/hour|\bhr\b/.test(text)) return amount * HOURS_A_YEAR;
-  if (/week/.test(text)) return amount * 52;
-  if (/month/.test(text)) return amount * 12;
-  if (/day/.test(text)) return amount * 260;
-  if (/year|annual/.test(text)) return amount;
+  if (/hour|\bhr\b|heure/.test(text)) return amount * HOURS_A_YEAR;
+  if (/week|semaine/.test(text)) return amount * 52;
+  if (/month|mois/.test(text)) return amount * 12;
+  if (/\bday\b|jour\b/.test(text)) return amount * 260;
+  if (/year|annual|annuel|annee\b/.test(text)) return amount;
   return 0;
 }
 
-async function toResult(item) {
+async function toResult(item, language) {
   const address = item.place.replace(/\s*\(([A-Za-z]{2})\)\s*$/, ', $1');
-  const jobBankUrl = `${JOB_BANK}/jobsearch/jobposting/${item.id}`;
-  const details = await inspectJobBankPosting(item.id);
+  const jobBankUrl = `${jobBankBase(language)}/jobsearch/jobposting/${item.id}`;
+  const details = await inspectJobBankPosting(item.id, language);
 
   const isPartner = Boolean(
     details?.externalUrl &&
@@ -438,11 +457,18 @@ async function toResult(item) {
   const fullDescription = details?.fullDescription || '';
   const summaryText = fullDescription
     ? plain(fullDescription, 340)
-    : `Listed on Canada's Job Bank${
-        item.mode ? ` · ${item.mode}` : ''
-      }. Open the posting to read the full description, the requirements and how to apply.`;
+    : language === 'Français'
+      ? `Offre affichée sur la Banque d'emplois du Canada${
+          item.mode ? ` · ${item.mode}` : ''
+        }. Ouvrez l'offre pour lire la description complète, les exigences et la façon de postuler.`
+      : `Listed on Canada's Job Bank${
+          item.mode ? ` · ${item.mode}` : ''
+        }. Open the posting to read the full description, the requirements and how to apply.`;
 
   return {
+    // French is claimed only when the French page actually served content;
+    // anything else is marked English so the translator takes it.
+    native_language: language === 'Français' && fullDescription ? 'Français' : 'English',
     job_title: item.title,
     company: item.company || details?.company || 'Not stated',
     work_address: details?.work_address || address,
@@ -465,7 +491,8 @@ export async function searchJobBank({
   distanceKm = 0,
   minPay = 0,
   payPeriod = 'year',
-  limit = 5
+  limit = 5,
+  language = 'English'
 }) {
   const term = cleanText(String(keywords == null ? '' : keywords), 120);
   if (term.length < 2) return [];
@@ -481,18 +508,22 @@ export async function searchJobBank({
     queries.push(term);
   }
 
-  const matchedItems = [];
-  const seen = new Set();
+  // One pass against one mirror of the board. A pass in French that finds
+  // nothing is retried against the English mirror rather than showing an
+  // empty board to a French-speaking client.
+  const collect = async (searchLanguage) => {
+    const matchedItems = [];
+    const seen = new Set();
 
-  for (const queryTerm of queries) {
-    const pages = place.city ? 2 : 1;
-    for (let page = 1; page <= pages; page += 1) {
-      let items = [];
-      try {
-        items = await listingPage(queryTerm, place.province, page);
-      } catch (error) {
-        break;
-      }
+    for (const queryTerm of queries) {
+      const pages = place.city ? 2 : 1;
+      for (let page = 1; page <= pages; page += 1) {
+        let items = [];
+        try {
+          items = await listingPage(queryTerm, place.province, page, searchLanguage);
+        } catch (error) {
+          break;
+        }
       if (!items.length) break;
 
       for (const item of items) {
@@ -520,6 +551,16 @@ export async function searchJobBank({
     }
   }
 
-  const results = await Promise.all(matchedItems.slice(0, limit).map((item) => toResult(item)));
+    return matchedItems.slice(0, limit);
+  };
+
+  let matchedItems = await collect(language);
+  if (!matchedItems.length && language !== 'English') {
+    matchedItems = await collect('English');
+  }
+
+  const results = await Promise.all(
+    matchedItems.slice(0, limit).map((item) => toResult(item, language))
+  );
   return results;
 }

@@ -33,6 +33,8 @@ export default function JobSearchPanel({ onResults }) {
       const minPay = pay ? Number(pay) : 0;
       const payload = {
         mode,
+        // The person's language rides along so postings come back in it.
+        language: (profile.preferred_language || '').trim(),
         category: category.trim(),
         location: place.trim(),
         homeLocation: (profile.location_full || profile.location || place || '').trim(),
