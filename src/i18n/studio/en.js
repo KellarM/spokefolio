@@ -88,6 +88,17 @@ export default {
   'profile.styleLede': 'Every new résumé uses this style. You can still pick a different one for a single application.',
   'profile.couldNotSaveStyle': 'Could not save your style',
   'profile.completeHistory': 'Complete and lock in your career history to generate your master summary.',
+  'profile.dangerEyebrow': 'Danger zone',
+  'profile.deleteTitle': 'Delete profile',
+  'profile.deleteLede': 'This erases everything you have in Spokefolio: your details, career history, applications, résumés, saved postings and board list. Your sign-in identity stays with the login service, so you can create a new account again at any time. This cannot be undone.',
+  'profile.deleteButton': 'Delete profile',
+  'profile.deleteConfirmTitle': 'Delete your profile?',
+  'profile.deleteConfirmDesc': 'Everything is erased: your profile, career history, applications, résumés, postings and your board list. There is no undo.',
+  'profile.deleteTypePrompt': 'Type DELETE to confirm.',
+  'profile.deleteCancel': 'Keep my profile',
+  'profile.deleteConfirmButton': 'Erase everything',
+  'profile.deleteFailedTitle': 'The profile could not be deleted',
+  'profile.deleteFailedBody': 'Nothing may have been erased yet. Close this and try again, or check what remains.',
 
   // Career history.
   'history.stepOne': 'Step one',
