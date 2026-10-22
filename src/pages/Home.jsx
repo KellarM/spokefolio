@@ -2,11 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import useProfile from '@/hooks/useProfile';
 import { trackAppOpen } from '@/lib/analytics';
+import { useAuth } from '@/lib/AuthContext';
 import StudioHero from '@/components/home/StudioHero';
 import RecentApplications from '@/components/home/RecentApplications';
 
 export default function Home() {
   const { profile, loadingProfile } = useProfile();
+  const { user } = useAuth();
   const [entries, setEntries] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -33,7 +35,7 @@ export default function Home() {
   }, [load]);
 
   useEffect(() => {
-    trackAppOpen();
+    trackAppOpen(user?.id);
   }, []);
 
   const historyComplete = !!profile.history_complete;
