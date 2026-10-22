@@ -4,16 +4,18 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import JobSearchFilters, { pillClass } from '@/components/postings/JobSearchFilters';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 import useProfile from '@/hooks/useProfile';
 
-const MODES = [
-  { value: 'criteria', label: 'Search by category', icon: Search },
-  { value: 'profile', label: 'Jobs that fit me', icon: Sparkles }
-];
 
 // Finds postings on the job sites: by category and location, or from the person's own history.
 export default function JobSearchPanel({ onResults }) {
+  const { t } = useStudioLanguage();
   const { profile, loadingProfile } = useProfile();
+  const MODES = [
+    { value: 'criteria', label: t('postings.modeCriteria'), icon: Search },
+    { value: 'profile', label: t('postings.modeProfile'), icon: Sparkles }
+  ];
   const [mode, setMode] = useState('criteria');
   const [category, setCategory] = useState('');
   const [location, setLocation] = useState('');
@@ -81,14 +83,12 @@ export default function JobSearchPanel({ onResults }) {
     <section className="rounded-2xl border border-dashed border-border px-4 py-4 sm:px-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="eyebrow">Find postings</p>
+          <p className="eyebrow">{t('postings.findPostings')}</p>
           <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">
-            {mode === 'criteria'
-              ? "Search Canada's Job Bank and the job sites by category, place, distance and pay."
-              : 'Your career history, experience and location are read to find the roles that fit you.'}
+            {mode === 'criteria' ? t('postings.criteriaDesc') : t('postings.profileDesc')}
           </p>
           <p className="mt-1.5 text-[11px] text-muted-foreground/80">
-            Coverage: Canadian postings (Job Bank and the major job sites). More regions as we grow.
+            {t('postings.coverage')}
           </p>
         </div>
         <div className="flex gap-1.5">
@@ -116,21 +116,21 @@ export default function JobSearchPanel({ onResults }) {
           <Input
             value={category}
             onChange={(event) => setCategory(event.target.value)}
-            placeholder="Category — e.g. operations manager, welder, bookkeeper"
+            placeholder={t('postings.categoryPlaceholder')}
           />
         ) : (
           <div className="flex items-center rounded-md border border-border/70 bg-secondary/40 px-3 py-2 text-[12.5px] text-muted-foreground">
-            {loadingProfile ? 'Reading your history…' : 'Reads your saved history and profile'}
+            {loadingProfile ? t('postings.readingHistory') : t('postings.readsSavedHistory')}
           </div>
         )}
         <Input
           value={place}
           onChange={(event) => setLocation(event.target.value)}
-          placeholder="City, region or Remote"
+          placeholder={t('postings.placePlaceholder')}
         />
         <Button onClick={run} disabled={busy || !ready} className="rounded-full">
           {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
-          {busy ? 'Searching' : 'Search jobs'}
+          {busy ? t('postings.searching') : t('postings.searchJobs')}
         </Button>
       </div>
 

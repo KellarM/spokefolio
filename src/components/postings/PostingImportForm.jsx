@@ -4,14 +4,16 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
-const MODES = [
-  { value: 'link', label: 'Paste a link', icon: Link2 },
-  { value: 'text', label: 'Paste the text', icon: ClipboardPaste }
-];
 
 // Brings one posting into the app from a link or from pasted text, and hands the details back.
-export default function PostingImportForm({ onExtracted, title = 'Bring in a posting', hint }) {
+export default function PostingImportForm({ onExtracted, title, hint }) {
+  const { t } = useStudioLanguage();
+  const MODES = [
+    { value: 'link', label: t('postings.pasteLink'), icon: Link2 },
+    { value: 'text', label: t('postings.pasteText'), icon: ClipboardPaste }
+  ];
   const [mode, setMode] = useState('link');
   const [url, setUrl] = useState('');
   const [text, setText] = useState('');
@@ -34,7 +36,7 @@ export default function PostingImportForm({ onExtracted, title = 'Bring in a pos
 
       if (data.status === 'unreadable') {
         // Nothing is invented from a page that could not be read: the text route takes over instead.
-        setNote(data.note || 'That posting could not be read. Paste the posting text instead.');
+        setNote(data.note || t('postings.unreadable'));
         setMode('text');
         setBusy(false);
         return;
@@ -57,7 +59,7 @@ export default function PostingImportForm({ onExtracted, title = 'Bring in a pos
     <section className="rounded-2xl border border-dashed border-border px-4 py-4 sm:px-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="eyebrow">{title}</p>
+          <p className="eyebrow">{title || t('postings.bringInPosting')}</p>
           {hint && <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">{hint}</p>}
         </div>
         <div className="flex gap-1.5">
@@ -89,12 +91,12 @@ export default function PostingImportForm({ onExtracted, title = 'Bring in a pos
           <Input
             value={url}
             onChange={(event) => setUrl(event.target.value)}
-            placeholder="https:// — the link to the posting"
+            placeholder={t('postings.linkPlaceholder')}
             className="sm:flex-1"
           />
           <Button onClick={read} disabled={busy || !ready} className="rounded-full">
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Read the posting
+            {t('postings.readPosting')}
           </Button>
         </div>
       ) : (
@@ -103,14 +105,14 @@ export default function PostingImportForm({ onExtracted, title = 'Bring in a pos
             rows={6}
             value={text}
             onChange={(event) => setText(event.target.value)}
-            placeholder="Paste the whole posting — responsibilities, requirements, the things the employer cares about."
+            placeholder={t('postings.textPlaceholder')}
             className="text-[14px] leading-relaxed"
           />
           <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[12px] text-muted-foreground">The text is kept exactly as you paste it.</p>
+            <p className="text-[12px] text-muted-foreground">{t('postings.textKeptExact')}</p>
             <Button onClick={read} disabled={busy || !ready} className="rounded-full">
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Use this posting
+              {t('postings.useThisPosting')}
             </Button>
           </div>
         </div>

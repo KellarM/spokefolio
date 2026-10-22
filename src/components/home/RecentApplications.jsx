@@ -1,29 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-
-const STATUS_LABELS = {
-  draft: 'In progress',
-  ready: 'Ready to send',
-  not_applied: 'Not yet sent',
-  applied: 'Applied',
-  contacted: 'Contacted',
-  interviewing: 'Interviewing',
-  offer: 'Offer',
-  declined: 'Declined',
-  not_hired: 'Not hired',
-  rejected: 'Closed'
-};
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 export default function RecentApplications({ applications = [] }) {
+  const { t } = useStudioLanguage();
+
   return (
     <section className="mec-panel">
       <div className="mec-rhead">
         <div>
-          <div className="mec-eyebrow">Latest</div>
-          <h2 className="mec-h2">Tailored résumés</h2>
+          <div className="mec-eyebrow">{t('home.latest')}</div>
+          <h2 className="mec-h2">{t('home.tailoredResumes')}</h2>
         </div>
         <Link to="/applications" className="mec-va">
-          View all →
+          {t('home.viewAll')}
         </Link>
       </div>
 
@@ -36,11 +26,11 @@ export default function RecentApplications({ applications = [] }) {
               className="mec-app"
             >
               <div>
-                <p className="mec-at">{application.job_title || 'Tailored résumé'}</p>
-                <p className="mec-ac">{application.company || 'Company not named'}</p>
+                <p className="mec-at">{application.job_title || t('common.tailoredResume')}</p>
+                <p className="mec-ac">{application.company || t('common.companyNotNamed')}</p>
               </div>
               <span className="mec-badge">
-                {STATUS_LABELS[application.status] || STATUS_LABELS.ready}
+                {t(`status.${application.status || 'ready'}`)}
               </span>
             </Link>
           ))}
@@ -48,9 +38,7 @@ export default function RecentApplications({ applications = [] }) {
       )}
 
       {applications.length === 0 && (
-        <div className="mec-empty">
-          No résumés yet. Paste a job posting to create your first one.
-        </div>
+        <div className="mec-empty">{t('home.noResumes')}</div>
       )}
     </section>
   );

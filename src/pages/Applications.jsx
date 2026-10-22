@@ -8,21 +8,12 @@ import SalaryPill from '@/components/applications/SalaryPill';
 import JobLocation from '@/components/applications/JobLocation';
 import DeleteApplicationButton from '@/components/applications/DeleteApplicationButton';
 import RunScoreBadge from '@/components/applications/RunScoreBadge';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
-const FILTERS = [
-  { value: 'all', label: 'All' },
-  { value: 'ready', label: 'Ready' },
-  { value: 'not_applied', label: 'Not Applied' },
-  { value: 'applied', label: 'Applied' },
-  { value: 'contacted', label: 'Contacted' },
-  { value: 'interviewing', label: 'Interviewing' },
-  { value: 'offer', label: 'Offer' },
-  { value: 'declined', label: 'Declined' },
-  { value: 'not_hired', label: 'Not Hired' },
-  { value: 'rejected', label: 'Closed' }
-];
+const FILTERS = ['all', 'ready', 'not_applied', 'applied', 'contacted', 'interviewing', 'offer', 'declined', 'not_hired', 'rejected'];
 
 export default function Applications() {
+  const { t } = useStudioLanguage();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -80,55 +71,55 @@ export default function Applications() {
     <div className="animate-rise">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
-          <p className="eyebrow">Your search</p>
-          <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">Applications</h1>
+          <p className="eyebrow">{t('common.yourSearch')}</p>
+          <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('applications.title')}</h1>
           <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
-            Every tailored résumé you have generated, with the posting it was written for.
+            {t('applications.lede')}
           </p>
         </div>
         <Button asChild className="rounded-full">
           <Link to="/tailor-application">
-            <Plus className="mr-2 h-4 w-4" /> Tailor a résumé
+            <Plus className="mr-2 h-4 w-4" /> {t('common.tailorResume')}
           </Link>
         </Button>
       </header>
 
       <div className="mt-7 flex flex-wrap gap-2">
-        {FILTERS.map((item) => (
+        {FILTERS.map((value) => (
           <button
-            key={item.value}
+            key={value}
             type="button"
-            onClick={() => setFilter(item.value)}
+            onClick={() => setFilter(value)}
             className={`rounded-full border px-3.5 py-1.5 text-[13px] transition-colors ${
-              filter === item.value
+              filter === value
                 ? 'border-transparent bg-primary text-primary-foreground'
                 : 'border-border/70 text-muted-foreground hover:text-foreground'
             }`}
           >
-            {item.label}
+            {t(`status.${value}`)}
           </button>
         ))}
       </div>
 
       {locating && (
         <p className="mt-4 flex items-center gap-2 text-[13px] text-muted-foreground">
-          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Finding work-site addresses and drive times…
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('common.findingAddresses')}
         </p>
       )}
 
       {loading ? (
         <div className="mt-8 flex items-center gap-3 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Loading your applications…
+          <Loader2 className="h-4 w-4 animate-spin" /> {t('applications.loading')}
         </div>
       ) : visible.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-border px-6 py-14 text-center">
-          <p className="font-heading text-[20px]">Nothing here yet</p>
+          <p className="font-heading text-[20px]">{t('applications.nothingYet')}</p>
           <p className="mx-auto mt-2 max-w-md text-[14px] leading-relaxed text-muted-foreground">
-            Paste a job posting and you will get a résumé written for that role, saved here with its status.
+            {t('applications.nothingDesc')}
           </p>
           <Button asChild className="mt-5 rounded-full">
             <Link to="/tailor-application">
-              Tailor your first résumé <ArrowRight className="ml-2 h-4 w-4" />
+              {t('applications.tailorFirst')} <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>
@@ -145,7 +136,7 @@ export default function Applications() {
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-body text-[21px] font-semibold tracking-tight text-foreground sm:text-[22px]">
-                    {application.job_title || 'Tailored résumé'}
+                    {application.job_title || t('common.tailoredResume')}
                   </p>
                   <p className="mt-1.5 flex flex-wrap items-center gap-2.5 text-[15px] font-medium text-foreground/85">
                     <span>

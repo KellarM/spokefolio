@@ -5,13 +5,13 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/AuthContext';
 import { isTestAccount } from '@/lib/testAccount';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
-const CONFIRM =
-  'Clear this account’s whole career history?\n\nEvery entry, saved draft and review is deleted and the master history is reset. This cannot be undone.';
 
 // Testing account only — nobody else ever sees this button. It empties this account's own
 // career history, so a new persona can be built from a blank slate.
 export default function ClearHistoryButton({ entries = 0, disabled, onCleared }) {
+  const { t } = useStudioLanguage();
   const { user } = useAuth();
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
@@ -19,7 +19,7 @@ export default function ClearHistoryButton({ entries = 0, disabled, onCleared })
   if (!isTestAccount(user)) return null;
 
   const clear = async () => {
-    if (!window.confirm(CONFIRM)) return;
+    if (!window.confirm(t('history.clearConfirm'))) return;
     setBusy(true);
     try {
       const mine = { created_by_id: user.id };
@@ -27,12 +27,12 @@ export default function ClearHistoryButton({ entries = 0, disabled, onCleared })
       await base44.entities.CareerHistoryReview.deleteMany(mine);
       await onCleared();
       toast({
-        title: 'Career history cleared',
-        description: `${entries} ${entries === 1 ? 'entry' : 'entries'} and any saved reviews removed. Start again whenever you like.`
+        title: t('history.cleared'),
+        description: t('history.clearedDesc', { count: entries })
       });
     } catch (error) {
       toast({
-        title: 'The history could not be cleared',
+        title: t('history.clearFailed'),
         description: error?.response?.data?.error || error.message,
         variant: 'destructive'
       });
@@ -48,7 +48,7 @@ export default function ClearHistoryButton({ entries = 0, disabled, onCleared })
       disabled={disabled || busy}
     >
       {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
-      Clear history
+      {t('history.clearHistory')}
     </Button>
   );
 }

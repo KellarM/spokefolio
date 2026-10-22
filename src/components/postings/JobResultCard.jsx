@@ -2,6 +2,7 @@ import React from 'react';
 import { ExternalLink, Loader2, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import JobLocation from '@/components/applications/JobLocation';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 const hostOf = (url) => {
   try {
@@ -13,12 +14,13 @@ const hostOf = (url) => {
 
 // One posting the search turned up, with the ways forward: keep it, write a résumé for it, or drop it.
 export default function JobResultCard({ result, busy, onKeep, onTailor, onDismiss }) {
+  const { t } = useStudioLanguage();
   const host = hostOf(result.source_url);
   const badge =
     result.origin === 'partner' && result.partner_source
-      ? `${result.partner_source.replace(/^www\./i, '')} · via Job Bank`
+      ? t('postings.viaJobBank', { name: result.partner_source.replace(/^www\./i, '') })
       : result.origin === 'jobbank'
-        ? 'Job Bank'
+        ? t('postings.jobBank')
         : '';
 
   return (
@@ -53,15 +55,15 @@ export default function JobResultCard({ result, busy, onKeep, onTailor, onDismis
           ) : (
             <Sparkles className="mr-1.5 h-3.5 w-3.5" />
           )}
-          Tailor a résumé
+          {t('common.tailorResume')}
         </Button>
         <Button size="sm" variant="secondary" className="rounded-full" onClick={onKeep} disabled={busy}>
-          Keep posting
+          {t('postings.keepPosting')}
         </Button>
         {result.source_url && (
           <Button asChild size="sm" variant="ghost" className="rounded-full">
             <a href={result.source_url} target="_blank" rel="noreferrer">
-              <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> Open posting
+              <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> {t('common.openPosting')}
             </a>
           </Button>
         )}
@@ -71,7 +73,7 @@ export default function JobResultCard({ result, busy, onKeep, onTailor, onDismis
           className="ml-auto rounded-full text-muted-foreground hover:text-destructive"
           onClick={onDismiss}
         >
-          <X className="h-3.5 w-3.5" /> Dismiss
+          <X className="h-3.5 w-3.5" /> {t('common.dismiss')}
         </Button>
       </div>
     </li>

@@ -1,28 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock } from 'lucide-react';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 const HERO_IMAGE = 'https://media.base44.com/images/public/6acfb4bf0fc7d7424c8470e5/5163f1c7d_generated_5d1d5b3a.jpg';
 
 export default function StudioHero({ draftCount = 0 }) {
+  const { t } = useStudioLanguage();
   return (
     <section className="mec-hero">
       <div>
-        <div className="mec-eyebrow">Spokefolio Personal Resume Studio</div>
-        <h1 className="mec-h1">
-          Turn your real work history into a résumé written for the job you want.
-        </h1>
-        <p className="mec-body">
-          Capture your career by voice, one entry at a time. Then paste any job posting and get a résumé shaped around it,
-          ready to download as a Word document.
-        </p>
+        <div className="mec-eyebrow">{t('home.heroEyebrow')}</div>
+        <h1 className="mec-h1">{t('home.heroTitle')}</h1>
+        <p className="mec-body">{t('home.heroBody')}</p>
 
         <div className="mec-btns">
           <Link to="/tailor-application" className="mec-btn mec-gold">
-            Tailor a résumé
+            {t('common.tailorResume')}
           </Link>
           <Link to="/history" className="mec-btn mec-ghost">
-            Capture career history
+            {t('home.captureHistory')}
           </Link>
         </div>
 
@@ -32,7 +29,9 @@ export default function StudioHero({ draftCount = 0 }) {
             className="mt-6 inline-flex items-center gap-2 font-body text-[16px] font-medium text-[#D4AF37] transition-opacity hover:opacity-80"
           >
             <Clock className="h-3.5 w-3.5" />
-            {draftCount} {draftCount === 1 ? 'entry is' : 'entries are'} still in progress — pick up where you left off
+            {draftCount === 1
+              ? t('home.draftLineSingular', { count: draftCount })
+              : t('home.draftLinePlural', { count: draftCount })}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         )}

@@ -8,8 +8,10 @@ import PostingCard from '@/components/postings/PostingCard';
 import PostingImportForm from '@/components/postings/PostingImportForm';
 import JobSearchPanel from '@/components/postings/JobSearchPanel';
 import JobSearchResults from '@/components/postings/JobSearchResults';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 export default function Postings() {
+  const { t } = useStudioLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [postings, setPostings] = useState([]);
@@ -64,10 +66,10 @@ export default function Postings() {
         status: 'saved'
       });
       setPostings((prev) => [created, ...prev]);
-      toast({ title: 'Posting saved', description: 'Tailor a résumé to it whenever you are ready.' });
+      toast({ title: t('postings.toastSavedTitle'), description: t('postings.toastSavedDesc') });
     } catch (error) {
       toast({
-        title: 'That posting could not be saved',
+        title: t('postings.toastSaveFailed'),
         description: error?.response?.data?.error || error.message,
         variant: 'destructive'
       });
@@ -75,13 +77,13 @@ export default function Postings() {
   };
 
   const remove = async (posting) => {
-    if (!window.confirm('Remove this saved posting?')) return;
+    if (!window.confirm(t('postings.removeConfirm'))) return;
     try {
       await base44.entities.JobPosting.delete(posting.id);
       setPostings((prev) => prev.filter((item) => item.id !== posting.id));
     } catch (error) {
       toast({
-        title: 'Could not remove that posting',
+        title: t('postings.toastRemovedTitle'),
         description: error?.response?.data?.error || error.message,
         variant: 'destructive'
       });
@@ -90,14 +92,14 @@ export default function Postings() {
 
   const clearAll = async () => {
     if (!postings.length) return;
-    if (!window.confirm(`Remove all ${postings.length} saved postings?`)) return;
+    if (!window.confirm(t('postings.clearAllConfirm', { count: postings.length }))) return;
     try {
       await base44.entities.JobPosting.deleteMany({ id: { $in: postings.map((posting) => posting.id) } });
       setPostings([]);
-      toast({ title: 'Saved postings cleared', description: 'Your applications are not affected.' });
+      toast({ title: t('postings.toastClearedTitle'), description: t('postings.toastClearedDesc') });
     } catch (error) {
       toast({
-        title: 'Those postings could not be cleared',
+        title: t('postings.toastClearFailed'),
         description: error?.response?.data?.error || error.message,
         variant: 'destructive'
       });
@@ -162,15 +164,15 @@ export default function Postings() {
       });
       setPostings((prev) => [created, ...prev]);
       toast({
-        title: 'Posting kept',
+        title: t('postings.toastKeptTitle'),
         description: fullText
-          ? 'The whole posting was read from the employer page.'
-          : 'Only the search summary could be read. Paste the full text on the posting for a sharper résumé.'
+          ? t('postings.toastKeptFull')
+          : t('postings.toastKeptPartial')
       });
       return created;
     } catch (error) {
       toast({
-        title: 'That posting could not be kept',
+        title: t('postings.toastKeepFailed'),
         description: error?.response?.data?.error || error.message,
         variant: 'destructive'
       });
@@ -190,12 +192,10 @@ export default function Postings() {
   return (
     <div className="animate-rise">
       <header className="max-w-2xl">
-        <p className="eyebrow">Your search</p>
-        <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">Job postings</h1>
+        <p className="eyebrow">{t('common.yourSearch')}</p>
+        <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('postings.title')}</h1>
         <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
-          Search by category and location — Canada's Job Bank and the job sites are both scanned — or let it read your
-          history and find the roles that fit you. Anything you like can be kept here — brought in from a link, pasted,
-          or found by a search — and tailored into a résumé without pasting a word twice.
+          {t('postings.lede')}
         </p>
       </header>
 
@@ -215,35 +215,36 @@ export default function Postings() {
 
         <PostingImportForm
           onExtracted={add}
-          hint="Give it the link and it reads the employer, the role, the location and the posting itself — or paste the text for sites that block reading."
+          hint={t('postings.importHint')}
         />
       </div>
 
       {locating && (
         <p className="mt-6 flex items-center gap-2 text-[13px] text-muted-foreground">
-          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Finding work-site addresses and travel distances from home…
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('common.findingAddressesPostings')}
         </p>
       )}
 
       {loading ? (
         <div className="mt-8 flex items-center gap-3 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Loading your postings…
+          <Loader2 className="h-4 w-4 animate-spin" /> {t('postings.loadingPostings')}
         </div>
       ) : postings.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-border px-6 py-14 text-center">
-          <p className="font-heading text-[20px]">No postings kept yet</p>
+          <p className="font-heading text-[20px]">{t('postings.nothingKept')}</p>
           <p className="mx-auto mt-2 max-w-md text-[14px] leading-relaxed text-muted-foreground">
-            Add the first one above. It stays here with a way to start a résumé written for it, and the original link kept
-            with the application.
+            {t('postings.nothingKeptDesc')}
           </p>
         </div>
       ) : (
         <>
           <div className="mt-8 flex flex-wrap items-center justify-between gap-2">
-            <p className="eyebrow">Kept postings</p>
+            <p className="eyebrow">{t('postings.keptPostings')}</p>
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-[12.5px] text-muted-foreground">
-                {postings.length} saved{tailored ? ` · ${tailored} with a résumé written` : ''}
+                {tailored
+                  ? t('postings.savedCount', { count: postings.length }) + t('postings.withResume', { count: tailored })
+                  : t('postings.savedCount', { count: postings.length })}
               </p>
               <Button
                 size="sm"
@@ -251,7 +252,7 @@ export default function Postings() {
                 className="rounded-full text-muted-foreground hover:text-destructive"
                 onClick={clearAll}
               >
-                <Trash2 className="h-3.5 w-3.5" /> Clear all
+                <Trash2 className="h-3.5 w-3.5" /> {t('postings.clearAll')}
               </Button>
             </div>
           </div>

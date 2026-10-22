@@ -15,6 +15,7 @@ import ClearHistoryButton from '@/components/history/ClearHistoryButton';
 import { buildCombinedEntry } from '@/lib/mergeEntries';
 import { sortEntriesByDate } from '@/lib/entryOrder';
 import retryOnTimeout from '@/lib/retryOnTimeout';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 const COMPLETE_PHRASE = /resume history is complete/i;
 const DICTATION_KEY = 'resumecraft.dictation';
@@ -70,6 +71,7 @@ const unansweredPrompts = (prompts, answers) => {
 };
 
 export default function HistoryCapture() {
+  const { t } = useStudioLanguage();
   const { toast } = useToast();
   const { profile, loadingProfile, save } = useProfile();
   const [entries, setEntries] = useState([]);
@@ -133,7 +135,7 @@ export default function HistoryCapture() {
     toast({
       title,
       description: /timed out|timeout/i.test(raw)
-        ? 'The save service took too long to answer. Nothing you wrote is lost — try that button once more.'
+        ? t('history.timeoutDesc')
         : raw,
       variant: 'destructive'
     });
@@ -155,7 +157,7 @@ export default function HistoryCapture() {
       setDraft(created);
       await loadEntries();
     } catch (error) {
-      reportError('Could not capture that entry', error);
+      reportError(t('history.toastCaptureFailed'), error);
     }
     setBusy(false);
   };
@@ -191,9 +193,9 @@ export default function HistoryCapture() {
     try {
       await persistDraft(draft, { status: 'draft' });
       setDraft(null);
-      toast({ title: 'Saved for later', description: 'Find it in your master history and continue whenever you like.' });
+      toast({ title: t('history.toastSavedLater'), description: t('history.toastSavedLaterDesc') });
     } catch (error) {
-      reportError('That entry could not be saved', error);
+      reportError(t('history.toastSaveEntryFailed'), error);
     }
     setBusy(false);
   };
@@ -224,9 +226,9 @@ export default function HistoryCapture() {
         patch.suggestion_index = 0;
       }
       await persistDraft(draft, patch);
-      toast({ title: 'Entry updated from your words' });
+      toast({ title: t('history.toastUpdatedFromWords') });
     } catch (error) {
-      reportError('Those words could not be added to the entry', error);
+      reportError(t('history.toastWordsFailed'), error);
     }
     setBusy(false);
   };
@@ -263,7 +265,7 @@ export default function HistoryCapture() {
         });
       }
     } catch (error) {
-      reportError('That answer could not be merged in', error);
+      reportError(t('history.toastAnswerFailed'), error);
     }
     setBusy(false);
   };
@@ -274,9 +276,9 @@ export default function HistoryCapture() {
     try {
       await persistDraft(draft, { status: 'confirmed' });
       setDraft(null);
-      toast({ title: 'Entry saved to your history' });
+      toast({ title: t('history.toastEntrySaved') });
     } catch (error) {
-      reportError('That entry could not be saved', error);
+      reportError(t('history.toastSaveEntryFailed'), error);
     }
     setBusy(false);
   };
@@ -289,7 +291,7 @@ export default function HistoryCapture() {
       setDraft(null);
       await loadEntries();
     } catch (error) {
-      reportError('That entry could not be discarded', error);
+      reportError(t('history.toastDiscardFailed'), error);
     }
     setBusy(false);
   };
@@ -301,7 +303,7 @@ export default function HistoryCapture() {
   };
 
   const deleteEntry = async (entry) => {
-    if (!window.confirm(`Delete “${entry.title}”?`)) return;
+    if (!window.confirm(t('documents.deleteConfirm', { name: entry.title }))) return;
     await base44.entities.CareerEntry.delete(entry.id);
     if (draft && draft.id === entry.id) setDraft(null);
     await loadEntries();
@@ -314,7 +316,7 @@ export default function HistoryCapture() {
   };
   const openReview = async (entry) => {
     try { await prepareReview(); setReviewTarget({ anchor: entry }); }
-    catch (error) { reportError('Could not open review', error); }
+    catch (error) { reportError(t('history.toastReviewFailed'), error); }
   };
   const openSavedReview = async (review) => {
     await prepareReview(); setReviewTarget({ initialReview: review });
@@ -326,7 +328,7 @@ export default function HistoryCapture() {
     await prepareReview();
     await base44.functions.invoke('commitCareerReview', { review_id: review.id, action: 'restore' });
     await reviewChanged();
-    toast({ title: 'Original career entries restored' });
+    toast({ title: t('history.toastRestored') });
   };
 
   const toggleSelected = (entry) => {
@@ -345,18 +347,18 @@ export default function HistoryCapture() {
       setDraft(null);
       await loadEntries();
       toast({
-        title: `Combined into ${merged.organization || 'one employer'}`,
-        description: `${count} positions now sit inside a single employer block.`
+        title: t('history.toastCombined', { name: merged.organization || '' }),
+        description: t('history.toastCombinedDesc', { count })
       });
     } catch (error) {
-      reportError('Those positions could not be combined', error);
+      reportError(t('history.toastCombineFailed'), error);
     }
     setBusy(false);
   };
 
   const lockHistory = async () => {
     if (!confirmed.length) {
-      toast({ title: 'Nothing to lock in yet', description: 'Capture and save at least one entry first.' });
+      toast({ title: t('history.toastNothingToLock'), description: t('history.toastNothingToLockDesc') });
       return;
     }
     setBusy(true);
@@ -371,16 +373,16 @@ export default function HistoryCapture() {
         content_language: data.language || '',
         location_full: data.home_location && data.home_location !== 'unknown' ? data.home_location : ''
       });
-      toast({ title: 'Career history complete', description: 'Your master history is locked in and ready to tailor.' });
+      toast({ title: t('history.toastCompleteTitle'), description: t('history.toastCompleteDesc') });
     } catch (error) {
-      reportError('The history could not be locked in', error);
+      reportError(t('history.toastLockFailed'), error);
     }
     setBusy(false);
   };
 
   const unlockHistory = async () => {
     await save({ history_complete: false });
-    toast({ title: 'History unlocked', description: 'Add more entries whenever you like.' });
+    toast({ title: t('history.toastUnlockTitle'), description: t('history.toastUnlockDesc') });
   };
 
   // Testing account only: once the entries are gone, this page goes back to a blank slate.
@@ -496,21 +498,21 @@ export default function HistoryCapture() {
     <div className="animate-rise">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
-          <p className="eyebrow">Step one</p>
-          <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">Capture your career history</h1>
+          <p className="eyebrow">{t('history.stepOne')}</p>
+          <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('history.title')}</h1>
           <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
-            One entry at a time. I will ask follow-up questions you can accept with a detail, pass on, or skip.
+            {t('history.lede')}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {historyComplete ? (
             <Button variant="secondary" className="rounded-full" onClick={unlockHistory}>
-              <LockOpen className="mr-2 h-4 w-4" /> Unlock history
+              <LockOpen className="mr-2 h-4 w-4" /> {t('history.unlock')}
             </Button>
           ) : (
             <Button variant="secondary" className="rounded-full" onClick={lockHistory} disabled={busy || !confirmed.length}>
               {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lock className="mr-2 h-4 w-4" />}
-              History is complete
+              {t('history.historyComplete')}
             </Button>
           )}
           <ClearHistoryButton entries={entries.length} disabled={busy || loading} onCleared={clearLocalHistory} />
@@ -521,8 +523,7 @@ export default function HistoryCapture() {
         <div className="mt-6 flex items-start gap-3 rounded-2xl border border-accent/25 bg-accent/5 px-5 py-4">
           <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" strokeWidth={2} />
           <p className="text-[13.5px] leading-relaxed text-foreground/90">
-            Your master history is locked in with {confirmed.length} confirmed entries. You can still add or edit entries here,
-            and re-lock the history when you are done.
+            {t('history.lockedBanner', { count: confirmed.length })}
           </p>
         </div>
       )}
@@ -564,28 +565,35 @@ export default function HistoryCapture() {
       <section className="mt-12">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="eyebrow">Master history</p>
+            <p className="eyebrow">{t('history.masterHistory')}</p>
             <h2 className="mt-2 font-heading text-[22px]">
-              {loading ? 'Loading…' : `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} captured`}
+              {loading
+                ? t('common.loading')
+                : entries.length === 1
+                  ? t('history.entriesCaptured', { count: 1 })
+                  : t('history.entriesCapturedPlural', { count: entries.length })}
             </h2>
           </div>
           {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
         </div>
         {!loading && entries.length > 1 && (
           <p className="mt-2 text-[13px] text-muted-foreground">
-            Tick the positions that overlap in time to combine them into one employer block.
+            {t('history.combineHint')}
           </p>
         )}
         {!loading && openDrafts.length > 0 && (
           <p className="mt-2 text-[13px] text-muted-foreground">
-            {openDrafts.length === 1 ? 'One entry is still in progress' : `${openDrafts.length} entries are still in progress`}
-            {' — open it and carry on where you left off.'}
+            {openDrafts.length === 1
+              ? t('history.oneInProgress')
+              : t('history.nInProgress', { count: openDrafts.length })}
           </p>
         )}
         {selectedEntries.length > 0 && (
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-accent/30 bg-accent/5 px-5 py-3">
             <p className="text-[13.5px] text-foreground/90">
-              {selectedEntries.length} {selectedEntries.length === 1 ? 'position' : 'positions'} selected
+              {selectedEntries.length === 1
+                ? t('history.positionsSelectedSingular', { count: 1 })
+                : t('history.positionsSelectedPlural', { count: selectedEntries.length })}
             </p>
             <div className="flex items-center gap-2">
               <Button
@@ -602,7 +610,7 @@ export default function HistoryCapture() {
                 disabled={selectedEntries.length < 2 || busy}
                 onClick={() => setCombining(true)}
               >
-                <Layers className="mr-2 h-3.5 w-3.5" /> Combine into one employer
+                <Layers className="mr-2 h-3.5 w-3.5" /> {t('history.combineInto')}
               </Button>
             </div>
           </div>

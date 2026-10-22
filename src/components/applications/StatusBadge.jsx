@@ -1,4 +1,5 @@
 import React from 'react';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 const STYLES = {
   draft: 'bg-secondary text-secondary-foreground',
@@ -13,24 +14,12 @@ const STYLES = {
   rejected: 'bg-rose-100 text-rose-700'
 };
 
-const LABELS = {
-  draft: 'Draft',
-  ready: 'Ready to send',
-  not_applied: 'Not Applied',
-  applied: 'Applied',
-  contacted: 'Contacted',
-  interviewing: 'Interviewing',
-  offer: 'Offer',
-  declined: 'Declined',
-  not_hired: 'Not Hired',
-  rejected: 'Closed'
-};
-
 export default function StatusBadge({ status }) {
+  const { t } = useStudioLanguage();
   const key = STYLES[status] ? status : 'ready';
   return (
     <span className={`shrink-0 rounded-full px-3 py-1 font-body text-[12.5px] font-semibold ${STYLES[key]}`}>
-      {LABELS[key]}
+      {t(`status.${key}`)}
     </span>
   );
 }

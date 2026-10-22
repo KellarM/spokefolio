@@ -6,14 +6,25 @@ import ContactForm from '@/components/home/ContactForm';
 import TemplateCard from '@/components/home/TemplateCard';
 import { useAuth } from '@/lib/AuthContext';
 import { missingProfileFields, profileIsComplete } from '@/lib/profileGate';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 // The profile: the details that head every résumé, the portrait, and the house style. A new
 // client arrives here first, and the rest of the studio stays closed until the five details
 // that head every résumé, including the language, are saved.
 export default function Profile() {
+  const { t } = useStudioLanguage();
   const { user } = useAuth();
   const { profile, loadingProfile, save } = useProfile();
-  const missing = missingProfileFields(profile);
+  const missingLabels = missingProfileFields(profile);
+  // The gate speaks in catalog keys so the banner reads in the chosen language.
+  const GATE_LABELS = {
+    'Full name': 'profile.fullName',
+    'Email': 'profile.email',
+    'Phone': 'profile.phone',
+    'Location': 'profile.location',
+    'Language': 'profile.language'
+  };
+  const missing = missingLabels.map((label) => t(GATE_LABELS[label] || label));
   const complete = profileIsComplete(profile);
   // A brand new account holds no contact details yet, so its own email address is offered.
   const details = profile.email ? profile : { ...profile, email: user?.email || '' };
@@ -21,21 +32,21 @@ export default function Profile() {
   return (
     <div className="animate-rise">
       <header className="max-w-2xl">
-        <p className="eyebrow">Profile</p>
+        <p className="eyebrow">{t('profile.eyebrow')}</p>
         <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">
-          How you appear on paper
+          {t('profile.title')}
         </h1>
         <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
-          Your contact details, your portrait, and the style every new résumé starts from.
+          {t('profile.lede')}
         </p>
       </header>
 
       {!loadingProfile && !complete && (
         <div className="mt-6 rounded-2xl border border-accent/30 bg-accent/5 px-5 py-4">
-          <p className="mec-eyebrow">Before the overview opens</p>
+          <p className="mec-eyebrow">{t('profile.beforeOpens')}</p>
           <p className="mt-2 text-[14.5px] leading-relaxed text-foreground/90">
-            Every résumé heads with your name, email, phone number and location, and you choose the language the studio speaks, so those five come first.
-            {missing.length ? ` Still to add: ${missing.join(', ')}.` : ''}
+            {t('profile.fiveComeFirst')}
+            {missing.length ? ` ${t('profile.stillToAdd')} ${missing.join(', ')}.` : ''}
           </p>
         </div>
       )}
@@ -88,17 +99,17 @@ export default function Profile() {
               </div>
             ) : (
               <p className="mt-3 font-body text-[15.5px] leading-relaxed text-muted-foreground">
-                Complete and lock in your career history to generate your master summary.
+                {t('profile.completeHistory')}
               </p>
             )}
           </section>
           {complete && (
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Link to="/" className="mec-btn mec-gold">
-                Continue to your overview <ArrowRight className="h-4 w-4" />
+                {t('profile.continue')} <ArrowRight className="h-4 w-4" />
               </Link>
               <p className="text-[13.5px] text-muted-foreground">
-                All five details are in — the rest of the studio is open to you.
+                {t('profile.allFive')}
               </p>
             </div>
           )}

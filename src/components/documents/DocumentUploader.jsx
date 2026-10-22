@@ -6,17 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-const TYPES = [
-  { value: 'previous_resume', label: 'Previous résumé' },
-  { value: 'project', label: 'Project document' },
-  { value: 'testimonial', label: 'Customer praise / testimonial' },
-  { value: 'certification', label: 'Certification' },
-  { value: 'other', label: 'Other' }
-];
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 export default function DocumentUploader({ onChanged }) {
+  const { t } = useStudioLanguage();
   const { toast } = useToast();
+  const TYPES = [
+    { value: 'previous_resume', label: t('documents.typePreviousResume') },
+    { value: 'project', label: t('documents.typeProject') },
+    { value: 'testimonial', label: t('documents.typeTestimonial') },
+    { value: 'certification', label: t('documents.typeCertification') },
+    { value: 'other', label: t('documents.typeOther') }
+  ];
   const inputRef = useRef(null);
   const [files, setFiles] = useState([]);
   const [docType, setDocType] = useState('previous_resume');
@@ -47,19 +48,18 @@ export default function DocumentUploader({ onChanged }) {
       setNotes('');
       if (inputRef.current) inputRef.current.value = '';
       onChanged();
-      toast({ title: 'Files added', description: 'Reading them now so their highlights can be reused.' });
+      toast({ title: t('documents.toastAddedTitle'), description: t('documents.toastAddedDesc') });
     } catch (error) {
-      toast({ title: 'Upload failed', description: error?.response?.data?.error || error.message, variant: 'destructive' });
+      toast({ title: t('documents.toastUploadFailed'), description: error?.response?.data?.error || error.message, variant: 'destructive' });
     }
     setBusy(false);
   };
 
   return (
     <div className="paper rounded-2xl p-5 sm:p-6">
-      <p className="eyebrow">Add reference material</p>
+      <p className="eyebrow">{t('documents.addMaterial')}</p>
       <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground">
-        Previous résumés, project write-ups, customer praise, certifications. I read them and reuse the real detail when
-        tailoring a résumé.
+        {t('documents.addLede')}
       </p>
 
       <label
@@ -67,8 +67,8 @@ export default function DocumentUploader({ onChanged }) {
         className="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-border px-6 py-8 text-center transition-colors hover:border-accent/50 hover:bg-secondary/40"
       >
         <FileUp className="h-5 w-5 text-muted-foreground" strokeWidth={1.6} />
-        <span className="mt-3 text-[14px]">Choose files</span>
-        <span className="mt-1 text-[12px] text-muted-foreground">PDF, Word, text or images</span>
+        <span className="mt-3 text-[14px]">{t('documents.chooseFiles')}</span>
+        <span className="mt-1 text-[12px] text-muted-foreground">{t('documents.fileTypes')}</span>
         <input
           id="documents-input"
           ref={inputRef}
@@ -91,7 +91,7 @@ export default function DocumentUploader({ onChanged }) {
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div>
-          <Label className="eyebrow">What is it</Label>
+          <Label className="eyebrow">{t('documents.whatIsIt')}</Label>
           <div className="mt-2">
             <Select value={docType} onValueChange={setDocType}>
               <SelectTrigger>
@@ -109,13 +109,13 @@ export default function DocumentUploader({ onChanged }) {
         </div>
         <div>
           <Label htmlFor="document-notes" className="eyebrow">
-            Note (optional)
+            {t('documents.noteOptional')}
           </Label>
           <Input
             id="document-notes"
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
-            placeholder="2019 résumé, Acme project brief…"
+            placeholder={t('documents.notePlaceholder')}
             className="mt-2"
           />
         </div>
@@ -123,7 +123,7 @@ export default function DocumentUploader({ onChanged }) {
 
       <Button onClick={upload} disabled={busy || !files.length} className="mt-5 rounded-full">
         {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileUp className="mr-2 h-4 w-4" />}
-        Upload and read
+        {t('documents.uploadRead')}
       </Button>
     </div>
   );

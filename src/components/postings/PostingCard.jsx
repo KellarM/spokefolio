@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ExternalLink, Sparkles, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import JobLocation from '@/components/applications/JobLocation';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 const hostOf = (url) => {
   try {
@@ -14,23 +15,24 @@ const hostOf = (url) => {
 
 // One posting kept in the app, with the way into tailoring it.
 export default function PostingCard({ posting, onDelete }) {
+  const { t } = useStudioLanguage();
   const words = (posting.job_description || '').trim().split(/\s+/).filter(Boolean).length;
   const host = hostOf(posting.source_url);
   const tailored = posting.status === 'tailored' && posting.application_id;
   const source =
     posting.imported_from === 'search'
-      ? 'found in a job search'
+      ? t('postings.foundInSearch')
       : host
-        ? `read from ${host}`
+        ? t('postings.readFrom', { host })
         : posting.imported_from === 'link'
-          ? 'link kept'
-          : 'pasted text';
+          ? t('postings.linkKept')
+          : t('postings.pastedText');
 
   return (
     <li className="rounded-2xl border border-border/70 bg-card p-5 transition-all hover:border-accent/40">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="font-heading text-[18px]">{posting.job_title || 'Posting without a title'}</p>
+          <p className="font-heading text-[18px]">{posting.job_title || t('postings.postingNoTitle')}</p>
           <p className="mt-1 text-[13px] text-muted-foreground">
             {[
               posting.company,
@@ -45,7 +47,7 @@ export default function PostingCard({ posting, onDelete }) {
             minutes={posting.drive_minutes}
           />
           <p className="mt-1.5 text-[12px] text-muted-foreground">
-            {words} words · {source}
+            {words} {t('postings.words')} · {source}
           </p>
         </div>
         <span
@@ -55,26 +57,26 @@ export default function PostingCard({ posting, onDelete }) {
               : 'rounded-full border border-border/70 px-3 py-1 text-[12px] text-muted-foreground'
           }
         >
-          {tailored ? 'Résumé tailored' : 'Saved'}
+          {tailored ? t('postings.resumeTailored') : t('postings.saved')}
         </span>
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <Button asChild size="sm" className="rounded-full">
           <Link to={`/tailor-application?posting=${posting.id}`}>
-            <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Tailor a résumé
+            <Sparkles className="mr-1.5 h-3.5 w-3.5" /> {t('common.tailorResume')}
           </Link>
         </Button>
         {posting.source_url && (
           <Button asChild size="sm" variant="secondary" className="rounded-full">
             <a href={posting.source_url} target="_blank" rel="noreferrer">
-              <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> Open posting
+              <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> {t('common.openPosting')}
             </a>
           </Button>
         )}
         {tailored && (
           <Button asChild size="sm" variant="ghost" className="rounded-full">
-            <Link to={`/application/${posting.application_id}`}>View the résumé</Link>
+            <Link to={`/application/${posting.application_id}`}>{t('common.viewResume')}</Link>
           </Button>
         )}
         <Button
@@ -83,7 +85,7 @@ export default function PostingCard({ posting, onDelete }) {
           className="ml-auto rounded-full text-muted-foreground hover:text-destructive"
           onClick={() => onDelete(posting)}
         >
-          <Trash2 className="h-3.5 w-3.5" /> Remove
+          <Trash2 className="h-3.5 w-3.5" /> {t('common.remove')}
         </Button>
       </div>
     </li>

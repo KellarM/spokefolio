@@ -1,18 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import LanguageSelect, { getStoredLanguage } from '@/components/LanguageSelect';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 const FIELDS = [
-  { key: 'full_name', label: 'Full name', placeholder: 'Jane Doe', required: true },
-  { key: 'email', label: 'Email', placeholder: 'jane@email.com', required: true },
-  { key: 'phone', label: 'Phone', placeholder: '(555) 010-2233', required: true },
-  { key: 'location', label: 'Location', placeholder: 'Edmonton, Alberta, Canada', required: true },
-  { key: 'preferred_language', label: 'Language', placeholder: 'Choose your language', language: true, required: true },
+  { key: 'full_name', label: 'profile.fullName', placeholder: 'Jane Doe', required: true },
+  { key: 'email', label: 'profile.email', placeholder: 'jane@email.com', required: true },
+  { key: 'phone', label: 'profile.phone', placeholder: '(555) 010-2233', required: true },
+  { key: 'location', label: 'profile.location', placeholder: 'Edmonton, Alberta, Canada', required: true },
+  { key: 'preferred_language', label: 'profile.language', placeholder: 'profile.chooseLanguage', language: true, required: true },
   { key: 'linkedin', label: 'LinkedIn', placeholder: 'linkedin.com/in/janedoe' },
   { key: 'website', label: 'Website', placeholder: 'janedoe.com' }
 ];
 
+// LinkedIn and Website keep their own labels; everything else comes from the catalog.
+const FIELDS_TITLES = { linkedin: 'LinkedIn', website: 'Website' };
+
 export default function ContactForm({ profile, onSave }) {
+  const { t } = useStudioLanguage();
   const { toast } = useToast();
   const [form, setForm] = useState(profile || {});
   const [saving, setSaving] = useState(false);
@@ -30,10 +35,10 @@ export default function ContactForm({ profile, onSave }) {
     setSaving(true);
     try {
       await onSave(form);
-      toast({ title: 'Details saved' });
+      toast({ title: t('profile.detailsSaved') });
     } catch (error) {
       toast({
-        title: 'Could not save your details',
+        title: t('profile.couldNotSave'),
         description: error?.response?.data?.error || error.message,
         variant: 'destructive'
       });
@@ -43,23 +48,23 @@ export default function ContactForm({ profile, onSave }) {
 
   return (
     <div className="mec-panel">
-      <h3 className="mec-h3-top">Your details</h3>
+      <h3 className="mec-h3-top">{t('profile.yourDetails')}</h3>
       <p className="mec-lede">
-        These sit at the top of every résumé you generate. The five starred details are needed before the overview opens.
+        {t('profile.detailsLede')}
       </p>
 
       <div className="mec-fields">
         {FIELDS.map((field) => (
           <div key={field.key} className="mec-f">
             <label htmlFor={field.key}>
-              {field.label}
+              {field.language ? t(field.label) : FIELDS_TITLES[field.key] || t(field.label)}
               {field.required && <span className="text-accent"> *</span>}
             </label>
             {field.language ? (
               <LanguageSelect
                 id={field.key}
                 value={form[field.key] || ''}
-                placeholder={field.placeholder}
+                placeholder={t(field.placeholder)}
                 className="mec-v"
                 onChange={(value) => setForm({ ...form, [field.key]: value })}
               />
@@ -76,7 +81,7 @@ export default function ContactForm({ profile, onSave }) {
             )}
             {field.key === 'location' && profile?.location_full && (
               <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
-                Identified as {profile.location_full}
+                {t('profile.identifiedAs', { place: profile.location_full })}
               </p>
             )}
           </div>
@@ -90,7 +95,7 @@ export default function ContactForm({ profile, onSave }) {
           disabled={saving}
           className="mec-btn mec-gold"
         >
-          {saving ? 'Saving…' : 'Save details'}
+          {saving ? t('common.saving') : t('profile.saveDetails')}
         </button>
       </div>
     </div>

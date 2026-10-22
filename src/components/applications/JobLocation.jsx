@@ -1,9 +1,11 @@
 import React from 'react';
 import { Car, MapPin } from 'lucide-react';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 // The work site named in the posting, with the travel distance and drive time from the candidate's home.
 export default function JobLocation({ address, distanceKm, minutes }) {
-  const drive = [distanceKm ? `${distanceKm} km from home` : '', minutes ? `${minutes} min drive` : '']
+  const { t } = useStudioLanguage();
+  const drive = [distanceKm ? t('applications.kmFromHome', { count: distanceKm }) : '', minutes ? t('applications.minDrive', { count: minutes }) : '']
     .filter(Boolean)
     .join(' · ');
   if (!address && !drive) return null;

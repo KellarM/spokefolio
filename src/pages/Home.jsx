@@ -5,8 +5,10 @@ import { trackAppOpen } from '@/lib/analytics';
 import { useAuth } from '@/lib/AuthContext';
 import StudioHero from '@/components/home/StudioHero';
 import RecentApplications from '@/components/home/RecentApplications';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 export default function Home() {
+  const { t } = useStudioLanguage();
   const { profile, loadingProfile } = useProfile();
   const { user } = useAuth();
   const [entries, setEntries] = useState([]);
@@ -50,19 +52,19 @@ export default function Home() {
       <div className="mec-ticker">
         <div className="mec-tk">
           <b>{entries.length}</b>
-          <span>Entries</span>
+          <span>{t('home.tickerEntries')}</span>
         </div>
         <div className="mec-tk">
           <b>{confirmed.length}</b>
-          <span>Confirmed</span>
+          <span>{t('home.tickerConfirmed')}</span>
         </div>
         <div className="mec-tk">
           <b>{documents.length}</b>
-          <span>Files</span>
+          <span>{t('home.tickerFiles')}</span>
         </div>
         <div className="mec-tk">
           <b>{applications.length}</b>
-          <span>Résumés</span>
+          <span>{t('home.tickerResumes')}</span>
         </div>
       </div>
 
@@ -70,10 +72,10 @@ export default function Home() {
         <RecentApplications applications={applications.slice(0, 2)} />
 
         <section className="mec-panel">
-          <div className="mec-eyebrow">Master history</div>
+          <div className="mec-eyebrow">{t('home.masterHistory')}</div>
           {busy ? (
             <div className="mec-load" style={{ marginTop: 12 }}>
-              Loading your studio…
+              {t('home.loadingStudio')}
             </div>
           ) : historyComplete && profile.master_summary ? (
             <div>
@@ -94,13 +96,13 @@ export default function Home() {
               )}
               {Array.isArray(profile.target_titles) && profile.target_titles.length > 0 && (
                 <p className="mt-4 font-body text-[16px] text-[#aab3c5]">
-                  Best fit roles: {profile.target_titles.join(' · ')}
+                  {t('home.bestFitRoles')} {profile.target_titles.join(' · ')}
                 </p>
               )}
             </div>
           ) : (
             <div className="mec-load" style={{ marginTop: 12 }}>
-              Complete and lock in your career history to generate your master summary.
+              {t('home.completeHistory')}
             </div>
           )}
         </section>
