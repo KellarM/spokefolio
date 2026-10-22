@@ -1,52 +1,15 @@
 import React from 'react';
 
-// Languages a visitor can pick, each named in its own language so it is
-// readable to the person choosing it. Anything else can be typed freely —
-// the list is a convenience, not a gate.
+// Languages the app currently carries a full dictionary for, each named in
+// its own language so it is readable to the person choosing it. Anything
+// else can still be typed freely; an unknown language falls back to English.
 export const LANGUAGES = [
   'English',
   'Español',
   'Français',
   'Deutsch',
   'Italiano',
-  'Português',
-  'Nederlands',
-  'Polski',
-  'Türkçe',
-  'Svenska',
-  'Norsk',
-  'Dansk',
-  'Suomi',
-  'Čeština',
-  'Magyar',
-  'Română',
-  'Български',
-  'Ελληνικά',
-  'Українська',
-  'Русский',
-  'العربية',
-  'עברית',
-  'فارسی',
-  'اردو',
-  'हिन्दी',
-  'मराठी',
-  'বাংলা',
-  'தமிழ்',
-  'తెలుగు',
-  'ಕನ್ನಡ',
-  'മലയാളം',
-  'ਪੰਜਾਬੀ',
-  '中文',
-  '日本語',
-  '한국어',
-  'Tiếng Việt',
-  'ไทย',
-  'Bahasa Indonesia',
-  'Bahasa Melayu',
-  'Filipino',
-  'Kiswahili',
-  'Afrikaans',
-  'Català'
+  'Português'
 ];
 
 const LS_KEY = 'sf_preferred_language';
