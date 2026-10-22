@@ -144,14 +144,31 @@ export default function JobBoardDirectory({ postings, search }) {
     let cancelled = false;
     (async () => {
       try {
+        const country = detectCountry(profile?.location);
+        const sets = { CA: STARTER_BOARDS_CA, US: STARTER_BOARDS_US };
         let records = await loadBoards();
         if (!records.length) {
           // First visit: this account gets its own copy of the starter list —
           // the Canada set, or the US set when the profile lives there.
-          const country = detectCountry(profile?.location);
-          const starters = country === 'US' ? STARTER_BOARDS_US : STARTER_BOARDS_CA;
+          const starters = sets[country] || sets.CA;
           await Promise.all(starters.map((board) => base44.entities.JobBoard.create(board)));
           records = await loadBoards();
+        } else if (sets[country]) {
+          // The starter list follows the profile's country. When the profile
+          // has moved — a Canadian set out for an American profile, or the
+          // reverse — the other country's starters are retired and this
+          // country's take their place. Boards added by hand are never touched.
+          const mine = sets[country];
+          const theirs = sets[country === 'US' ? 'CA' : 'US'];
+          const foreignNames = new Set(theirs.map((board) => board.name));
+          const foreign = records.filter((record) => foreignNames.has(record.name));
+          if (foreign.length) {
+            await Promise.all(foreign.map((record) => base44.entities.JobBoard.delete(record.id)));
+            const kept = new Set(records.map((record) => record.name));
+            const missing = mine.filter((board) => !kept.has(board.name));
+            await Promise.all(missing.map((board) => base44.entities.JobBoard.create(board)));
+            records = await loadBoards();
+          }
         }
         if (!cancelled) setBoards(records);
       } catch {
@@ -162,7 +179,7 @@ export default function JobBoardDirectory({ postings, search }) {
     return () => {
       cancelled = true;
     };
-  }, [loadBoards]);
+  }, [loadBoards, profile?.location]);
 
   const place = profile?.location?.trim();
 
