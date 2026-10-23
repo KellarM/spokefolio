@@ -13,6 +13,19 @@ async function sha256Hex(text) {
     .join('');
 }
 
+// The website beacon stores its visitor id at the front of metadata JSON;
+// regex first, parse as backup.
+function visitorOf(event) {
+  const meta = String(event.metadata || '');
+  const m = meta.match(/"visitor":"([^"]+)"/);
+  if (m) return m[1];
+  try {
+    return String((JSON.parse(meta) || {}).visitor || '');
+  } catch {
+    return '';
+  }
+}
+
 function countByDay(events, days) {
   const daysAgo = (n) => {
     const d = new Date();
@@ -21,10 +34,12 @@ function countByDay(events, days) {
     return d.toISOString().slice(0, 10);
   };
   const buckets = [];
-  for (let i = days - 1; i >= 0; i--) buckets.push({ date: daysAgo(i), opens: 0, actions: 0 });
+  for (let i = days - 1; i >= 0; i--) buckets.push({ date: daysAgo(i), opens: 0, actions: 0, visits: 0 });
   const index = new Map(buckets.map((b, i) => [b.date, i]));
-  // One person opening many times in a day is one open that day.
+  // One person opening many times in a day is one open that day. Website
+  // visits follow the same rule: one anonymous visitor, once per day.
   const openPeopleByDay = new Map();
+  const siteVisitorsByDay = new Map();
   for (const event of events) {
     const key = String(event.created_date || '').slice(0, 10);
     const i = index.get(key);
@@ -33,12 +48,17 @@ function countByDay(events, days) {
       const people = openPeopleByDay.get(key) || new Set();
       people.add(event.created_by_id);
       openPeopleByDay.set(key, people);
+    } else if (event.event_type === 'site_visit') {
+      const visitors = siteVisitorsByDay.get(key) || new Set();
+      visitors.add(visitorOf(event));
+      siteVisitorsByDay.set(key, visitors);
     } else {
       buckets[i].actions += 1;
     }
   }
   for (const b of buckets) {
     b.opens = (openPeopleByDay.get(b.date) || new Set()).size;
+    b.visits = (siteVisitorsByDay.get(b.date) || new Set()).size;
   }
   return buckets;
 }
@@ -74,7 +94,7 @@ export default async function (req) {
       grab('User'),
       grab('JobApplication'),
       grab('ResumeProfile'),
-      grab('AppEvent')
+      grab('AppEvent', '-created_date', 5000)
     ]);
 
     const resumes = applications.filter(
@@ -87,7 +107,10 @@ export default async function (req) {
     };
 
     const openEvents = events.filter((e) => e.event_type === 'app_open');
-    const actionEvents = events.filter((e) => e.event_type !== 'app_open');
+    const siteEvents = events.filter((e) => e.event_type === 'site_visit');
+    const actionEvents = events.filter(
+      (e) => e.event_type !== 'app_open' && e.event_type !== 'site_visit'
+    );
 
     const usedUsers = new Set();
     applications.forEach((a) => distinct(usedUsers, a.created_by_id));
@@ -102,6 +125,16 @@ export default async function (req) {
     const openDays = new Set();
     openEvents.forEach((e) => {
       if (e.created_by_id) openDays.add(`${e.created_by_id}|${String(e.created_date || '').slice(0, 10)}`);
+    });
+
+    // The website, same rule: one anonymous visitor counts once per day.
+    const siteVisitors = new Set();
+    const siteVisitDays = new Set();
+    siteEvents.forEach((e) => {
+      const visitor = visitorOf(e);
+      if (!visitor) return;
+      siteVisitors.add(visitor);
+      siteVisitDays.add(`${visitor}|${String(e.created_date || '').slice(0, 10)}`);
     });
 
     // Per-account usage detail for the signups table.
@@ -194,6 +227,8 @@ export default async function (req) {
       applicationsTracked: applications.length,
       appOpens: openDays.size,
       appOpenUsers: openUsers.size,
+      websiteVisits: siteVisitDays.size,
+      websiteVisitors: siteVisitors.size,
       usedApp: usedUsers.size,
       daily: countByDay(events, 14),
       funnel,

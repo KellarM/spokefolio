@@ -6,6 +6,7 @@
       "type": "string",
       "enum": [
         "app_open",
+        "site_visit",
         "resume_created",
         "tailoring_run",
         "application_tracked",

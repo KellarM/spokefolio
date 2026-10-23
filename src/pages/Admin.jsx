@@ -118,7 +118,7 @@ export default function Admin() {
   }
 
   const daily = Array.isArray(stats.daily) ? stats.daily : [];
-  const maxDaily = Math.max(1, ...daily.map((d) => (d.opens || 0) + (d.actions || 0)));
+  const maxDaily = Math.max(1, ...daily.map((d) => (d.opens || 0) + (d.actions || 0) + (d.visits || 0)));
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -133,7 +133,12 @@ export default function Admin() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-6">
+        <StatTile
+          label="Visited the website"
+          value={stats.websiteVisits || 0}
+          hint={`${stats.websiteVisitors || 0} unique ${(stats.websiteVisitors || 0) === 1 ? 'visitor' : 'visitors'} checked us out`}
+        />
         <StatTile label="Signups" value={stats.signups} hint="Registered accounts" />
         <StatTile label="Opened the app" value={stats.appOpens} hint={`${stats.appOpenUsers} ${stats.appOpenUsers === 1 ? 'person' : 'people'} reached the studio`} />
         <StatTile label="Used the app" value={stats.usedApp} hint="Created an application, résumé, or history" />
@@ -143,20 +148,32 @@ export default function Admin() {
       <div className="rounded-xl border border-border bg-card p-5 mt-5">
         <div className="flex items-baseline justify-between">
           <h2 className="font-semibold text-foreground">Activity, last 14 days</h2>
-          <p className="text-xs text-muted-foreground">opens + actions per day</p>
+          <p className="text-xs text-muted-foreground">website visits · app opens · actions per day</p>
         </div>
         <div className="flex items-end gap-2 mt-4 h-32">
           {daily.map((d) => {
-            const total = (d.opens || 0) + (d.actions || 0);
+            const opens = d.opens || 0;
+            const actions = d.actions || 0;
+            const visits = d.visits || 0;
+            const total = opens + actions + visits;
             const height = total ? Math.max(8, Math.round((total / maxDaily) * 100)) : 3;
+            const seg = (n) => `${(n / total) * 100}%`;
             const date = new Date(d.date + 'T00:00:00Z');
             return (
-              <div key={d.date} className="flex-1 flex flex-col items-center gap-1" title={`${d.date}: ${d.opens} opens, ${d.actions} actions`}>
+              <div
+                key={d.date}
+                className="flex-1 flex flex-col items-center gap-1"
+                title={`${d.date}: ${visits} website visits, ${opens} opens, ${actions} actions`}
+              >
                 <span className="text-[10px] text-muted-foreground">{total || ''}</span>
                 <div
-                  className={`w-full rounded-t ${total ? 'bg-primary' : 'bg-muted'}`}
+                  className={`w-full flex flex-col justify-end overflow-hidden rounded-t ${total ? '' : 'bg-muted'}`}
                   style={{ height: `${height}%` }}
-                />
+                >
+                  {visits > 0 && <div className="bg-primary/25" style={{ height: seg(visits) }} />}
+                  {actions > 0 && <div className="bg-primary/60" style={{ height: seg(actions) }} />}
+                  {opens > 0 && <div className="bg-primary" style={{ height: seg(opens) }} />}
+                </div>
                 <span className="text-[10px] text-muted-foreground">{DAY_LABEL[date.getUTCDay()]}</span>
               </div>
             );
