@@ -41,6 +41,7 @@ export default {
     'Erfasse deine Karriere per Sprache, ein Eintrag nach dem anderen. Füge dann ein beliebiges Stellenangebot ein und erhalte ein darauf zugeschnittenes Résumé, fertig zum Herunterladen als Word-Dokument.',
   'home.captureHistory': 'Berufshistorie erfassen',
   'home.navUpload': 'Lebenslauf hochladen',
+  'home.stepsAria': 'Die vier Schritte',
   'home.draftLineSingular': '{count} Eintrag ist noch in Bearbeitung — mach dort weiter, wo du aufgehört hast',
   'home.draftLinePlural': '{count} Einträge sind noch in Bearbeitung — mach dort weiter, wo du aufgehört hast',
   'home.tickerEntries': 'Einträge',

@@ -48,6 +48,7 @@ export default {
     'Capture your career by voice, one entry at a time. Then paste any job posting and get a résumé shaped around it, ready to download as a Word document.',
   'home.captureHistory': 'Capture career history',
   'home.navUpload': 'Upload resume',
+  'home.stepsAria': 'The four steps',
   'home.draftLineSingular': '{count} entry is still in progress — pick up where you left off',
   'home.draftLinePlural': '{count} entries are still in progress — pick up where you left off',
   'home.tickerEntries': 'Entries',

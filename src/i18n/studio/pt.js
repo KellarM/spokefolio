@@ -36,6 +36,7 @@ export default {
   'home.heroBody': 'Registre sua carreira por voz, um registro por vez. Depois, cole qualquer vaga e obtenha um currículo sob medida para ela, pronto para baixar como documento Word.',
   'home.captureHistory': 'Registrar histórico profissional',
   'home.navUpload': 'Enviar currículo',
+  'home.stepsAria': 'Os quatro passos',
   'home.draftLineSingular': '{count} registro ainda está em andamento — continue de onde parou',
   'home.draftLinePlural': '{count} registros ainda estão em andamento — continue de onde parou',
   'home.tickerEntries': 'Registros',

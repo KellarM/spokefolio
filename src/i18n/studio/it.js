@@ -36,6 +36,7 @@ export default {
   'home.heroBody': 'Registra la tua carriera a voce, una voce alla volta. Poi incolla un\'offerta di lavoro e ottieni un curriculum personalizzato, pronto da scaricare in formato Word.',
   'home.captureHistory': 'Registra storia lavorativa',
   'home.navUpload': 'Carica il curriculum',
+  'home.stepsAria': 'I quattro passi',
   'home.draftLineSingular': '{count} voce è ancora in corso — riprendi da dove avevi lasciato',
   'home.draftLinePlural': '{count} voci sono ancora in corso — riprendi da dove avevi lasciato',
   'home.tickerEntries': 'Voci',

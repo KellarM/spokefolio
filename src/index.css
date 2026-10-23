@@ -431,6 +431,78 @@
   object-fit: cover;
 }
 
+/* The Step Order: four numbered bubbles spanning the full width of the
+   hero's rails, the last one solid gold as the payoff. */
+.mec-steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: 0 80px 48px;
+  animation: fade 1s 0.45s ease-out both;
+}
+
+.mec-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 10px 14px;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 999px;
+  background: #161E2E;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.mec-step:hover {
+  border-color: #D4AF37;
+  background: #1B2436;
+  transform: translateY(-1px);
+}
+
+.mec-step-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: #D4AF37;
+  color: #0B0F17;
+  font: 700 14px system-ui, sans-serif;
+  flex-shrink: 0;
+}
+
+.mec-step-label {
+  color: #F9FAFB;
+  font: 500 14px system-ui, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mec-step.gold {
+  background: #D4AF37;
+  border-color: #D4AF37;
+}
+
+.mec-step.gold:hover {
+  background: #E6C45A;
+  border-color: #E6C45A;
+}
+
+.mec-step.gold .mec-step-label {
+  color: #0B0F17;
+  font-weight: 600;
+}
+
+.mec-step.gold .mec-step-n {
+  background: #0B0F17;
+  color: #D4AF37;
+}
+
 .mec-ticker {
   position: relative;
   margin: 0 80px;
@@ -838,6 +910,23 @@
   color: #8a94a8;
 }
 
+@media (min-width: 1101px) {
+  .mec-hero {
+    align-items: stretch;
+  }
+  .mec-hp img {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+    height: auto;
+    aspect-ratio: auto;
+    object-fit: cover;
+  }
+}
+
 @media (max-width: 1100px) {
   .mec-nav {
     padding: 20px 24px;
@@ -851,6 +940,10 @@
   }
   .mec-h1 {
     font-size: 48px;
+  }
+  .mec-steps {
+    margin: 0 24px 36px;
+    grid-template-columns: repeat(2, 1fr);
   }
   .mec-ticker {
     margin: 0 24px;
