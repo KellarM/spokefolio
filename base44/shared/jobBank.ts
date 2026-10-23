@@ -30,6 +30,29 @@ const PROVINCE_NAMES = {
   yukon: 'YT'
 };
 
+// The United States, named the same way: the full state name points at its
+// two-letter code. A US profile reads its place the same way a Canadian one does.
+const US_STATE_NAMES = {
+  alabama: 'AL', alaska: 'AK', arizona: 'AZ', arkansas: 'AR',
+  california: 'CA', colorado: 'CO', connecticut: 'CT', delaware: 'DE',
+  florida: 'FL', georgia: 'GA', hawaii: 'HI', idaho: 'ID',
+  illinois: 'IL', indiana: 'IN', iowa: 'IA', kansas: 'KS',
+  kentucky: 'KY', louisiana: 'LA', maine: 'ME', maryland: 'MD',
+  massachusetts: 'MA', michigan: 'MI', minnesota: 'MN', mississippi: 'MS',
+  missouri: 'MO', montana: 'MT', nebraska: 'NE', nevada: 'NV', 'new hampshire': 'NH',
+  'new jersey': 'NJ', 'new mexico': 'NM', 'new york': 'NY',
+  'north carolina': 'NC', 'north dakota': 'ND', ohio: 'OH', oklahoma: 'OK',
+  oregon: 'OR', pennsylvania: 'PA', 'rhode island': 'RI',
+  'south carolina': 'SC', 'south dakota': 'SD', tennessee: 'TN', texas: 'TX',
+  utah: 'UT', vermont: 'VT', virginia: 'VA', washington: 'WA',
+  'west virginia': 'WV', wisconsin: 'WI', wyoming: 'WY',
+  'district of columbia': 'DC'
+};
+
+const US_STATE_CODES = Object.values(US_STATE_NAMES).map((c) => c.toLowerCase());
+const CANADA_CODES = Object.values(PROVINCE_NAMES).map((c) => c.toLowerCase());
+const ALL_REGION_CODES = [...CANADA_CODES, ...US_STATE_CODES];
+
 // Coordinates for Canadian cities and metro hubs so distance-based filtering works reliably and fast.
 const CITY_COORDS = {
   'edmonton|ab': { lat: 53.5461, lon: -113.4938 },
@@ -178,13 +201,18 @@ export function readPlace(value) {
     return { city: '', province: '', remote: true };
   }
 
-  let province = '';
-  Object.entries(PROVINCE_NAMES).forEach(([name, code]) => {
-    if (folded.includes(` ${name} `)) province = code;
-  });
+  // Two-letter codes first: they name one region only ("Las Vegas, NV").
+  const codeMatch = folded.match(new RegExp(`\\s(${ALL_REGION_CODES.join('|')})\\s`));
+  let province = codeMatch ? codeMatch[1].toUpperCase() : '';
   if (!province) {
-    const code = folded.match(/\s(ab|bc|mb|nb|nl|ns|nt|nu|on|pe|qc|sk|yt)\s/);
-    if (code) province = code[1].toUpperCase();
+    Object.entries(PROVINCE_NAMES).forEach(([name, code]) => {
+      if (folded.includes(` ${name} `)) province = code;
+    });
+  }
+  if (!province) {
+    Object.entries(US_STATE_NAMES).forEach(([name, code]) => {
+      if (folded.includes(` ${name} `)) province = code;
+    });
   }
 
   const parts = raw
@@ -197,8 +225,24 @@ export function readPlace(value) {
     cityCandidate = parts[1];
   }
 
-  let city = fold(cityCandidate.replace(PROVINCE_WORD_REGEX, ' ').replace(/\b[a-z]\d[a-z]\s*\d[a-z]\d\b/gi, ' '));
-  if (city === 'canada' || city === 'remote') city = '';
+  const POSTAL = /\b[a-z]\d[a-z]\s*\d[a-z]\d\b/gi;
+  // With commas ("New York, NY"), the first segment is already a clean city
+  // name and is kept as written. Without commas ("Las Vegas Nevada"), the
+  // region words have to be stripped out of the one segment there is.
+  let city;
+  if (parts.length >= 2) {
+    city = fold(cityCandidate.replace(POSTAL, ' '));
+  } else {
+    city = fold(
+      cityCandidate
+        .replace(PROVINCE_WORD_REGEX, ' ')
+        .replace(new RegExp(`\\b(${[...Object.keys(US_STATE_NAMES)].join('|')}|united states|usa)\\b`, 'gi'), ' ')
+        .replace(POSTAL, ' ')
+    );
+    // "Las Vegas NV" writes the region as its two letters instead.
+    city = city.replace(new RegExp(`\\s(${ALL_REGION_CODES.join('|')})\\s*$`), '');
+  }
+  if (city === 'canada' || city === 'united states' || city === 'usa' || city === 'remote') city = '';
   if (Object.prototype.hasOwnProperty.call(PROVINCE_NAMES, city)) city = '';
 
   return { city, province, remote: false };
@@ -231,9 +275,13 @@ export async function resolveCoords(placeText) {
   }
 
   try {
-    const q = place.province ? `${place.city}, ${place.province}, Canada` : `${place.city}, Canada`;
+    // The two-letter code says which country the city is in: a US state code
+    // looks the place up in the United States, anything else in Canada.
+    const inUS = US_STATE_CODES.includes((place.province || '').toLowerCase());
+    const country = inUS ? 'United States' : 'Canada';
+    const q = place.province ? `${place.city}, ${place.province}, ${country}` : `${place.city}, ${country}`;
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ca&q=${encodeURIComponent(q)}`,
+      `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=${inUS ? 'us' : 'ca'}&q=${encodeURIComponent(q)}`,
       {
         headers: { 'User-Agent': 'IndividualResumeCraft/1.0' },
         signal: AbortSignal.timeout(4000)
