@@ -21,6 +21,12 @@ export default function StudioHero({ draftCount = 0 }) {
           <Link to="/history" className="mec-btn mec-ghost">
             {t('home.captureHistory')}
           </Link>
+          <Link to="/documents" className="mec-btn mec-ghost">
+            {t('home.navUpload')}
+          </Link>
+          <Link to="/postings" className="mec-btn mec-ghost">
+            {t('nav.postings')}
+          </Link>
         </div>
 
         {draftCount > 0 && (
