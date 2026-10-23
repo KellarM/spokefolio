@@ -3,7 +3,13 @@ import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { clearSessionToken, getSessionToken } from '@/lib/sessionToken';
 
-const AuthContext = createContext();
+// The context object is pinned to the window so a hot update of this file -
+// which can leave the mounted provider on an older copy while consumers such
+// as the account menu get the new one - still hands everyone the same object.
+// Without the pin, useAuth reads an empty context and throws.
+const AUTH_CONTEXT_KEY = '__spokefolioAuthContext';
+const AuthContext =
+  globalThis[AUTH_CONTEXT_KEY] || (globalThis[AUTH_CONTEXT_KEY] = createContext());
 
 // A remembered session must not outlive its owner's attention by too long.
 // Eight hours idle (either in one sitting or across visits - the clock is
