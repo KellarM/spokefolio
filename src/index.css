@@ -1825,18 +1825,25 @@
    dark navy - unreadable. Inside the sheet, fields read as
    paper: transparent fill, a soft line on hover, gold focus.
    ============================================================ */
+/* Fields on the sheet draw as real boxes: a warm ink line that stands
+   up off the cream (the invisible borders made the fields hard to find),
+   a touch darker on hover, and a soft gold ring on focus. */
 .resume-sheet .sf-field {
   background: transparent;
-  border-color: transparent;
+  border: 1px solid rgba(31, 41, 55, 0.32);
+  border-radius: 0.5rem;
+  padding-left: 0.625rem;
+  padding-right: 0.625rem;
 }
 
 .resume-sheet .sf-field:hover {
-  border-color: hsl(220 12% 80%);
+  border-color: rgba(31, 41, 55, 0.55);
 }
 
 .resume-sheet .sf-field:focus-visible,
 .resume-sheet .sf-field:focus {
   border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(205, 165, 78, 0.25);
 }
 
 .resume-sheet .sf-field::placeholder {
