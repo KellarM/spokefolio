@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AlertCircle, Loader2, Search, Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import LocationInput from '@/components/home/LocationInput';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import JobSearchFilters, { pillClass } from '@/components/postings/JobSearchFilters';
@@ -123,10 +124,11 @@ export default function JobSearchPanel({ onResults, initial }) {
             {loadingProfile ? t('postings.readingHistory') : t('postings.readsSavedHistory')}
           </div>
         )}
-        <Input
+        <LocationInput
           value={place}
-          onChange={(event) => setLocation(event.target.value)}
+          onChange={setLocation}
           placeholder={t('postings.placePlaceholder')}
+          className="sf-field flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
         />
         <Button onClick={run} disabled={busy || !ready} className="rounded-full">
           {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
