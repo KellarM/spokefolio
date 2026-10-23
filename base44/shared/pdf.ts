@@ -113,6 +113,11 @@ class Writer {
     }
   }
 
+  // Height still standing on this page before the bottom margin.
+  room(): number {
+    return this.y - this.margin.bottom;
+  }
+
   wrap(text: string, font: any, size: number, width: number): string[] {
     const words = text.split(' ');
     const lines: string[] = [];
@@ -603,8 +608,46 @@ export async function buildResumePdf({
     keywords: Array.isArray(data.keywords) && data.keywords.filter(Boolean).length > 0
   };
 
+  // A section heading is never left alone at the foot of a page. Before each heading is
+  // drawn, the writer reserves the height of the heading plus the first line of the
+  // section's own content; when the pair cannot both land, the whole group moves to the
+  // top of the next page - the same keep-with-next the Word file carries.
+  const headingHeight = () => {
+    const body = theme.sectionFill
+      ? sectionSize * 1.9 + 8
+      : sectionSize * 1.35 + 1;
+    const rule = theme.sectionFill
+      ? 0
+      : theme.sectionRule
+        ? Math.max(0.6, twips(theme.sectionRuleSize, 0.6)) + 2
+        : theme.sectionBar
+          ? Math.max(1, twips(theme.sectionBarSize, 1.6)) + 2
+          : 0;
+    return sectionBefore + body + rule + sectionAfter;
+  };
+
+  const skillsFirstUnit = () => {
+    const size = halfPoints(theme.skillsSize, bodySize);
+    const chipRow = theme.skillsShape && theme.skillsShape !== 'none' && theme.skillsLayout !== 'lines'
+      ? size * 2.2 + 10
+      : 0;
+    const line = size * 1.35 + 4;
+    return Math.max(chipRow || 0, line);
+  };
+
+  const firstUnit: Record<string, number> = {
+    summary: data.summary ? bodySize * bodyGap + 4 : 0,
+    skills: skillsFirstUnit(),
+    // The same guards the blocks apply to their own first lines.
+    experience: 40,
+    education: 30,
+    certifications: bulletSize * bodyGap + 2,
+    keywords: keywordSize * bodyGap + 4
+  };
+
   for (const id of config.sections) {
     if (!has[id] || !blocks[id]) continue;
+    w.ensure(headingHeight() + (firstUnit[id] || 0));
     heading(id);
     blocks[id]();
   }
