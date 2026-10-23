@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Download, Eye, Loader2, Mail, Pencil, RefreshCw, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar as CalendarIcon, Clock, Download, Eye, Loader2, Mail, Pencil, RefreshCw, Save, Trash2 } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 import { base44 } from '@/api/base44Client';
 import { trackEvent } from '@/lib/analytics';
 import { useToast } from '@/components/ui/use-toast';
@@ -8,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import useProfile from '@/hooks/useProfile';
 import StatusBadge from '@/components/applications/StatusBadge';
 import JobLocation from '@/components/applications/JobLocation';
@@ -56,6 +59,20 @@ export default function ApplicationDetail() {
   const [interviewPick, setInterviewPick] = useState(false);
   const [interviewDate, setInterviewDate] = useState('');
   const [interviewTime, setInterviewTime] = useState('');
+  const [datePopoverOpen, setDatePopoverOpen] = useState(false);
+
+  // Half-hour slots across a working day. The value stays HH:mm so the saved
+  // interview_at timestamp keeps the same shape it always had.
+  const interviewTimeSlots = [];
+  for (let minutes = 7 * 60; minutes <= 20 * 60; minutes += 30) {
+    const hh = String(Math.floor(minutes / 60)).padStart(2, '0');
+    const mm = String(minutes % 60).padStart(2, '0');
+    const hour12 = ((Math.floor(minutes / 60) + 11) % 12) + 1;
+    interviewTimeSlots.push({
+      value: `${hh}:${mm}`,
+      label: `${hour12}:${String(minutes % 60).padStart(2, '0')} ${Math.floor(minutes / 60) < 12 ? 'AM' : 'PM'}`
+    });
+  }
   const [savingInterview, setSavingInterview] = useState(false);
   const [entries, setEntries] = useState([]);
   const [resume, setResume] = useState({});
@@ -766,25 +783,64 @@ export default function ApplicationDetail() {
                 <label htmlFor="interview-date" className="text-[13px] font-medium text-muted-foreground">
                   {t('applications.interviewDate')}
                 </label>
-                <input
-                  id="interview-date"
-                  type="date"
-                  value={interviewDate}
-                  onChange={(event) => setInterviewDate(event.target.value)}
-                  className="mt-1 w-full rounded-xl border border-border/70 bg-background px-3 py-2 text-[14px] text-foreground focus:border-primary focus:outline-none"
-                />
+                <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      id="interview-date"
+                      className="mt-1 flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 text-left text-[14px] text-foreground transition-colors hover:border-primary/50 focus:border-primary focus:outline-none"
+                    >
+                      {interviewDate ? (
+                        <span>{format(parseISO(interviewDate), 'EEEE, MMM d, yyyy')}</span>
+                      ) : (
+                        <span className="text-muted-foreground">yyyy-mm-dd</span>
+                      )}
+                      <CalendarIcon className="h-4 w-4 shrink-0 text-primary" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={interviewDate ? parseISO(interviewDate) : undefined}
+                      onSelect={(day) => {
+                        setInterviewDate(day ? format(day, 'yyyy-MM-dd') : '');
+                        setDatePopoverOpen(false);
+                      }}
+                      disabled={{ before: new Date() }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               <div>
                 <label htmlFor="interview-time" className="text-[13px] font-medium text-muted-foreground">
                   {t('applications.interviewAt')}
                 </label>
-                <input
-                  id="interview-time"
-                  type="time"
-                  value={interviewTime}
-                  onChange={(event) => setInterviewTime(event.target.value)}
-                  className="mt-1 w-full rounded-xl border border-border/70 bg-background px-3 py-2 text-[14px] text-foreground focus:border-primary focus:outline-none"
-                />
+                <Select value={interviewTime || undefined} onValueChange={setInterviewTime}>
+                  <SelectTrigger
+                    id="interview-time"
+                    className="mt-1 h-10 rounded-xl border-border/70 bg-background px-3 text-[14px] data-[placeholder]:text-muted-foreground"
+                  >
+                    {interviewTime ? (
+                      <span className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-primary" />
+                        {interviewTimeSlots.find((slot) => slot.value === interviewTime)?.label || interviewTime}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2 text-muted-foreground">
+                        <Clock className="h-4 w-4 text-primary" />
+                        --:-- --
+                      </span>
+                    )}
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {interviewTimeSlots.map((slot) => (
+                      <SelectItem key={slot.value} value={slot.value}>
+                        {slot.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="mt-5 flex justify-end gap-2">
