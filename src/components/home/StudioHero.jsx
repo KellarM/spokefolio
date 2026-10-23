@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock } from 'lucide-react';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
@@ -28,6 +28,38 @@ export default function StudioHero({ draftCount = 0, profile }) {
   const name = greetingName(profile);
   const greeting = `${t(greetingKey())}${name ? `, ${name}.` : '.'}`;
 
+  // The bubble is the width of the headline below it; the type grows to
+  // fill the bubble. Measured against the real rendered width so any name
+  // and any language fills it exactly - long greetings ease down, short
+  // ones swell up, the bubble is always edge to edge with its words.
+  const greetRef = useRef(null);
+  const lineRef = useRef(null);
+  useLayoutEffect(() => {
+    const pill = greetRef.current;
+    const line = lineRef.current;
+    if (!pill || !line) return undefined;
+
+    const BASE = 30; // px, matches the base size in the stylesheet
+    const MIN = 20;
+    const MAX = 64;
+    const fit = () => {
+      pill.style.fontSize = `${BASE}px`;
+      const wave = pill.querySelector('.mec-greet-wave');
+      const reserved = 40 /* pill side padding */ + (wave ? wave.offsetWidth + 10 : 0);
+      const room = pill.clientWidth - reserved;
+      const natural = line.scrollWidth;
+      if (!room || !natural) return;
+      const size = Math.min(MAX, Math.max(MIN, (BASE * room) / natural));
+      pill.style.fontSize = `${size}px`;
+    };
+
+    fit();
+    const watcher = new ResizeObserver(fit);
+    watcher.observe(pill);
+    document.fonts?.ready?.then(fit).catch(() => {});
+    return () => watcher.disconnect();
+  }, [greeting]);
+
   // The Step Order, numbered so the order is unmistakable: capture the
   // history, bring the reference files in, find the postings, then tailor.
   // The last step is the payoff, so it stays solid gold.
@@ -42,9 +74,9 @@ export default function StudioHero({ draftCount = 0, profile }) {
     <>
       <section className="mec-hero">
         <div>
-          <div className="mec-greet" role="text" aria-label={greeting}>
+          <div className="mec-greet" ref={greetRef} role="text" aria-label={greeting}>
             <span className="mec-greet-wave" aria-hidden="true">&#128075;</span>
-            <span>
+            <span className="mec-greet-line" ref={lineRef}>
               {t(greetingKey())}
               {name ? <>,&nbsp;<b>{name}</b>.</> : '.'}
             </span>
