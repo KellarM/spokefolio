@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Loader2, Plus } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Loader2, Plus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import StatusBadge from '@/components/applications/StatusBadge';
@@ -18,6 +18,7 @@ export default function Applications() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [page, setPage] = useState(0);
   const [locating, setLocating] = useState(false);
   const [scores, setScores] = useState({});
 
@@ -66,6 +67,12 @@ export default function Applications() {
 
   const visible = filter === 'all' ? applications : applications.filter((application) => application.status === filter);
 
+  // Ten applications per screen; the pager steps between them.
+  const PAGE_SIZE = 10;
+  const totalPages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const pageItems = visible.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
+
   const handleDeleted = (id) => setApplications((current) => current.filter((application) => application.id !== id));
 
   return (
@@ -93,7 +100,10 @@ export default function Applications() {
           <button
             key={value}
             type="button"
-            onClick={() => setFilter(value)}
+            onClick={() => {
+              setFilter(value);
+              setPage(0);
+            }}
             className={`rounded-full border px-3.5 py-1.5 text-[13px] transition-colors ${
               filter === value
                 ? 'border-transparent bg-primary text-primary-foreground'
@@ -129,7 +139,7 @@ export default function Applications() {
         </div>
       ) : (
         <ul className="mt-6 space-y-4 font-body">
-          {visible.map((application) => (
+          {pageItems.map((application) => (
             <li
               key={application.id}
               className="group flex items-stretch gap-3 rounded-2xl border border-border/70 bg-card px-6 py-5 transition-all hover:border-accent/40 hover:shadow-[0_18px_40px_-32px_rgba(16,24,40,0.5)]"
@@ -171,6 +181,30 @@ export default function Applications() {
             </li>
           ))}
         </ul>
+      )}
+
+      {totalPages > 1 && (
+        <div className="mt-7 flex items-center justify-center gap-4">
+          <button
+            type="button"
+            onClick={() => setPage(Math.max(0, safePage - 1))}
+            disabled={safePage === 0}
+            className="inline-flex h-9 items-center rounded-full border border-border/70 px-4 text-[13px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronLeft className="mr-1.5 h-4 w-4" /> {t('applications.previousPage')}
+          </button>
+          <span className="text-[13px] font-medium text-muted-foreground">
+            {t('applications.pageOf', { page: safePage + 1, total: totalPages })}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPage(Math.min(totalPages - 1, safePage + 1))}
+            disabled={safePage === totalPages - 1}
+            className="inline-flex h-9 items-center rounded-full border border-border/70 px-4 text-[13px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {t('applications.nextPage')} <ChevronRight className="ml-1.5 h-4 w-4" />
+          </button>
+        </div>
       )}
     </div>
   );
