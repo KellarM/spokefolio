@@ -1,14 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import DocumentUploader from '@/components/documents/DocumentUploader';
 import DocumentRow from '@/components/documents/DocumentRow';
+import CurrentResumeDialog from '@/components/resume/CurrentResumeDialog';
+import { Button } from '@/components/ui/button';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 export default function Documents() {
   const { t } = useStudioLanguage();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [resumeOpen, setResumeOpen] = useState(false);
 
   const load = useCallback(async () => {
     const records = await base44.entities.SupportingDocument.list('-created_date', 100);
@@ -40,6 +43,19 @@ export default function Documents() {
         </p>
       </header>
 
+      <section className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border bg-card px-6 py-5">
+        <div>
+          <h2 className="font-heading text-[20px]">{t('masterResume.cardTitle')}</h2>
+          <p className="mt-1.5 max-w-xl text-[14px] leading-relaxed text-muted-foreground">
+            {t('masterResume.cardText')}
+          </p>
+        </div>
+        <Button onClick={() => setResumeOpen(true)} className="gap-2 rounded-full">
+          <FileText className="h-4 w-4" />
+          {t('masterResume.view')}
+        </Button>
+      </section>
+
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1.15fr]">
         <DocumentUploader onChanged={load} />
 
@@ -61,6 +77,8 @@ export default function Documents() {
           )}
         </section>
       </div>
+
+      <CurrentResumeDialog open={resumeOpen} onClose={() => setResumeOpen(false)} />
     </div>
   );
 }

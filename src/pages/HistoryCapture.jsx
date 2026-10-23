@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Check, Layers, Loader2, Lock, LockOpen } from 'lucide-react';
+import { Check, FileText, Layers, Loader2, Lock, LockOpen } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import DraftEntryEditor from '@/components/history/DraftEntryEditor';
 import EntryList from '@/components/history/EntryList';
 import CombineDialog from '@/components/history/CombineDialog';
 import HistoryReviewDialog from '@/components/history/review/HistoryReviewDialog';
+import CurrentResumeDialog from '@/components/resume/CurrentResumeDialog';
 import HistoryReviewPanel from '@/components/history/review/HistoryReviewPanel';
 import ClearHistoryButton from '@/components/history/ClearHistoryButton';
 import { buildCombinedEntry } from '@/lib/mergeEntries';
@@ -76,6 +77,7 @@ export default function HistoryCapture() {
   const { profile, loadingProfile, save } = useProfile();
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [resumeOpen, setResumeOpen] = useState(false);
   const [dictation, setDictation] = useState(() => localStorage.getItem(DICTATION_KEY) || '');
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState(null);
@@ -503,6 +505,14 @@ export default function HistoryCapture() {
           <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
             {t('history.lede')}
           </p>
+          <button
+            type="button"
+            onClick={() => setResumeOpen(true)}
+            className="mt-3 inline-flex items-center gap-1.5 text-[13px] text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+          >
+            <FileText className="h-3.5 w-3.5" />
+            {t('history.seeCurrent')}
+          </button>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {historyComplete ? (
@@ -637,6 +647,8 @@ export default function HistoryCapture() {
           />
         )}
       </section>
+
+      <CurrentResumeDialog open={resumeOpen} onClose={() => setResumeOpen(false)} />
     </div>
   );
 }
