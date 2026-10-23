@@ -172,11 +172,14 @@ export default function Applications() {
         </div>
       ) : (
         <ul className="mt-6 space-y-4 font-body">
-          {pageItems.map((application) => (
+          {pageItems.map((application, index) => (
             <li
               key={application.id}
               className="group flex items-stretch gap-3 rounded-2xl border border-border/70 bg-card px-6 py-5 transition-all hover:border-accent/40 hover:shadow-[0_18px_40px_-32px_rgba(16,24,40,0.5)]"
             >
+              <span className="hidden w-7 shrink-0 select-none items-center justify-center text-[13px] font-semibold text-muted-foreground/70 sm:flex">
+                {safePage * PAGE_SIZE + index + 1}
+              </span>
               <Link
                 to={`/application/${application.id}`}
                 className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-4"
