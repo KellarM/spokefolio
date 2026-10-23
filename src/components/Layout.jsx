@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import AccountMenu from '@/components/AccountMenu';
+import HeaderSearch from '@/components/HeaderSearch';
 import { StudioLanguageProvider, useStudioLanguage } from '@/lib/StudioLanguage';
 import { ProfileProvider } from '@/hooks/useProfile';
 
@@ -88,7 +89,10 @@ function Nav() {
           ))}
         </nav>
 
-        <AccountMenu />
+        <div className="flex items-center gap-2.5">
+          <HeaderSearch />
+          <AccountMenu />
+        </div>
       </header>
 
       {isHome ? (
