@@ -24,7 +24,7 @@ export default function ResumeDocument({
 
   return (
     <div
-      className={`rounded-2xl border border-border/70 px-6 py-8 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_24px_48px_-32px_rgba(16,24,40,0.35)] sm:px-12 sm:py-14 ${style.sheet}`}
+      className={`resume-sheet rounded-2xl border border-border/70 px-6 py-8 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_24px_48px_-32px_rgba(16,24,40,0.35)] sm:px-12 sm:py-14 ${style.sheet}`}
     >
       <ResumeHeader
         profile={profile}

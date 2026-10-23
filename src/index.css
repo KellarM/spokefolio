@@ -1817,6 +1817,33 @@
   opacity: 1;
 }
 
+/* ============================================================
+   The résumé sheet is paper, and its editing fields sit ON the
+   sheet itself. The studio's navy sf-field fill (and its pale
+   placeholder) was never scoped away from it, so the summary
+   textarea and the quiet role inputs drowned in dark ink on
+   dark navy - unreadable. Inside the sheet, fields read as
+   paper: transparent fill, a soft line on hover, gold focus.
+   ============================================================ */
+.resume-sheet .sf-field {
+  background: transparent;
+  border-color: transparent;
+}
+
+.resume-sheet .sf-field:hover {
+  border-color: hsl(220 12% 80%);
+}
+
+.resume-sheet .sf-field:focus-visible,
+.resume-sheet .sf-field:focus {
+  border-color: var(--primary);
+}
+
+.resume-sheet .sf-field::placeholder {
+  color: hsl(220 9% 64%);
+  opacity: 1;
+}
+
 .sf-field:focus-visible,
 .sf-field:focus {
   border-color: var(--primary);
