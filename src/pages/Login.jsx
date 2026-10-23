@@ -7,17 +7,15 @@ import { Label } from "@/components/ui/label";
 import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
-import { Checkbox } from "@/components/ui/checkbox";
 import { safeReturnTo } from "@/lib/authReturnTo";
-import { clearSessionToken, markSignInHandoff, setSessionToken } from "@/lib/sessionToken";
+import { markSignInHandoff, setSessionToken } from "@/lib/sessionToken";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // Off by default: a session-only sign-in lives in this browser's session
-      // store and disappears when the browser closes. A shared computer must
-      // never inherit a permanent key to the account by accident.
-      const [remember, setRemember] = useState(false);
+  // No remembered-device mode: every page load without a fresh sign-in
+  // withdraws every key (see AuthContext), so no browser is ever left holding
+  // a way in. The sign-in itself lives in the session store for this visit.
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   // Post-login destination (e.g. the MCP OAuth consent page sends users here
@@ -30,14 +28,10 @@ export default function Login() {
     setLoading(true);
     try {
       const { access_token } = await base44.auth.loginViaEmailPassword(email, password);
-      if (remember) {
-        clearSessionToken();
-      } else {
-        // Keep this visit alive without leaving a saved session behind on the device.
-        setSessionToken(access_token);
-        window.localStorage.removeItem("base44_access_token");
-        window.localStorage.removeItem("token");
-      }
+      // Keep this visit alive without leaving a saved session behind on the device.
+      setSessionToken(access_token);
+      window.localStorage.removeItem("base44_access_token");
+      window.localStorage.removeItem("token");
       // This sign-in earns the next page load; the one after it asks again.
       markSignInHandoff();
       window.location.href = returnTo;
@@ -133,22 +127,10 @@ export default function Login() {
             />
           </div>
         </div>
-        <div className="flex items-start gap-2.5 pt-1">
-          <Checkbox
-            id="remember"
-            checked={remember}
-            onCheckedChange={(checked) => setRemember(checked === true)}
-            className="mt-0.5"
-          />
-          <div className="space-y-0.5">
-            <Label htmlFor="remember" className="cursor-pointer text-sm font-normal leading-none">
-              Remember me on this device
-            </Label>
-            <p className="text-[11px] text-muted-foreground">
-              Unchecked, you'll be signed out when you close your browser. Leave it unchecked on a shared computer.
-            </p>
-          </div>
-        </div>
+        <p className="pt-1 text-[12px] leading-relaxed text-muted-foreground">
+          You stay signed in for this visit. Opening Spokefolio again asks for your sign-in, so no key to your
+          career is ever left behind on this computer.
+        </p>
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
           {loading ? (
             <>

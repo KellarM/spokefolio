@@ -68,8 +68,9 @@ export default function PasswordHelpDialog({ open, onOpenChange }) {
         <div className="mt-3 flex items-start gap-3 border-t border-border/70 pt-4">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.75} />
           <p className="text-[13px] leading-relaxed text-muted-foreground">
-            On a shared computer, leave "Remember me on this device" unchecked when you sign in, and use Log out in the
-            account menu when you leave — closing the tab alone keeps a remembered session alive.
+            Spokefolio never keeps a key behind on a computer: opening the site again always asks for your sign-in.
+            On a shared computer, use Log out in the account menu when you leave — it clears everything immediately,
+            rather than waiting for the browser to close.
           </p>
         </div>
       </DialogContent>
