@@ -85,7 +85,10 @@ module.exports = {
   			heading: ['var(--font-heading)'],
   			body: ['var(--font-body)'],
   			display: ['var(--font-display)'],
-  			mono: ['var(--font-mono)']
+  			mono: ['var(--font-mono)'],
+  			// The reading face for stored documents: a posting should look like
+  			// the newspaper columns the job was first printed in, not like app UI.
+  			reading: ['Georgia', 'Cambria', '"Times New Roman"', 'serif']
   		},
   		keyframes: {
   			'accordion-down': {
