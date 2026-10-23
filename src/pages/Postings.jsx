@@ -10,8 +10,49 @@ import JobSearchPanel from '@/components/postings/JobSearchPanel';
 import JobSearchResults from '@/components/postings/JobSearchResults';
 import JobBoardDirectory from '@/components/postings/JobBoardDirectory';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
+import useProfile from '@/hooks/useProfile';
 import { pillClass } from '@/components/postings/JobSearchFilters';
 import { Search, FolderSearch } from 'lucide-react';
+
+// The last search stays on this device for this account, so results survive
+// changing screens or a page refresh. Nothing ever re-runs on its own: running
+// a search again stays a manual click on the client.
+const SEARCH_KEY = 'spokefolio:search';
+
+const readStoredSearch = (email) => {
+  try {
+    const raw = email ? window.localStorage.getItem(`${SEARCH_KEY}:${email}`) : null;
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed && Array.isArray(parsed.results) ? parsed : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+const storeSearch = (email, search) => {
+  const key = `${SEARCH_KEY}:${email}`;
+  try {
+    if (!search) {
+      window.localStorage.removeItem(key);
+      return;
+    }
+    window.localStorage.setItem(key, JSON.stringify(search));
+  } catch (e) {
+    try {
+      // The descriptions are the bulk. Trim them and try once more.
+      const light = {
+        ...search,
+        results: (search.results || []).map((item) => ({
+          ...item,
+          job_description: String(item.job_description || '').slice(0, 500)
+        }))
+      };
+      window.localStorage.setItem(key, JSON.stringify(light));
+    } catch (e2) {
+      // The search still works without persistence.
+    }
+  }
+};
 
 export default function Postings() {
   const { t } = useStudioLanguage();
@@ -20,7 +61,8 @@ export default function Postings() {
   const [postings, setPostings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [locating, setLocating] = useState(false);
-  const [search, setSearch] = useState(null);
+  const { profile } = useProfile();
+  const [search, setSearchState] = useState(null);
   const [savingKey, setSavingKey] = useState('');
   const [tab, setTab] = useState('search');
 
@@ -30,6 +72,13 @@ export default function Postings() {
     setLoading(false);
     return records || [];
   }, []);
+
+  useEffect(() => {
+    const email = (profile.email || '').trim();
+    if (email && search === null) {
+      setSearchState(readStoredSearch(email));
+    }
+  }, [profile.email]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     let cancelled = false;
@@ -109,6 +158,15 @@ export default function Postings() {
       });
     }
   };
+
+  const setSearch = useCallback(
+    (value) => {
+      setSearchState(value);
+      const email = (profile.email || '').trim();
+      if (email) storeSearch(email, value);
+    },
+    [profile.email]
+  );
 
   const dismissResult = (result) => {
     const key = `${result.source_url || result.job_title}-${result.company}`;
@@ -228,7 +286,7 @@ export default function Postings() {
       ) : (
       <>
       <div className="mt-7 space-y-6">
-        <JobSearchPanel onResults={setSearch} />
+        <JobSearchPanel onResults={setSearch} initial={search} />
 
         {search && (
           <JobSearchResults

@@ -9,19 +9,19 @@ import useProfile from '@/hooks/useProfile';
 
 
 // Finds postings on the job sites: by category and location, or from the person's own history.
-export default function JobSearchPanel({ onResults }) {
+export default function JobSearchPanel({ onResults, initial }) {
   const { t } = useStudioLanguage();
   const { profile, loadingProfile } = useProfile();
   const MODES = [
     { value: 'criteria', label: t('postings.modeCriteria'), icon: Search },
     { value: 'profile', label: t('postings.modeProfile'), icon: Sparkles }
   ];
-  const [mode, setMode] = useState('criteria');
-  const [category, setCategory] = useState('');
-  const [location, setLocation] = useState('');
-  const [distance, setDistance] = useState(0);
-  const [pay, setPay] = useState('');
-  const [period, setPeriod] = useState('year');
+  const [mode, setMode] = useState(initial?.mode === 'profile' ? 'profile' : 'criteria');
+  const [category, setCategory] = useState(String(initial?.category || ''));
+  const [location, setLocation] = useState(String(initial?.location || ''));
+  const [distance, setDistance] = useState(Number(initial?.distance) || 0);
+  const [pay, setPay] = useState(initial?.minPay ? String(initial.minPay) : '');
+  const [period, setPeriod] = useState(initial?.payPeriod || 'year');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
