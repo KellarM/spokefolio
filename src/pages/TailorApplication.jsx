@@ -51,7 +51,8 @@ export default function TailorApplication() {
       base44.entities.SupportingDocument.list('-created_date', 50)
     ]);
     // Draft entries are real history too: leaving them out silently drops whole jobs from the résumé.
-    setEntries((entryRecords || []).filter((entry) => entry.title && entry.title.trim()));
+    // Hidden entries stay captured but never feed a resume.
+    setEntries((entryRecords || []).filter((entry) => entry.title && entry.title.trim() && !entry.hidden));
     setDocuments((documentRecords || []).filter((doc) => doc.extracted_summary));
     setLoading(false);
   }, []);

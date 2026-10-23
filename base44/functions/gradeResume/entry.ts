@@ -79,7 +79,8 @@ export default async function (req) {
       base44.entities.CareerEntry.list('-created_date', 200).catch(() => [])
     ]);
     const profile = (Array.isArray(profileRecords) ? profileRecords[0] : null) || {};
-    const entries = Array.isArray(entryRecords) ? entryRecords : [];
+    // Hidden entries stay captured but never feed a resume or its checks.
+    const entries = (Array.isArray(entryRecords) ? entryRecords : []).filter((entry: any) => !entry?.hidden);
 
     const prompt = `You are a hiring manager screening one candidate's résumé against one job posting, and you also know exactly how applicant tracking software reads a document. Grade against a balanced, realistic hiring bar: a strong, honest résumé from a real career lands in the 70s or low 80s, and 90+ is reserved for work where nearly every line carries a scope, a number and a result. Mark a résumé down only when it genuinely falls short.
 

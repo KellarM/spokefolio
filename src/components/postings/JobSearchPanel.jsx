@@ -52,7 +52,7 @@ export default function JobSearchPanel({ onResults, initial }) {
         const records = await base44.entities.CareerEntry.list('-created_date', 50);
         payload.profile = profile;
         payload.entries = (records || [])
-          .filter((entry) => entry.title && entry.title.trim())
+          .filter((entry) => entry.title && entry.title.trim() && !entry.hidden)
           .slice(0, 10)
           .map((entry) => ({
             title: entry.title,

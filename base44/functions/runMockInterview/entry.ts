@@ -273,7 +273,9 @@ export default async function (req: Request) {
       { created_by_id: user.id },
       { sort: '-created_date', limit: 40 }
     );
-    const history = careerHistory(Array.isArray(historyPage) ? historyPage : historyPage?.items || []);
+    // Hidden entries stay captured but never feed the drill.
+    const visible = (Array.isArray(historyPage) ? historyPage : historyPage?.items || []).filter((entry: any) => !entry?.hidden);
+    const history = careerHistory(visible);
     let sessions = trimSessions(application.mock_interviews);
     const now = new Date().toISOString();
 
