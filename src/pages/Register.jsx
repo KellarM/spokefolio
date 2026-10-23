@@ -8,14 +8,19 @@ import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
+import { clearSessionToken, setSessionToken } from "@/lib/sessionToken";
 
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  // Off by default, matching the sign-in page: a fresh account on a shared
+  // computer must not leave a permanent key behind in the browser.
+  const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
@@ -44,7 +49,14 @@ export default function Register() {
     try {
       const result = await base44.auth.verifyOtp({ email, otpCode });
       if (result?.access_token) {
-        base44.auth.setToken(result.access_token);
+        if (remember) {
+          clearSessionToken();
+          base44.auth.setToken(result.access_token);
+        } else {
+          setSessionToken(result.access_token);
+          window.localStorage.removeItem("base44_access_token");
+          window.localStorage.removeItem("token");
+        }
       }
       window.location.href = safeReturnTo();
     } catch (err) {
@@ -100,6 +112,22 @@ export default function Register() {
               <InputOTPSlot index={5} />
             </InputOTPGroup>
           </InputOTP>
+        </div>
+        <div className="flex items-start gap-2.5 pt-1 mb-4">
+          <Checkbox
+            id="remember-register"
+            checked={remember}
+            onCheckedChange={(checked) => setRemember(checked === true)}
+            className="mt-0.5"
+          />
+          <div className="space-y-0.5">
+            <Label htmlFor="remember-register" className="cursor-pointer text-sm font-normal leading-none">
+              Remember me on this device
+            </Label>
+            <p className="text-[11px] text-muted-foreground">
+              Unchecked, you'll be signed out when you close your browser. Leave it unchecked on a shared computer.
+            </p>
+          </div>
         </div>
         <Button
           className="w-full h-12 font-medium"

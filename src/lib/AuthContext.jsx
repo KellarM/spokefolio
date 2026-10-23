@@ -5,6 +5,44 @@ import { clearSessionToken, getSessionToken } from '@/lib/sessionToken';
 
 const AuthContext = createContext();
 
+// A remembered session must not outlive its owner's attention by too long.
+// Eight hours idle (either in one sitting or across visits - the clock is
+// persisted) and the key is withdrawn: on the next visit the person signs
+// in again. A session-only sign-in never needed this; a remembered one did.
+const IDLE_LIMIT_MS = 8 * 60 * 60 * 1000;
+const IDLE_CHECK_MS = 5 * 60 * 1000;
+const IDLE_KEY = 'sf_last_activity';
+
+let lastActivityWrite = 0;
+const touchActivity = () => {
+  const now = Date.now();
+  if (now - lastActivityWrite < 60000) return;
+  lastActivityWrite = now;
+  try {
+    window.localStorage.setItem(IDLE_KEY, String(now));
+  } catch {
+    // Private modes refuse storage; the interval check below still works in-memory.
+  }
+};
+
+const readActivity = () => {
+  try {
+    return Number(window.localStorage.getItem(IDLE_KEY) || '0');
+  } catch {
+    return Date.now();
+  }
+};
+
+const clearRememberedKeys = () => {
+  try {
+    window.localStorage.removeItem('base44_access_token');
+    window.localStorage.removeItem('token');
+    window.localStorage.removeItem(IDLE_KEY);
+  } catch {
+    // Nothing to sweep in environments without storage.
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -111,6 +149,9 @@ export const AuthProvider = ({ children }) => {
 
   const logout = (shouldRedirect = true) => {
     clearSessionToken();
+    // A remembered key dies with the session, not with the browser: signing
+    // out must work on a shared computer, not just on the owner's own.
+    clearRememberedKeys();
     setUser(null);
     setIsAuthenticated(false);
     
@@ -122,6 +163,35 @@ export const AuthProvider = ({ children }) => {
       base44.auth.logout();
     }
   };
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    // A remembered session that sat idle past the limit is closed on arrival,
+    // before any studio data is fetched.
+    if (readActivity() && Date.now() - readActivity() > IDLE_LIMIT_MS) {
+      logout(false);
+      window.location.assign('/login');
+      return;
+    }
+
+    touchActivity();
+    const events = ['mousedown', 'keydown', 'touchstart', 'scroll'];
+    events.forEach((name) => window.addEventListener(name, touchActivity, { passive: true }));
+
+    const timer = setInterval(() => {
+      if (Date.now() - readActivity() > IDLE_LIMIT_MS) {
+        logout(false);
+        window.location.assign('/login');
+      }
+    }, IDLE_CHECK_MS);
+
+    return () => {
+      events.forEach((name) => window.removeEventListener(name, touchActivity));
+      clearInterval(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   const navigateToLogin = () => {
     // Use the SDK's redirectToLogin method

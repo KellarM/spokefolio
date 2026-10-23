@@ -14,7 +14,10 @@ import { clearSessionToken, setSessionToken } from "@/lib/sessionToken";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(true);
+  // Off by default: a session-only sign-in lives in this browser's session
+      // store and disappears when the browser closes. A shared computer must
+      // never inherit a permanent key to the account by accident.
+      const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   // Post-login destination (e.g. the MCP OAuth consent page sends users here
@@ -139,7 +142,7 @@ export default function Login() {
               Remember me on this device
             </Label>
             <p className="text-[11px] text-muted-foreground">
-              Unchecked, you'll be signed out when you close your browser.
+              Unchecked, you'll be signed out when you close your browser. Leave it unchecked on a shared computer.
             </p>
           </div>
         </div>

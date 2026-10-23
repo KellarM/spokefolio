@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, KeyRound, Loader2, Mail } from 'lucide-react';
+import { Check, KeyRound, Loader2, Mail, ShieldCheck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -62,6 +62,14 @@ export default function PasswordHelpDialog({ open, onOpenChange }) {
           <p className="text-[13px] leading-relaxed text-muted-foreground">
             Created your account with Google? Then you need no password at all: use "Continue with Google" on the sign-in
             page on any device.
+          </p>
+        </div>
+
+        <div className="mt-3 flex items-start gap-3 border-t border-border/70 pt-4">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.75} />
+          <p className="text-[13px] leading-relaxed text-muted-foreground">
+            On a shared computer, leave "Remember me on this device" unchecked when you sign in, and use Log out in the
+            account menu when you leave — closing the tab alone keeps a remembered session alive.
           </p>
         </div>
       </DialogContent>
