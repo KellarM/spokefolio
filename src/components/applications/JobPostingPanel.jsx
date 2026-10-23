@@ -90,9 +90,26 @@ function toBlocks(raw) {
     }
 
     const pieces = trimmed.split(/\s*[•●▪]\s*/);
-    // The prose before the first bullet leads the list; a pulled posting keeps
-    // its own line breaks, so each line stands as its own paragraph.
-    pieces[0].split(/\n+/).forEach((line) => pushPara(line));
+    // Two posting shapes arrive here. Copied text puts every duty on one line
+    // with bullet glyphs; a pulled posting puts each duty on its own line after
+    // a colon-ended lead-in ("...responsible for:"). The glyph shape splits on
+    // bullets directly. The line shape reads lines in order: a paragraph
+    // ending in a colon leads a list, and the unpunctuated lines that follow
+    // it are the duties themselves, until a sentence closes the group.
+    let inList = false;
+    pieces[0].split(/\n+/).forEach((line) => {
+      const t = line.trim();
+      if (!t) return;
+      if (t.endsWith(':')) {
+        pushPara(t);
+        inList = true;
+      } else if (inList && !/[.?!]$/.test(t)) {
+        pushItem(t);
+      } else {
+        pushPara(t);
+        inList = false;
+      }
+    });
     pieces.slice(1).forEach((piece) => pushItem(piece));
   });
 
