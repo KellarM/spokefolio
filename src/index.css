@@ -405,15 +405,15 @@
 /* The greeting: a friendly hello in a soft gold bubble. The wave and the
    handwritten voice are the warmth; the pill keeps it studio-grade. */
 .mec-greet {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
-  width: 100%;
+  max-width: 100%;
   padding: 8px 24px 9px 16px;
   border-radius: 999px;
   background: linear-gradient(120deg, rgba(212, 175, 55, 0.16), rgba(212, 175, 55, 0.04));
   border: 1px solid rgba(212, 175, 55, 0.38);
-  font: 500 30px/1.1 'Caveat', 'Segoe Script', cursive;
+  font: 500 clamp(22px, 2.3vw, 30px)/1.1 'Caveat', 'Segoe Script', cursive;
   color: #F3F5F9;
   letter-spacing: 0.01em;
   box-shadow: 0 2px 12px rgba(212, 175, 55, 0.12);
@@ -422,7 +422,7 @@
 .mec-greet b {
   color: #E9C766;
   font-weight: 700;
-  font-size: 32px;
+  font-size: 1.08em;
 }
 .mec-greet-wave {
   font-size: 23px;
