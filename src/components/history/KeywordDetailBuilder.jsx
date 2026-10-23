@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { GripVertical, Loader2, Plus, RefreshCw, Search, Sparkles, Wand2 } from 'lucide-react';
+import { ChevronDown, GripVertical, Loader2, Plus, RefreshCw, Search, Sparkles, Wand2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -26,6 +26,7 @@ export default function KeywordDetailBuilder({
   onAppendToExistingEntry
 }) {
   const { toast } = useToast();
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [generatedItems, setGeneratedItems] = useState([]);
   const [checkedIds, setCheckedIds] = useState([]);
@@ -205,17 +206,31 @@ export default function KeywordDetailBuilder({
 
   return (
     <div className="paper animate-rise rounded-2xl p-5 sm:p-6">
-      <div>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex w-full items-center justify-between gap-3 text-left"
+        aria-expanded={open}
+      >
         <span className="eyebrow flex items-center gap-2 text-primary">
           <Wand2 className="h-3.5 w-3.5" /> Keyword & Detail Builder
         </span>
-        <h2 className="mt-2 font-heading text-[22px] leading-snug">
-          Enter a word or description to generate career details
-        </h2>
-        <p className="mt-1 text-[13px] text-muted-foreground">
-          Type any equipment, job title, skill, or short description. Point-form details will appear so you can drag and drop them or tick the checkboxes and click Add.
-        </p>
-      </div>
+        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          {open ? 'Hide' : 'Open'}
+          <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </span>
+      </button>
+
+      {open && (
+        <>
+          <div>
+            <h2 className="mt-2 font-heading text-[22px] leading-snug">
+              Enter a word or description to generate career details
+            </h2>
+            <p className="mt-1 text-[13px] text-muted-foreground">
+              Type any equipment, job title, skill, or short description. Point-form details will appear so you can drag and drop them or tick the checkboxes and click Add.
+            </p>
+          </div>
 
       {/* Input + Generate button */}
       <form
@@ -389,7 +404,9 @@ export default function KeywordDetailBuilder({
           onDropItem={addSingleItem}
           onSaveTray={handleSaveTray}
         />
-      </div>
+        </div>
+      </>
+      )}
     </div>
   );
 }
