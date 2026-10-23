@@ -12,6 +12,15 @@ import ResumeDownloadButtons from '@/components/resume/ResumeDownloadButtons';
 // employer portals while still looking like a real document on screen.
 const MASTER_TEMPLATE = 'editorial';
 
+// The current résumé runs summary first, then the career story, education and
+// certifications, with the skill list at the bottom: the profile default style
+// with this document's own fixed section order. Tailored applications are
+// untouched; each carries its own layout.
+const MASTER_LAYOUT = {
+  ...DEFAULT_RESUME_LAYOUT,
+  order: ['summary', 'experience', 'education', 'certifications', 'skills']
+};
+
 // The current résumé, composed live from the knowledge base each time it
 // opens: profile identity, master summary, core skills and every captured
 // entry, with no job posting and no generation involved.
@@ -98,7 +107,7 @@ export default function CurrentResumeDialog({ open, onClose }) {
               profile={profile}
               resume={resume}
               template={MASTER_TEMPLATE}
-              layout={DEFAULT_RESUME_LAYOUT}
+              layout={MASTER_LAYOUT}
               overrides={{}}
               onUpdateOverride={() => {}}
             />
@@ -119,7 +128,7 @@ export default function CurrentResumeDialog({ open, onClose }) {
               profile={profile}
               resume={resume}
               template={MASTER_TEMPLATE}
-              layout={DEFAULT_RESUME_LAYOUT}
+              layout={MASTER_LAYOUT}
               styleOverrides={{}}
               label={t('masterResume.download')}
             />
