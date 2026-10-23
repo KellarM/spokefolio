@@ -194,7 +194,9 @@ export default function ActivityCalendar({ applications }) {
 
   const openDay = (key) => {
     setSelectedDay(key);
-    setNoteDraft(existingNote ? existingNote.note || '' : '');
+    // The note for the day being opened - not the one opened before it.
+    const saved = notesByDay.get(key);
+    setNoteDraft(saved ? saved.note || '' : '');
   };
 
   const saveNote = async () => {
@@ -204,8 +206,8 @@ export default function ActivityCalendar({ applications }) {
       const text = noteDraft.trim();
       const current = notesByDay.get(selectedDay);
       if (current) {
-        const updated = await base44.entities.DayNote.update(current.id, { note: text });
-        setNotes((all) => all.map((note) => (note.id === current.id ? updated : note)));
+        await base44.entities.DayNote.update(current.id, { note: text });
+        setNotes((all) => all.map((note) => (note.id === current.id ? { ...note, note: text } : note)));
       } else {
         const created = await base44.entities.DayNote.create({ date: selectedDay, note: text });
         setNotes((all) => [...all, created]);
