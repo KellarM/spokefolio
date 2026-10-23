@@ -4,17 +4,18 @@ import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 
-// One colour per status, in the studio's own palette: gold marks the ones
-// still moving forward, reds and greys close the story out.
+// One colour per status, each in its own family so no two read alike on
+// the dark background: gold for the ones still moving forward, blue and
+// cyan for the pipeline, red and magenta for the two ways a story ends.
 const STATUS_COLORS = {
   ready: 'bg-primary',
   not_applied: 'bg-slate-400',
   applied: 'bg-blue-400',
-  contacted: 'bg-sky-300',
+  contacted: 'bg-cyan-400',
   interviewing: 'bg-violet-400',
   offer: 'bg-emerald-400',
-  declined: 'bg-orange-300',
-  not_hired: 'bg-rose-400',
+  declined: 'bg-red-500',
+  not_hired: 'bg-fuchsia-500',
   rejected: 'bg-zinc-500'
 };
 
