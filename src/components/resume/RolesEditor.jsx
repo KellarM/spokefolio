@@ -34,9 +34,14 @@ export default function RolesEditor({
     onChange(next);
   };
 
+  // Paper palette: a whisper of ink instead of the studio's dark chrome — a 40% navy
+  // slab on a cream sheet read as mud. The wash sits quietly on every template's
+  // light sheet, and dragging picks up the studio gold.
   const cardClass = (dragging) =>
-    `rounded-xl border px-4 py-4 ${
-      dragging ? 'border-accent/40 bg-card shadow-lg' : 'border-border/60 bg-background/40'
+    `rounded-xl border px-4 py-4 transition-colors ${
+      dragging
+        ? 'border-primary/50 bg-[#1F2937]/[0.05] shadow-lg'
+        : 'border-[#1F2937]/15 bg-[#1F2937]/[0.03] hover:border-[#1F2937]/30'
     }`;
 
   const body = (role, index, handle) => (

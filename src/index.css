@@ -1844,6 +1844,25 @@
   opacity: 1;
 }
 
+/* The sheet's own palette: ink on paper. Text that inherits its colour
+   (the bullets, chiefly) was picking up the studio's dark-theme white
+   and landing pale-on-cream, and the muted chrome grey washed out on
+   paper — so inside the sheet, everything that doesn't carry one of
+   the template's own colours reads as warm ink and paper-grey. */
+.resume-sheet {
+  color: #374151;
+}
+
+.resume-sheet .text-muted-foreground {
+  color: #6B7280;
+}
+
+.resume-sheet textarea:focus,
+.resume-sheet textarea:focus-visible {
+  background: transparent;
+  border-color: var(--primary);
+}
+
 .sf-field:focus-visible,
 .sf-field:focus {
   border-color: var(--primary);
