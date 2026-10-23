@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Loader2, StickyNote, X } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { useToast } from '@/components/ui/use-toast';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 // One colour per status, in the studio's own palette: gold marks the ones
@@ -39,26 +41,62 @@ const dayCounts = (applications) => {
   return byDay;
 };
 
+const localDayKey = (value) => {
+  const date = new Date(value);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 export default function ActivityCalendar({ applications }) {
   const { t, language } = useStudioLanguage();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  const [selected, setSelected] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [notes, setNotes] = useState([]);
+  const [noteDraft, setNoteDraft] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
 
   const locale = LOCALES[language] || 'en-CA';
   const byDay = useMemo(() => dayCounts(applications), [applications]);
+  const notesByDay = useMemo(() => {
+    const map = new Map();
+    for (const note of notes || []) {
+      if (note.date) map.set(note.date, note);
+    }
+    return map;
+  }, [notes]);
 
-  // Escape closes the box, as everywhere else in the studio.
+  // The day notes load with the calendar, not with the page.
+  useEffect(() => {
+    if (!open) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const records = await base44.entities.DayNote.list('-created_date', 200);
+        if (!cancelled) setNotes(records || []);
+      } catch {
+        // A sync that has not caught up yet shows no notes, not a broken page.
+        if (!cancelled) setNotes([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+
+  // Escape closes the day box first; a second Escape closes the calendar.
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (event) => {
-      if (event.key === 'Escape') setOpen(false);
+      if (event.key !== 'Escape') return;
+      if (selectedDay) setSelectedDay(null);
+      else setOpen(false);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open]);
+  }, [open, selectedDay]);
 
-  // S M T W T F S, in the studio's language; Sunday first, as specified.
+  // S/M T W T F S, in the studio's language; Sunday first, as specified.
   const weekdays = useMemo(() => {
     const names = [];
     const formatter = new Intl.DateTimeFormat(locale, { weekday: 'narrow' });
@@ -78,23 +116,44 @@ export default function ActivityCalendar({ applications }) {
     for (let blank = 0; blank < leading; blank += 1) list.push(null);
     for (let day = 1; day <= daysInMonth; day += 1) {
       const key = `${year}-${String(index + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      list.push({ day, key, weekday: (leading + day - 1) % 7 });
+      list.push({ day, key });
     }
     return list;
   }, [month]);
 
-  const todayKey = (() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  })();
+  const todayKey = localDayKey(new Date());
 
   const monthLabel = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(month);
-  const selectedApplications = (applications || []).filter((application) => {
-    if (!application.created_date || !selected) return false;
-    const date = new Date(application.created_date);
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    return key === selected;
-  });
+  const selectedDate = selectedDay ? new Date(`${selectedDay}T12:00:00`) : null;
+  const selectedApplications = (applications || []).filter(
+    (application) => application.created_date && localDayKey(application.created_date) === selectedDay
+  );
+  const existingNote = selectedDay ? notesByDay.get(selectedDay) : null;
+
+  const openDay = (key) => {
+    setSelectedDay(key);
+    setNoteDraft(existingNote ? existingNote.note || '' : '');
+  };
+
+  const saveNote = async () => {
+    if (!selectedDay) return;
+    setSavingNote(true);
+    try {
+      const text = noteDraft.trim();
+      const current = notesByDay.get(selectedDay);
+      if (current) {
+        const updated = await base44.entities.DayNote.update(current.id, { note: text });
+        setNotes((all) => all.map((note) => (note.id === current.id ? updated : note)));
+      } else {
+        const created = await base44.entities.DayNote.create({ date: selectedDay, note: text });
+        setNotes((all) => [...all, created]);
+      }
+      toast({ title: t('applications.noteSaved') });
+    } catch (error) {
+      toast({ title: t('applications.noteError'), variant: 'destructive' });
+    }
+    setSavingNote(false);
+  };
 
   return (
     <>
@@ -137,7 +196,7 @@ export default function ActivityCalendar({ applications }) {
                 aria-label={t('applications.previousMonth')}
                 onClick={() => {
                   setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1));
-                  setSelected(null);
+                  setSelectedDay(null);
                 }}
                 className="rounded-full border border-border/70 p-1.5 text-muted-foreground transition-colors hover:text-foreground"
               >
@@ -149,7 +208,7 @@ export default function ActivityCalendar({ applications }) {
                 aria-label={t('applications.nextMonth')}
                 onClick={() => {
                   setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1));
-                  setSelected(null);
+                  setSelectedDay(null);
                 }}
                 className="rounded-full border border-border/70 p-1.5 text-muted-foreground transition-colors hover:text-foreground"
               >
@@ -168,21 +227,24 @@ export default function ActivityCalendar({ applications }) {
                 if (!cell) return <span key={`blank-${index}`} className="min-h-[72px]" />;
                 const counts = byDay.get(cell.key) || {};
                 const marks = STATUS_ORDER.filter((status) => counts[status]);
+                const hasNote = notesByDay.has(cell.key);
                 const isToday = cell.key === todayKey;
-                const isSelected = cell.key === selected;
                 return (
                   <button
                     key={cell.key}
                     type="button"
-                    onClick={() => setSelected(isSelected ? null : cell.key)}
+                    onClick={() => openDay(cell.key)}
                     className={`flex min-h-[72px] flex-col rounded-lg border p-1.5 text-left transition-colors ${
-                      isSelected
+                      selectedDay === cell.key
                         ? 'border-primary bg-primary/10'
                         : 'border-border/50 hover:border-primary/40 hover:bg-accent/50'
                     } ${isToday ? 'ring-1 ring-primary' : ''}`}
                   >
-                    <span className={`text-[12.5px] ${marks.length ? 'text-foreground' : 'text-muted-foreground'}`}>
-                      {cell.day}
+                    <span className="flex w-full items-center justify-between gap-1">
+                      <span className={`text-[12.5px] ${marks.length || hasNote ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        {cell.day}
+                      </span>
+                      {hasNote && <StickyNote className="h-3 w-3 shrink-0 text-primary/70" aria-label={t('applications.noteLabel')} />}
                     </span>
                     <span className="mt-auto flex flex-wrap gap-1 pt-1">
                       {marks.map((status) => (
@@ -208,29 +270,77 @@ export default function ActivityCalendar({ applications }) {
                 </span>
               ))}
             </div>
+          </div>
+        </div>
+      )}
 
-            {selected && (
-              <div className="mt-4 border-t border-border/60 pt-3">
-                <p className="text-[13px] font-semibold text-foreground">
-                  {new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(
-                    new Date(`${selected}T12:00:00`)
-                  )}
-                </p>
-                {selectedApplications.length === 0 ? (
-                  <p className="mt-1 text-[12.5px] text-muted-foreground">{t('applications.nothingThatDay')}</p>
-                ) : (
-                  <ul className="mt-2 space-y-1.5">
-                    {selectedApplications.map((application) => (
-                      <li key={application.id} className="flex items-center gap-2 text-[13px]">
-                        <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_COLORS[application.status] || 'bg-muted-foreground'}`} />
-                        <span className="font-medium text-foreground">{application.job_title || application.title || t('applications.untitled')}</span>
-                        <span className="text-muted-foreground">· {application.company || ''}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
+      {open && selectedDay && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/60 p-4 sm:p-8"
+          role="dialog"
+          aria-modal="true"
+          aria-label={
+            selectedDate
+              ? new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(selectedDate)
+              : selectedDay
+          }
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setSelectedDay(null);
+          }}
+        >
+          <div className="mx-auto mt-[8vh] w-full max-w-lg rounded-2xl border border-primary/30 bg-card text-card-foreground shadow-2xl">
+            <div className="flex items-center justify-between gap-3 border-b border-border/60 p-5">
+              <h3 className="font-heading text-[18px] tracking-tight">
+                {selectedDate
+                  ? new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(selectedDate)
+                  : selectedDay}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSelectedDay(null)}
+                aria-label={t('common.close')}
+                className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="max-h-[62vh] overflow-y-auto p-5">
+              <p className="eyebrow">{t('applications.activityThisDay')}</p>
+              {selectedApplications.length === 0 ? (
+                <p className="mt-2 text-[13px] text-muted-foreground">{t('applications.nothingThatDay')}</p>
+              ) : (
+                <ul className="mt-2 space-y-2">
+                  {selectedApplications.map((application) => (
+                    <li key={application.id} className="flex items-start gap-2.5 rounded-lg border border-border/50 p-2.5 text-[13px]">
+                      <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${STATUS_COLORS[application.status] || 'bg-muted-foreground'}`} />
+                      <span>
+                        <span className="block font-medium text-foreground">{application.job_title || t('applications.untitled')}</span>
+                        <span className="block text-muted-foreground">{application.company || ''}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <p className="eyebrow mt-6">{t('applications.noteLabel')}</p>
+              <textarea
+                value={noteDraft}
+                onChange={(event) => setNoteDraft(event.target.value)}
+                placeholder={t('applications.notePlaceholder')}
+                rows={4}
+                className="mt-2 w-full resize-y rounded-xl border border-border/70 bg-background px-3.5 py-2.5 text-[13.5px] leading-relaxed text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={saveNote}
+                disabled={savingNote}
+                className="mt-2.5 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-1.5 text-[13px] font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+              >
+                {savingNote && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                {t('applications.saveNote')}
+              </button>
+            </div>
           </div>
         </div>
       )}

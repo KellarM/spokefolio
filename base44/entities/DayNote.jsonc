@@ -1,0 +1,28 @@
+// One personal note per calendar day. Scoped to the owner like every
+// other studio entity.
+{
+  "name": "DayNote",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "date"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
