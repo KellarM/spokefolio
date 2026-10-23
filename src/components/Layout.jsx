@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import AccountMenu from '@/components/AccountMenu';
 import { StudioLanguageProvider, useStudioLanguage } from '@/lib/StudioLanguage';
@@ -22,11 +22,52 @@ function Nav() {
     { label: t('nav.applications'), to: '/applications' }
   ];
 
+  // The header hides while scrolling down into the page and returns the
+  // moment the reader reaches for it: scrolling up, or bringing the
+  // cursor near the top edge. At the very top it never leaves.
+  const headerRef = useRef(null);
+  const lastY = useRef(0);
+  const [navHidden, setNavHidden] = useState(false);
+  const [navHeight, setNavHeight] = useState(64);
+
+  useEffect(() => {
+    const measure = () => setNavHeight(headerRef.current ? headerRef.current.offsetHeight : 64);
+    measure();
+    window.addEventListener('resize', measure);
+
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y <= 8) {
+        setNavHidden(false);
+      } else if (y > lastY.current + 4 && y > 120) {
+        setNavHidden(true);
+      } else if (y < lastY.current - 4) {
+        setNavHidden(false);
+      }
+      lastY.current = y;
+    };
+
+    const onMouseMove = (event) => {
+      if (event.clientY <= 48 && window.scrollY > 8) setNavHidden(false);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('mousemove', onMouseMove);
+    return () => {
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('mousemove', onMouseMove);
+    };
+  }, []);
+
   return (
     <div className="mec-root">
       <div className="mec-glow" aria-hidden="true" />
 
-      <header className="mec-nav">
+      {/* The header's fixed now, so this spacer keeps the page from
+          sliding up behind it. */}
+      <div style={{ height: navHeight }} aria-hidden="true" />
+      <header ref={headerRef} className={`mec-nav ${navHidden ? 'nav-away' : ''}`}>
         <Link to="/" className="mec-brand">
           <img src={LOGO} alt="Spokefolio Personal Resume Studio" />
           <div>
