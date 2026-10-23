@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { pillClass } from '@/components/postings/JobSearchFilters';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import useProfile from '@/hooks/useProfile';
+import { boardSearchUrl, hostOf } from '@/lib/boardSearchUrl';
 
 // The starter directory, region-aware: an account seeds the set that covers
 // where the profile says the person lives. Canada keeps the original twelve;
@@ -68,13 +69,6 @@ const DOMAIN_LABELS = {
   'casinocareers.com': 'Casino Careers'
 };
 
-const hostOf = (url) => {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '').toLowerCase();
-  } catch {
-    return '';
-  }
-};
 
 const labelFor = (url) => {
   const host = hostOf(url);
@@ -299,15 +293,22 @@ export default function JobBoardDirectory({ postings, search }) {
                     <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{board.notes}</p>
                   )}
                 </div>
-                <a
-                  href={board.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border/70 px-3 py-1.5 text-[12.5px] text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  {t('sources.open')}
-                </a>
+                {(() => {
+                  const openUrl = boardSearchUrl(board, search?.category, search?.location);
+                  const preFilled = openUrl !== board.url;
+                  return (
+                    <a
+                      href={openUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={preFilled ? t('sources.openPreFilled') : undefined}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-border/70 px-3 py-1.5 text-[12.5px] text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      {t('sources.open')}
+                    </a>
+                  );
+                })()}
               </div>
             ))}
           </div>

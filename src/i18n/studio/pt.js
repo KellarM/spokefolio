@@ -291,7 +291,8 @@ export default {
   'sources.kindRegional': 'Regional',
   'sources.kindGovernment': 'Governo',
   'sources.kindSpecialty': 'Ofícios e especialidades',
-  'sources.kindUser': 'Adicionado por você',
+  'sources.kindUser': 'Adicionado por você',  'sources.openPreFilled': 'Abre o site com sua última vaga e local já preenchidos',
+
   'sources.open': 'Abrir',
   'sources.addTitle': 'Adicionar um site de emprego',
   'sources.addLede': 'Conhece um site que cobre sua região e não está na lista? Adicione. Ele abre da sua lista como qualquer outro, e as ofertas entram do mesmo jeito.',

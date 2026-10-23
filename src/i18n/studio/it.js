@@ -291,7 +291,8 @@ export default {
   'sources.kindRegional': 'Regionale',
   'sources.kindGovernment': 'Pubblico',
   'sources.kindSpecialty': 'Mestieri e specialità',
-  'sources.kindUser': 'Aggiunta da te',
+  'sources.kindUser': 'Aggiunta da te',  'sources.openPreFilled': 'Apre il sito con l\'ultimo lavoro e luogo già compilati',
+
   'sources.open': 'Apri',
   'sources.addTitle': 'Aggiungi una bacheca',
   'sources.addLede': "Conosci una bacheca per la tua zona che manca? Aggiungila. Si apre dalla tua lista come le altre, e le sue offerte entrano allo stesso modo.",

@@ -327,7 +327,8 @@ export default {
   'sources.kindRegional': 'Regional',
   'sources.kindGovernment': 'Government',
   'sources.kindSpecialty': 'Trades & specialty',
-  'sources.kindUser': 'Added by you',
+  'sources.kindUser': 'Added by you',  'sources.openPreFilled': 'Opens the board with your last job and place already filled in',
+
   'sources.open': 'Open',
   'sources.addTitle': 'Add a job board',
   'sources.addLede': 'Know a board that covers your area and is not in the list? Add it. It opens from your list like any other, and its postings come in the same way.',

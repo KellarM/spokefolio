@@ -291,7 +291,8 @@ export default {
   'sources.kindRegional': 'Regional',
   'sources.kindGovernment': 'Gobierno',
   'sources.kindSpecialty': 'Oficios y especialidades',
-  'sources.kindUser': 'Añadida por ti',
+  'sources.kindUser': 'Añadida por ti',  'sources.openPreFilled': 'Abre el sitio con tu último puesto y lugar ya completados',
+
   'sources.open': 'Abrir',
   'sources.addTitle': 'Añadir una bolsa de empleo',
   'sources.addLede': '¿Conoces una bolsa que cubra tu zona y no esté en la lista? Añádela. Se abre desde tu lista como cualquier otra, y sus ofertas entran igual.',

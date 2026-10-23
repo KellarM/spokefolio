@@ -313,7 +313,8 @@ export default {
   'sources.kindRegional': 'Regional',
   'sources.kindGovernment': 'Behörde',
   'sources.kindSpecialty': 'Handwerk & Spezial',
-  'sources.kindUser': 'Von dir hinzugefügt',
+  'sources.kindUser': 'Von dir hinzugefügt',  'sources.openPreFilled': 'Öffnet die Seite mit Ihrer letzten Stelle und Ihrem Ort, bereits ausgefüllt',
+
   'sources.open': 'Öffnen',
   'sources.addTitle': 'Jobbörse hinzufügen',
   'sources.addLede': 'Kennst du eine Börse für deine Region, die in der Liste fehlt? Füge sie hinzu. Sie öffnet sich aus deiner Liste wie jede andere, und ihre Anzeigen kommen auf demselben Weg herein.',
