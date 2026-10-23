@@ -47,7 +47,7 @@ export default function Home() {
 
   return (
     <div>
-      <StudioHero draftCount={loading ? 0 : draftCount} />
+      <StudioHero draftCount={loading ? 0 : draftCount} profile={profile} />
 
       <div className="mec-ticker">
         <div className="mec-tk">

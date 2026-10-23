@@ -10,6 +10,10 @@
     "full_name": {
       "type": "string"
     },
+    "honorific": {
+      "type": "string",
+      "description": "Optional honorific the client wants to be greeted by (Mr., Mrs., Dr., ...)."
+    },
     "email": {
       "type": "string"
     },

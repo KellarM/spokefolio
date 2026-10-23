@@ -42,7 +42,9 @@ export default {
   'common.findingAddressesPostings': 'Finding work-site addresses and travel distances from home…',
 
   // The overview.
-  'home.heroEyebrow': 'Spokefolio Personal Resume Studio',
+  'home.greetMorning': 'Good morning',
+  'home.greetAfternoon': 'Good afternoon',
+  'home.greetEvening': 'Good evening',
   'home.heroTitle': 'Turn your real work history into a résumé written for the job you want.',
   'home.heroBody':
     'Capture your career by voice, one entry at a time. Then paste any job posting and get a résumé shaped around it, ready to download as a Word document.',
@@ -77,6 +79,8 @@ export default {
   'profile.yourDetails': 'Your details',
   'profile.detailsLede': 'These sit at the top of every résumé you generate. The five starred details are needed before the overview opens.',
   'profile.fullName': 'Full name',
+  'profile.honorific': 'Honorific (optional)',
+  'profile.honorificNone': 'No title',
   'profile.email': 'Email',
   'profile.phone': 'Phone',
   'profile.location': 'Location',

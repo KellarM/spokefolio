@@ -35,7 +35,9 @@ export default {
   'common.findingAddresses': 'Arbeitsort-Adressen und Fahrzeiten werden ermittelt…',
   'common.findingAddressesPostings': 'Arbeitsort-Adressen und Anfahrtswege von zu Hause werden ermittelt…',
 
-  'home.heroEyebrow': 'Spokefolio Persönliches Résumé-Studio',
+  'home.greetMorning': 'Guten Morgen',
+  'home.greetAfternoon': 'Guten Tag',
+  'home.greetEvening': 'Guten Abend',
   'home.heroTitle': 'Aus deiner echten Arbeitshistorie wird ein Résumé, geschrieben für die Stelle, die du willst.',
   'home.heroBody':
     'Erfasse deine Karriere per Sprache, ein Eintrag nach dem anderen. Füge dann ein beliebiges Stellenangebot ein und erhalte ein darauf zugeschnittenes Résumé, fertig zum Herunterladen als Word-Dokument.',
@@ -69,6 +71,8 @@ export default {
   'profile.yourDetails': 'Deine Angaben',
   'profile.detailsLede': 'Diese stehen oben auf jedem Résumé, das du erstellst. Die fünf markierten Angaben werden benötigt, bevor der Überblick öffnet.',
   'profile.fullName': 'Vollständiger Name',
+  'profile.honorific': 'Anrede (optional)',
+  'profile.honorificNone': 'Keine Anrede',
   'profile.email': 'E-Mail',
   'profile.phone': 'Telefon',
   'profile.location': 'Wohnort',

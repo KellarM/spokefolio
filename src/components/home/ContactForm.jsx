@@ -4,8 +4,11 @@ import LanguageSelect, { getStoredLanguage, normalizeLanguage } from '@/componen
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import LocationInput from '@/components/home/LocationInput';
 
+const HONORIFICS = ['', 'Mr.', 'Mrs.', 'Miss', 'Ms.', 'Mx.', 'Dr.', 'Prof.', 'Rev.'];
+
 const FIELDS = [
   { key: 'full_name', label: 'profile.fullName', placeholder: 'Jane Doe', required: true },
+  { key: 'honorific', label: 'profile.honorific', honorific: true, required: false },
   { key: 'email', label: 'profile.email', placeholder: 'jane@email.com', required: true },
   { key: 'phone', label: 'profile.phone', placeholder: '(555) 010-2233', required: true },
   { key: 'location', label: 'profile.location', placeholder: 'Edmonton, Alberta, Canada', required: true },
@@ -61,7 +64,20 @@ export default function ContactForm({ profile, onSave }) {
               {field.language ? t(field.label) : FIELDS_TITLES[field.key] || t(field.label)}
               {field.required && <span className="text-accent"> *</span>}
             </label>
-            {field.language ? (
+            {field.honorific ? (
+              <select
+                id={field.key}
+                value={form[field.key] || ''}
+                onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+                className="mec-v"
+              >
+                {HONORIFICS.map((option) => (
+                  <option key={option || 'none'} value={option}>
+                    {option || t('profile.honorificNone')}
+                  </option>
+                ))}
+              </select>
+            ) : field.language ? (
               <LanguageSelect
                 id={field.key}
                 value={form[field.key] || ''}

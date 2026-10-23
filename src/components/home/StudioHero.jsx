@@ -3,10 +3,30 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Clock } from 'lucide-react';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 
+// The greeting addresses the client the way they asked to be addressed: their
+// honorific with their surname when they chose one, their first name when not.
+// The honorific is always what the client declared — never guessed.
+function greetingName(profile) {
+  const parts = String(profile?.full_name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '';
+  const honorific = String(profile?.honorific || '').trim();
+  if (honorific) return `${honorific} ${parts[parts.length - 1]}`;
+  return parts[0];
+}
+
+function greetingKey() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'home.greetMorning';
+  if (hour < 17) return 'home.greetAfternoon';
+  return 'home.greetEvening';
+}
+
 const HERO_IMAGE = 'https://media.base44.com/images/public/6acfb4bf0fc7d7424c8470e5/5163f1c7d_generated_5d1d5b3a.jpg';
 
-export default function StudioHero({ draftCount = 0 }) {
+export default function StudioHero({ draftCount = 0, profile }) {
   const { t } = useStudioLanguage();
+  const name = greetingName(profile);
+  const greeting = t(greetingKey()) + (name ? `, ${name}.` : '.');
 
   // The Step Order, numbered so the order is unmistakable: capture the
   // history, bring the reference files in, find the postings, then tailor.
@@ -22,7 +42,7 @@ export default function StudioHero({ draftCount = 0 }) {
     <>
       <section className="mec-hero">
         <div>
-          <div className="mec-eyebrow">{t('home.heroEyebrow')}</div>
+          <div className="mec-eyebrow">{greeting}</div>
           <h1 className="mec-h1">{t('home.heroTitle')}</h1>
           <p className="mec-body">{t('home.heroBody')}</p>
 

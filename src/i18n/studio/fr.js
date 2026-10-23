@@ -35,7 +35,9 @@ export default {
   'common.findingAddresses': "Repérage des adresses de lieu de travail et des temps de trajet…",
   'common.findingAddressesPostings': "Repérage des adresses de lieu de travail et des distances depuis chez vous…",
 
-  'home.heroEyebrow': "Spokefolio Studio personnel de curriculum",
+  'home.greetMorning': 'Bonjour',
+  'home.greetAfternoon': 'Bon après-midi',
+  'home.greetEvening': 'Bonsoir',
   'home.heroTitle': "Transformez votre véritable parcours en un curriculum écrit pour le poste que vous voulez.",
   'home.heroBody':
     "Capturez votre carrière à la voix, une entrée à la fois. Collez ensuite n'importe quelle offre d'emploi et obtenez un curriculum taillé pour elle, prêt à télécharger en document Word.",
@@ -69,6 +71,8 @@ export default {
   'profile.yourDetails': "Vos détails",
   'profile.detailsLede': "Ils figurent en tête de chaque curriculum que vous générez. Les cinq détails marqués d'un astérisque sont requis avant l'ouverture de l'aperçu.",
   'profile.fullName': "Nom complet",
+  'profile.honorific': 'Civilité (facultatif)',
+  'profile.honorificNone': 'Sans civilité',
   'profile.email': "Courriel",
   'profile.phone': "Téléphone",
   'profile.location': "Lieu de résidence",
