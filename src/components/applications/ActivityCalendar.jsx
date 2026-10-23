@@ -53,6 +53,7 @@ export default function ActivityCalendar({ applications }) {
   const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [selectedDay, setSelectedDay] = useState(null);
   const [notes, setNotes] = useState([]);
+  const [events, setEvents] = useState([]);
   const [noteDraft, setNoteDraft] = useState('');
   const [savingNote, setSavingNote] = useState(false);
 
@@ -66,17 +67,68 @@ export default function ActivityCalendar({ applications }) {
     return map;
   }, [notes]);
 
+  // The status history, per day - the log outlives the applications, so
+  // deleted ones still tell their story here.
+  const eventsByDay = useMemo(() => {
+    const map = new Map();
+    for (const event of events || []) {
+      const key = event.interview_at ? localDayKey(event.interview_at) : localDayKey(event.created_date);
+      if (!key) continue;
+      const list = map.get(key) || [];
+      list.push(event);
+      map.set(key, list);
+    }
+    return map;
+  }, [events]);
+
+  // Interview days, for the bold gold marker in the grid.
+  const interviewByDay = useMemo(() => {
+    const map = new Map();
+    for (const event of events || []) {
+      if (!event.interview_at) continue;
+      const key = localDayKey(event.interview_at);
+      const list = map.get(key) || [];
+      list.push(event);
+      map.set(key, list);
+    }
+    return map;
+  }, [events]);
+
+  // The next interview still ahead of now, if one is scheduled. An
+  // application that has moved past Interviewing no longer counts as
+  // upcoming; a deleted one cannot be checked, so its moment stays.
+  const upcomingInterview = useMemo(() => {
+    const now = Date.now();
+    const statusById = new Map((applications || []).map((application) => [application.id, application.status]));
+    return (events || [])
+      .filter((event) => {
+        if (!event.interview_at || new Date(event.interview_at).getTime() <= now) return false;
+        if (!statusById.has(event.application_id)) return true;
+        return statusById.get(event.application_id) === 'interviewing';
+      })
+      .sort((a, b) => new Date(a.interview_at) - new Date(b.interview_at))[0] || null;
+  }, [events, applications]);
+
   // The day notes load with the calendar, not with the page.
   useEffect(() => {
     if (!open) return undefined;
     let cancelled = false;
     (async () => {
       try {
-        const records = await base44.entities.DayNote.list('-created_date', 200);
-        if (!cancelled) setNotes(records || []);
+        const [noteRecords, eventRecords] = await Promise.all([
+          base44.entities.DayNote.list('-created_date', 200),
+          base44.entities.StatusEvent.list('-created_date', 500)
+        ]);
+        if (!cancelled) {
+          setNotes(noteRecords || []);
+          setEvents(eventRecords || []);
+        }
       } catch {
         // A sync that has not caught up yet shows no notes, not a broken page.
-        if (!cancelled) setNotes([]);
+        if (!cancelled) {
+          setNotes([]);
+          setEvents([]);
+        }
       }
     })();
     return () => {
@@ -129,6 +181,15 @@ export default function ActivityCalendar({ applications }) {
     (application) => application.created_date && localDayKey(application.created_date) === selectedDay
   );
   const existingNote = selectedDay ? notesByDay.get(selectedDay) : null;
+
+  const selectedEvents = selectedDay ? eventsByDay.get(selectedDay) || [] : [];
+  const applicationIds = new Set((applications || []).map((application) => application.id));
+  // Creation shows through the applications list above; the rest of the
+  // history - every move after the start, and deleted applications included -
+  // shows here.
+  const historyEvents = selectedEvents.filter(
+    (event) => !(event.initial && applicationIds.has(event.application_id))
+  );
 
   const openDay = (key) => {
     setSelectedDay(key);
@@ -216,6 +277,26 @@ export default function ActivityCalendar({ applications }) {
               </button>
             </div>
 
+            {upcomingInterview && (
+              <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-primary/50 bg-primary/10 px-4 py-2.5 text-[13px]">
+                <CalendarDays className="h-4 w-4 shrink-0 text-primary" />
+                <span className="font-semibold text-primary">{t('applications.upcomingInterview')}:</span>
+                <span className="text-foreground">
+                  {upcomingInterview.job_title || t('applications.untitled')}
+                  {upcomingInterview.company ? ` · ${upcomingInterview.company}` : ''}
+                </span>
+                <span className="text-muted-foreground">
+                  {new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(
+                    new Date(upcomingInterview.interview_at)
+                  )}
+                  {upcomingInterview.interview_at.includes('T') &&
+                    ` · ${new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(
+                      new Date(upcomingInterview.interview_at)
+                    )}`}
+                </span>
+              </div>
+            )}
+
             <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {weekdays.map((name, index) => (
                 <span key={`${name}-${index}`}>{name}</span>
@@ -247,6 +328,11 @@ export default function ActivityCalendar({ applications }) {
                       {hasNote && <StickyNote className="h-3 w-3 shrink-0 text-primary/70" aria-label={t('applications.noteLabel')} />}
                     </span>
                     <span className="mt-auto flex flex-wrap gap-1 pt-1">
+                      {interviewByDay.has(cell.key) && (
+                        <span className="inline-flex items-center rounded-full bg-primary px-1.5 text-[10px] font-semibold leading-4 text-primary-foreground">
+                          {t('applications.interviewLabel')}
+                        </span>
+                      )}
                       {marks.map((status) => (
                         <span
                           key={status}
@@ -321,6 +407,29 @@ export default function ActivityCalendar({ applications }) {
                     </li>
                   ))}
                 </ul>
+              )}
+
+              {historyEvents.length > 0 && (
+                <>
+                  <p className="eyebrow mt-6">{t('applications.historyLabel')}</p>
+                  <ul className="mt-2 space-y-1.5">
+                    {historyEvents.map((event) => (
+                      <li key={event.id} className="flex items-start gap-2.5 text-[13px]">
+                        <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${STATUS_COLORS[event.status] || 'bg-muted-foreground'}`} />
+                        <span>
+                          <span className="font-medium text-foreground">{t(`status.${event.status}`)}</span>
+                          {event.interview_at && event.interview_at.includes('T') && (
+                            <span className="text-primary"> · {new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(new Date(event.interview_at))}</span>
+                          )}
+                          <span className="block text-muted-foreground">
+                            {event.job_title || t('applications.untitled')}
+                            {event.company ? ` · ${event.company}` : ''}
+                          </span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
               )}
 
               <p className="eyebrow mt-6">{t('applications.noteLabel')}</p>

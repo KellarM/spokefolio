@@ -156,6 +156,14 @@ export default function TailorApplication() {
         resume_template: template || DEFAULT_TEMPLATE_ID
       });
       await save({ headline: resume.headline }).catch(() => {});
+      // The history starts at the start: creation is the first status event.
+      await base44.entities.StatusEvent.create({
+        application_id: created.id,
+        job_title: form.job_title || '',
+        company: form.company || '',
+        status: 'ready',
+        initial: true
+      }).catch(() => {});
       trackEvent('application_tracked', [form.company, form.job_title].filter(Boolean).join(' - '));
       trackEvent('resume_created');
       if (postingId) {

@@ -1,0 +1,45 @@
+// The status history of every application, from creation to the end - even
+// past deletion. Each record is one transition: the status it moved to,
+// the moment it moved (created_date), and the job title and company copied
+// onto the event so the story stays readable when the application itself
+// is gone. interview_at carries the scheduled moment when the status
+// moved to Interviewing.
+{
+  "name": "StatusEvent",
+  "type": "object",
+  "properties": {
+    "application_id": {
+      "type": "string"
+    },
+    "job_title": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "interview_at": {
+      "type": "string"
+    },
+    "initial": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "application_id",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

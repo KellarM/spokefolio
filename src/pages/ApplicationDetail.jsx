@@ -28,6 +28,7 @@ import TemplatePicker from '@/components/resume/TemplatePicker';
 import { getTemplate, resolveTemplateId } from '@/lib/resumeTemplates';
 import { readElementOverrides } from '@/lib/resumeElementStyles';
 import DictateButton from '@/components/common/DictateButton';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 import { appendLine } from '@/hooks/useDictation';
 import { buildResumeProposal } from '@/lib/resumePatch';
 
@@ -49,8 +50,13 @@ export default function ApplicationDetail() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
+  const { t } = useStudioLanguage();
   const { profile, loadingProfile, save: saveProfile } = useProfile();
   const [application, setApplication] = useState(null);
+  const [interviewPick, setInterviewPick] = useState(false);
+  const [interviewDate, setInterviewDate] = useState('');
+  const [interviewTime, setInterviewTime] = useState('');
+  const [savingInterview, setSavingInterview] = useState(false);
   const [entries, setEntries] = useState([]);
   const [resume, setResume] = useState({});
   const [coverLetter, setCoverLetter] = useState('');
@@ -297,13 +303,57 @@ export default function ApplicationDetail() {
     navigate('/applications');
   };
 
+  // Every status move is written to the history: the new status, this moment,
+  // and the job title and company copied onto the event, so the story stays
+  // readable even after the application itself is deleted.
+  const logStatusEvent = async (status, interviewAt) => {
+    try {
+      await base44.entities.StatusEvent.create({
+        application_id: application.id,
+        job_title: application.job_title || '',
+        company: application.company || '',
+        status,
+        interview_at: interviewAt || undefined,
+        initial: false
+      });
+    } catch (error) {
+      // A history line that fails to write never blocks the status change.
+    }
+  };
+
+  // Interviewing asks for the moment it happens, so the calendar can carry it.
   const changeStatus = async (status) => {
+    if (status === 'interviewing') {
+      setInterviewDate('');
+      setInterviewTime('');
+      setInterviewPick(true);
+      return;
+    }
     setApplication((prev) => ({ ...prev, status }));
     try {
       await base44.entities.JobApplication.update(application.id, { status });
+      await logStatusEvent(status);
     } catch (error) {
       reportError('Could not update the status', error);
     }
+  };
+
+  const confirmInterview = async () => {
+    setSavingInterview(true);
+    const interviewAt = interviewDate && interviewTime ? `${interviewDate}T${interviewTime}` : interviewDate || '';
+    try {
+      await base44.entities.JobApplication.update(application.id, {
+        status: 'interviewing',
+        interview_at: interviewAt
+      });
+      await logStatusEvent('interviewing', interviewAt);
+      setApplication((prev) => ({ ...prev, status: 'interviewing', interview_at: interviewAt }));
+      setInterviewPick(false);
+      toast({ title: t('applications.interviewSaved') });
+    } catch (error) {
+      reportError('Could not update the status', error);
+    }
+    setSavingInterview(false);
   };
 
   const handleSelectionChange = async (selectedIds) => {
@@ -698,6 +748,57 @@ export default function ApplicationDetail() {
           setApplication((prev) => ({ ...prev, last_sent_to: data.sent_to, last_sent_at: data.sent_at }))
         }
       />
+
+      {interviewPick && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 p-4 sm:p-8"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('applications.interviewWhen')}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setInterviewPick(false);
+          }}
+        >
+          <div className="mx-auto mt-[18vh] w-full max-w-md rounded-2xl border border-primary/30 bg-card p-6 text-card-foreground shadow-2xl">
+            <h3 className="font-heading text-[19px] tracking-tight">{t('applications.interviewWhen')}</h3>
+            <div className="mt-4 space-y-3">
+              <div>
+                <label htmlFor="interview-date" className="text-[13px] font-medium text-muted-foreground">
+                  {t('applications.interviewDate')}
+                </label>
+                <input
+                  id="interview-date"
+                  type="date"
+                  value={interviewDate}
+                  onChange={(event) => setInterviewDate(event.target.value)}
+                  className="mt-1 w-full rounded-xl border border-border/70 bg-background px-3 py-2 text-[14px] text-foreground focus:border-primary focus:outline-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="interview-time" className="text-[13px] font-medium text-muted-foreground">
+                  {t('applications.interviewAt')}
+                </label>
+                <input
+                  id="interview-time"
+                  type="time"
+                  value={interviewTime}
+                  onChange={(event) => setInterviewTime(event.target.value)}
+                  className="mt-1 w-full rounded-xl border border-border/70 bg-background px-3 py-2 text-[14px] text-foreground focus:border-primary focus:outline-none"
+                />
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <Button variant="secondary" className="rounded-full" onClick={() => setInterviewPick(false)} disabled={savingInterview}>
+                {t('common.cancel')}
+              </Button>
+              <Button className="rounded-full" onClick={confirmInterview} disabled={!interviewDate || savingInterview}>
+                {savingInterview && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {t('common.save')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -65,6 +65,9 @@
       ],
       "default": "ready"
     },
+    "interview_at": {
+      "type": "string"
+    },
     "resume_template": {
       "type": "string"
     },
