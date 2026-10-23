@@ -938,6 +938,11 @@
     padding: 48px 24px 40px;
     gap: 40px;
   }
+  .mec-hp img {
+    /* A short wide banner on mobile: the suit shot stays, the screen
+       it was eating does not. */
+    aspect-ratio: 16 / 10;
+  }
   .mec-h1 {
     font-size: 48px;
   }
