@@ -12,3 +12,20 @@ export const setSessionToken = (token) => {
 export const clearSessionToken = () => {
   if (typeof window !== 'undefined') window.sessionStorage.removeItem(KEY);
 };
+
+// A sign-in made moments ago hands exactly one page load through the door.
+// The mark survives the redirect that follows a sign-in (and the round trip to
+// a provider) but is read and deleted at startup, so a later reload or restart
+// begins signed out and the person signs in again.
+const HANDOFF_KEY = 'sf_signin_handoff';
+
+export const markSignInHandoff = () => {
+  if (typeof window !== 'undefined') window.sessionStorage.setItem(HANDOFF_KEY, '1');
+};
+
+export const consumeSignInHandoff = () => {
+  if (typeof window === 'undefined') return false;
+  const seen = window.sessionStorage.getItem(HANDOFF_KEY) === '1';
+  window.sessionStorage.removeItem(HANDOFF_KEY);
+  return seen;
+};

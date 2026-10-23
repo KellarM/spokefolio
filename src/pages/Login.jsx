@@ -9,7 +9,7 @@ import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { Checkbox } from "@/components/ui/checkbox";
 import { safeReturnTo } from "@/lib/authReturnTo";
-import { clearSessionToken, setSessionToken } from "@/lib/sessionToken";
+import { clearSessionToken, markSignInHandoff, setSessionToken } from "@/lib/sessionToken";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -38,6 +38,8 @@ export default function Login() {
         window.localStorage.removeItem("base44_access_token");
         window.localStorage.removeItem("token");
       }
+      // This sign-in earns the next page load; the one after it asks again.
+      markSignInHandoff();
       window.location.href = returnTo;
     } catch (err) {
       setError(err.message || "Invalid email or password");
@@ -47,6 +49,7 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
+    markSignInHandoff();
     base44.auth.loginWithProvider("google", returnTo);
   };
 

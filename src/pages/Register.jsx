@@ -11,7 +11,7 @@ import GoogleIcon from "@/components/GoogleIcon";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
-import { clearSessionToken, setSessionToken } from "@/lib/sessionToken";
+import { clearSessionToken, markSignInHandoff, setSessionToken } from "@/lib/sessionToken";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -58,6 +58,8 @@ export default function Register() {
           window.localStorage.removeItem("token");
         }
       }
+      // Verifying closes the door behind the redirect: the next open asks again.
+      markSignInHandoff();
       window.location.href = safeReturnTo();
     } catch (err) {
       setError(err.message || "Invalid verification code");
@@ -80,6 +82,7 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
+    markSignInHandoff();
     base44.auth.loginWithProvider("google", safeReturnTo());
   };
 

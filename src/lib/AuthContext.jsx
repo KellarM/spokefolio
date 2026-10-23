@@ -1,7 +1,14 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
-import { clearSessionToken, getSessionToken } from '@/lib/sessionToken';
+import { clearSessionToken, consumeSignInHandoff, getSessionToken } from '@/lib/sessionToken';
+
+// Read once per page load: only a sign-in made just before this load carries
+// the handoff. Everything else opens at the sign-in door.
+const signedInThisLoad = consumeSignInHandoff();
+// Signing in is itself walking through the door: the studio opens right after,
+// instead of showing the welcome page to someone who just signed in.
+if (signedInThisLoad) window.sessionStorage.setItem('sf_entered', '1');
 
 // The context object is pinned to the window so a hot update of this file -
 // which can leave the mounted provider on an older copy while consumers such
@@ -67,6 +74,14 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
 
+      // No sign-in was made moments ago, so any key an earlier visit left on
+      // this device is withdrawn here: opening the studio always starts at the
+      // sign-in page, and nothing carries the last visit forward.
+      if (!signedInThisLoad) {
+        clearRememberedKeys();
+        clearSessionToken();
+      }
+
       // A session-only login (remember me off) is handed to the SDK in memory, never saved here.
       const sessionToken = getSessionToken();
       if (sessionToken && !appParams.token) {
@@ -78,7 +93,7 @@ export const AuthProvider = ({ children }) => {
         setAppPublicSettings(publicSettings);
         
         // If we got the app public settings successfully, check if user is authenticated
-        if (appParams.token || sessionToken) {
+        if (signedInThisLoad && (appParams.token || sessionToken)) {
           await checkUserAuth();
         } else {
           setIsLoadingAuth(false);
