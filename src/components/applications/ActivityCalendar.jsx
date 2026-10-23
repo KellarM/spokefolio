@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, Loader2, StickyNote, X } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Loader2, Pencil, StickyNote, Trash2, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
@@ -57,14 +57,21 @@ export default function ActivityCalendar({ applications }) {
   const [events, setEvents] = useState([]);
   const [noteDraft, setNoteDraft] = useState('');
   const [savingNote, setSavingNote] = useState(false);
+  const [editingNote, setEditingNote] = useState(null);
   const [navDir, setNavDir] = useState(1);
 
   const locale = LOCALES[language] || 'en-CA';
   const byDay = useMemo(() => dayCounts(applications), [applications]);
-  const notesByDay = useMemo(() => {
+  const notesListByDay = useMemo(() => {
     const map = new Map();
     for (const note of notes || []) {
-      if (note.date) map.set(note.date, note);
+      if (!note.date) continue;
+      const list = map.get(note.date) || [];
+      list.push(note);
+      map.set(note.date, list);
+    }
+    for (const list of map.values()) {
+      list.sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0));
     }
     return map;
   }, [notes]);
@@ -200,7 +207,7 @@ export default function ActivityCalendar({ applications }) {
   const selectedApplications = (applications || []).filter(
     (application) => application.created_date && localDayKey(application.created_date) === selectedDay
   );
-  const existingNote = selectedDay ? notesByDay.get(selectedDay) : null;
+  const dayNotes = selectedDay ? notesListByDay.get(selectedDay) || [] : [];
 
   const selectedEvents = selectedDay ? eventsByDay.get(selectedDay) || [] : [];
   const applicationIds = new Set((applications || []).map((application) => application.id));
@@ -213,29 +220,54 @@ export default function ActivityCalendar({ applications }) {
 
   const openDay = (key) => {
     setSelectedDay(key);
-    // The note for the day being opened - not the one opened before it.
-    const saved = notesByDay.get(key);
-    setNoteDraft(saved ? saved.note || '' : '');
+    // The day's saved notes are listed inside; the composer starts empty
+    // so a new note never overwrites an old one.
+    setNoteDraft('');
+    setEditingNote(null);
   };
 
   const saveNote = async () => {
     if (!selectedDay) return;
+    const text = noteDraft.trim();
+    if (!editingNote && !text) return;
     setSavingNote(true);
     try {
-      const text = noteDraft.trim();
-      const current = notesByDay.get(selectedDay);
-      if (current) {
-        await base44.entities.DayNote.update(current.id, { note: text });
-        setNotes((all) => all.map((note) => (note.id === current.id ? { ...note, note: text } : note)));
+      if (editingNote) {
+        await base44.entities.DayNote.update(editingNote, { note: text });
+        setNotes((all) => all.map((note) => (note.id === editingNote ? { ...note, note: text } : note)));
+        setEditingNote(null);
+        toast({ title: t('applications.noteSaved') });
       } else {
         const created = await base44.entities.DayNote.create({ date: selectedDay, note: text });
         setNotes((all) => [...all, created]);
+        toast({ title: t('applications.noteAdded') });
       }
-      toast({ title: t('applications.noteSaved') });
+      setNoteDraft('');
     } catch (error) {
       toast({ title: t('applications.noteError'), variant: 'destructive' });
     }
     setSavingNote(false);
+  };
+
+  const startEdit = (note) => {
+    setEditingNote(note.id);
+    setNoteDraft(note.note || '');
+  };
+
+  const cancelEdit = () => {
+    setEditingNote(null);
+    setNoteDraft('');
+  };
+
+  const deleteNote = async (id) => {
+    try {
+      await base44.entities.DayNote.delete(id);
+      setNotes((all) => all.filter((note) => note.id !== id));
+      if (editingNote === id) cancelEdit();
+      toast({ title: t('applications.noteDeleted') });
+    } catch (error) {
+      toast({ title: t('applications.noteError'), variant: 'destructive' });
+    }
   };
 
   return (
@@ -368,7 +400,7 @@ export default function ActivityCalendar({ applications }) {
                 if (!cell) return <span key={`blank-${index}`} className="min-h-[86px]" />;
                 const counts = byDay.get(cell.key) || {};
                 const marks = STATUS_ORDER.filter((status) => counts[status]);
-                const hasNote = notesByDay.has(cell.key);
+                const hasNote = notesListByDay.has(cell.key);
                 const isToday = cell.key === todayKey;
                 const carries = marks.length > 0 || hasNote || interviewByDay.has(cell.key);
                 const shown = marks.slice(0, 3);
@@ -510,6 +542,41 @@ export default function ActivityCalendar({ applications }) {
               )}
 
               <p className="eyebrow mt-6">{t('applications.noteLabel')}</p>
+              {dayNotes.length > 0 && (
+                <ul className="mt-2 space-y-2">
+                  {dayNotes.map((note) => (
+                    <li
+                      key={note.id}
+                      className={`flex items-start justify-between gap-2.5 rounded-lg border p-3 ${
+                        editingNote === note.id ? 'border-primary/60 bg-primary/10' : 'border-border/50 bg-background/40'
+                      }`}
+                    >
+                      <span className="min-w-0 whitespace-pre-wrap text-[13.5px] leading-relaxed text-foreground">
+                        {note.note}
+                      </span>
+                      <span className="flex shrink-0 items-center gap-1 pt-0.5">
+                        <button
+                          type="button"
+                          onClick={() => startEdit(note)}
+                          aria-label={t('applications.editNote')}
+                          className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteNote(note.id)}
+                          aria-label={t('applications.deleteNote')}
+                          className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-red-400"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
               <textarea
                 value={noteDraft}
                 onChange={(event) => setNoteDraft(event.target.value)}
@@ -517,15 +584,26 @@ export default function ActivityCalendar({ applications }) {
                 rows={4}
                 className="mt-2 w-full resize-y rounded-xl border border-border/70 bg-background px-3.5 py-2.5 text-[13.5px] leading-relaxed text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
               />
-              <button
-                type="button"
-                onClick={saveNote}
-                disabled={savingNote}
-                className="mt-2.5 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-1.5 text-[13px] font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
-              >
-                {savingNote && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                {t('applications.saveNote')}
-              </button>
+              <div className="mt-2.5 flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={saveNote}
+                  disabled={savingNote}
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-1.5 text-[13px] font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+                >
+                  {savingNote && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  {editingNote ? t('applications.saveNote') : t('applications.addNote')}
+                </button>
+                {editingNote && (
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    className="inline-flex items-center rounded-full border border-border/70 px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
