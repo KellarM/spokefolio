@@ -155,6 +155,7 @@ export default function HistoryCapture() {
     try {
       const response = await base44.functions.invoke('parseCareerEntry', { raw_text: text });
       const created = await base44.entities.CareerEntry.create(emptyFromParsed(response.data || {}, text));
+      if (response.data?.warning) toast({ title: response.data.warning });
       setDictation('');
       setDraft(created);
       await loadEntries();

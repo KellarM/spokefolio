@@ -149,6 +149,17 @@ export default function PreviewDocument({
                 {[role.dates, role.location].filter(Boolean).join('   •   ')}
               </RestyleablePart>
             )}
+            {role.summary && (
+              <RestyleablePart
+                id="body"
+                token={style.body}
+                overrides={overrides}
+                onUpdateOverride={onUpdateOverride}
+                className="mt-1.5"
+              >
+                {role.summary}
+              </RestyleablePart>
+            )}
             {(role.bullets || []).filter(Boolean).length > 0 && (
               <div className="mt-2">{bullets((role.bullets || []).filter(Boolean))}</div>
             )}

@@ -540,6 +540,9 @@ export async function buildResumePdf({
         });
         const details = [role.dates, role.location].filter(Boolean).join('   \u2022   ');
         if (details) w.text(details, { font: metaFont, size: metaSize, color: metaColor, after: 3 });
+        if (role.summary) {
+          w.text(role.summary, { font: bodyFont.regular, size: bulletSize, color: bodyColor, lineGap: bodyGap, after: 3 });
+        }
         for (const item of Array.isArray(role.bullets) ? role.bullets : []) {
           w.bullet(item, {
             font: bodyFont.regular,

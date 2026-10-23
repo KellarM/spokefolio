@@ -14,7 +14,8 @@ const RESPONSE_SCHEMA = {
     skills: { type: 'array', items: { type: 'string' } },
     metrics: { type: 'array', items: { type: 'string' } },
     keywords: { type: 'array', items: { type: 'string' } },
-    suggestions: { type: 'array', items: { type: 'string' } }
+    suggestions: { type: 'array', items: { type: 'string' } },
+    warning: { type: 'string' }
   },
   required: ['entry_type', 'title', 'summary', 'accomplishments', 'skills', 'metrics', 'keywords', 'suggestions']
 };
@@ -55,6 +56,8 @@ RULES
 - skills: tools, technologies, methods and domains named in the text or unmistakably implied by the work described.
 - keywords: 6-12 ATS-friendly keywords for this entry.
 - suggestions: 6-8 short follow-up questions, each answerable with yes/no plus a comment, that would pull out the strongest MISSING resume evidence: team size, budget or revenue owned, tools and technologies used, measurable results, scope of ownership, process improvements, stakeholders, awards or recognition, scale of the operation. Each question must be specific to this entry (name the employer, role or project where it helps). No generic filler, no duplicates.
+
+- AFTER you structure the entry, re-read the whole dictated text. If it clearly contains MORE THAN ONE separate item - several distinct jobs or employers, a section of schools or degrees, or a full multi-part history like "Work History (3 roles)" - set warning to one short plain sentence telling the person that this capture holds several entries, naming exactly what you see (for example "This capture holds 3 separate roles and 4 education items. Capture each role, degree and certificate as its own dictation so none of them is lost."). Empty string otherwise. The structured entry you return should still be the single best-formed item in the text; the warning exists so the rest is never silently dropped.
 
 DICTATED TEXT
 """

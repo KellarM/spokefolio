@@ -405,6 +405,9 @@ function buildBody(profile, resume, t, config, photo) {
       if (details) {
         items.push(para(run(details, { size: t.metaSize, color: t.metaColor, font: t.metaFont, italic: t.metaItalic }), { after: 70 }));
       }
+      if (role.summary) {
+        items.push(para(run(role.summary, { size: t.bodySize, color: t.bodyColor, font: t.bodyFont }), { after: 70, line: t.bodyLine }));
+      }
       for (const item of Array.isArray(role.bullets) ? role.bullets : []) {
         if (item) items.push(bulletLine(item, t));
       }
