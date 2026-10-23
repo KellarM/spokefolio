@@ -7,6 +7,7 @@ import StatusBadge from '@/components/applications/StatusBadge';
 import SalaryPill from '@/components/applications/SalaryPill';
 import JobLocation from '@/components/applications/JobLocation';
 import DeleteApplicationButton from '@/components/applications/DeleteApplicationButton';
+import ActivityCalendar from '@/components/applications/ActivityCalendar';
 import RunScoreBadge from '@/components/applications/RunScoreBadge';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 
@@ -77,11 +78,14 @@ export default function Applications() {
             {t('applications.lede')}
           </p>
         </div>
-        <Button asChild className="rounded-full">
-          <Link to="/tailor-application">
-            <Plus className="mr-2 h-4 w-4" /> {t('common.tailorResume')}
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ActivityCalendar applications={applications} />
+          <Button asChild className="rounded-full">
+            <Link to="/tailor-application">
+              <Plus className="mr-2 h-4 w-4" /> {t('common.tailorResume')}
+            </Link>
+          </Button>
+        </div>
       </header>
 
       <div className="mt-7 flex flex-wrap gap-2">
