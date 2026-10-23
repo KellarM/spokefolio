@@ -290,8 +290,8 @@ export default function ActivityCalendar({ applications }) {
             if (event.target === event.currentTarget) setOpen(false);
           }}
         >
-          <div className="mx-auto w-full max-w-4xl rounded-2xl border border-primary/30 bg-card p-5 text-card-foreground shadow-2xl sm:p-7">
-            <div className="flex items-center justify-between gap-3">
+          <div className="mx-auto flex max-h-[calc(100vh-2rem)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-primary/30 bg-card p-5 text-card-foreground shadow-2xl sm:max-h-[calc(100vh-4rem)] sm:p-7">
+            <div className="flex shrink-0 items-center justify-between gap-3">
               <h2 className="font-heading text-[22px] tracking-tight sm:text-[26px]">
                 {t('applications.calendarTitle')}
               </h2>
@@ -307,7 +307,7 @@ export default function ActivityCalendar({ applications }) {
 
             {/* The month's story: navigation on either side, the label and
                 its summary numbers in the middle. */}
-            <div className="mt-5 flex items-center justify-between gap-3">
+            <div className="mt-5 flex shrink-0 items-center justify-between gap-3">
               <button
                 type="button"
                 aria-label={t('applications.previousMonth')}
@@ -358,7 +358,7 @@ export default function ActivityCalendar({ applications }) {
 
             {/* The loudest thing in the room, but only when it needs to be. */}
             {upcomingInterview && (
-              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-primary/50 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent px-4 py-3">
+              <div className="mt-4 flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-primary/50 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent px-4 py-3">
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-primary">
                   <CalendarDays className="h-3.5 w-3.5" /> {t('applications.upcomingInterview')}
                 </span>
@@ -378,7 +378,7 @@ export default function ActivityCalendar({ applications }) {
               </div>
             )}
 
-            <div className="mt-5 grid grid-cols-7 gap-1.5 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="mt-5 grid shrink-0 grid-cols-7 gap-1.5 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {weekdays.map((name, index) => (
                 <span key={`${name}-${index}`}>{name}</span>
               ))}
@@ -392,12 +392,12 @@ export default function ActivityCalendar({ applications }) {
               @keyframes cal-in-prev { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: translateX(0); } }
             `}</style>
             <div
-              className="mt-1.5 grid grid-cols-7 gap-1.5"
+              className="mt-1.5 grid min-h-0 flex-1 grid-cols-7 gap-1.5 overflow-y-auto pr-0.5"
               key={monthLabel}
               style={{ animation: `${navDir === 1 ? 'cal-in-next' : 'cal-in-prev'} 240ms ease-out` }}
             >
               {cells.map((cell, index) => {
-                if (!cell) return <span key={`blank-${index}`} className="min-h-[86px]" />;
+                if (!cell) return <span key={`blank-${index}`} className="min-h-[46px] sm:min-h-[64px] md:min-h-[86px]" />;
                 const counts = byDay.get(cell.key) || {};
                 const marks = STATUS_ORDER.filter((status) => counts[status]);
                 const hasNote = notesListByDay.has(cell.key);
@@ -410,7 +410,7 @@ export default function ActivityCalendar({ applications }) {
                     key={cell.key}
                     type="button"
                     onClick={() => openDay(cell.key)}
-                    className={`group flex min-h-[86px] flex-col rounded-xl border p-2 text-left transition-all duration-200 hover:-translate-y-0.5 ${
+                    className={`group flex min-h-[46px] flex-col overflow-hidden rounded-xl border p-2 text-left transition-all duration-200 hover:-translate-y-0.5 ${
                       selectedDay === cell.key
                         ? 'border-primary bg-primary/10 shadow-[0_0_0_1px_rgba(212,175,55,0.35)]'
                         : carries
@@ -457,7 +457,7 @@ export default function ActivityCalendar({ applications }) {
             </div>
 
             {/* The key to the dots - calm, small, two tidy rows at most. */}
-            <div className="mt-5 flex flex-wrap gap-x-3.5 gap-y-1.5 border-t border-border/60 pt-3.5 text-[11px] text-muted-foreground">
+            <div className="mt-5 flex shrink-0 flex-wrap gap-x-3.5 gap-y-1.5 border-t border-border/60 pt-3.5 text-[11px] text-muted-foreground">
               {STATUS_ORDER.map((status) => (
                 <span key={status} className="inline-flex items-center gap-1.5">
                   <span className={`h-2 w-2 rounded-full ${STATUS_COLORS[status]}`} />
