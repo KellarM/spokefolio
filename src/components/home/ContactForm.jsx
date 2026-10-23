@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import LanguageSelect, { getStoredLanguage, normalizeLanguage } from '@/components/LanguageSelect';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
+import LocationInput from '@/components/home/LocationInput';
 
 const FIELDS = [
   { key: 'full_name', label: 'profile.fullName', placeholder: 'Jane Doe', required: true },
@@ -66,6 +67,15 @@ export default function ContactForm({ profile, onSave }) {
                 value={form[field.key] || ''}
                 className="mec-v"
                 onChange={(value) => setForm({ ...form, [field.key]: value })}
+              />
+            ) : field.key === 'location' ? (
+              <LocationInput
+                id={field.key}
+                value={form[field.key] || ''}
+                placeholder={field.placeholder}
+                required={field.required}
+                onChange={(value) => setForm({ ...form, [field.key]: value })}
+                className="mec-v"
               />
             ) : (
               <input
