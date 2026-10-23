@@ -129,22 +129,32 @@ export default function HeaderSearch() {
   const [debounced, setDebounced] = useState('');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const loadAttempted = useRef(false);
+  const [failed, setFailed] = useState(false);
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
 
-  // The datasets load once, on first open - not on every keystroke.
+  // The datasets load once, on first open - not on every keystroke. The
+  // once-guard is a REF, not state: a loading flag in the dependency list
+  // re-ran this effect the moment it flipped, firing the cleanup and
+  // discarding the results of a fetch that had already succeeded - the
+  // panel hung on 'Searching...' forever. The ref loads once, period.
   useEffect(() => {
-    if (!open || data || loading) return;
-    let alive = true;
+    if (!open || loadAttempted.current) return;
+    loadAttempted.current = true;
     setLoading(true);
+    const safe = (call) => call.catch(() => null);
     Promise.all([
-      base44.entities.ResumeProfile.list('-created_date', 10),
-      base44.entities.CareerEntry.list('-created_date', 500),
-      base44.entities.JobApplication.list('-created_date', 200),
-      base44.entities.SupportingDocument.list('-created_date', 200)
+      safe(base44.entities.ResumeProfile.list('-created_date', 10)),
+      safe(base44.entities.CareerEntry.list('-created_date', 500)),
+      safe(base44.entities.JobApplication.list('-created_date', 200)),
+      safe(base44.entities.SupportingDocument.list('-created_date', 200))
     ])
       .then(([profiles, entries, applications, documents]) => {
-        if (!alive) return;
+        if (!profiles && !entries && !applications && !documents) {
+          setFailed(true);
+          return;
+        }
         setData({
           profile: profiles?.[0] || null,
           entries: (entries || []).filter((entry) => !entry.hidden),
@@ -152,14 +162,8 @@ export default function HeaderSearch() {
           documents: documents || []
         });
       })
-      .catch(() => {})
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [open, data, loading]);
+      .finally(() => setLoading(false));
+  }, [open]);
 
   useEffect(() => {
     const id = setTimeout(() => setDebounced(query.trim().toLowerCase()), 220);
@@ -255,10 +259,13 @@ export default function HeaderSearch() {
             {loading && (
               <p className="px-1 py-3 font-body text-[14px] text-muted-foreground">{t('search.searching')}</p>
             )}
-            {!loading && query.trim().length >= 2 && hits.length === 0 && (
+            {!loading && failed && (
+              <p className="px-1 py-3 font-body text-[14px] text-muted-foreground">{t('search.loadError')}</p>
+            )}
+            {!loading && !failed && query.trim().length >= 2 && hits.length === 0 && (
               <p className="px-1 py-3 font-body text-[14px] text-muted-foreground">{t('search.noResults')}</p>
             )}
-            {!loading && query.trim().length < 2 && (
+            {!loading && !failed && query.trim().length < 2 && (
               <p className="px-1 py-3 font-body text-[13px] leading-relaxed text-muted-foreground">
                 {t('search.hint')}
               </p>

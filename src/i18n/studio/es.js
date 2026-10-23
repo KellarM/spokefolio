@@ -4,6 +4,7 @@ export default {
   'search.title': 'Buscar en tu estudio',
   'search.placeholder': 'Encuentra palabras en tus currículums…',
   'search.searching': 'Buscando…',
+  'search.loadError': 'No se pudieron cargar tus registros. Cierra el panel e inténtalo de nuevo.',
   'search.noResults': 'Sin coincidencias.',
   'search.hint': 'Busca en tu historial, perfil, candidaturas y documentos.',
   'search.sourceProfile': 'Perfil',

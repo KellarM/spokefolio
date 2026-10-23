@@ -5,6 +5,7 @@ export default {
   'search.title': 'Studio durchsuchen',
   'search.placeholder': 'Wörter in deinen Résumés finden…',
   'search.searching': 'Suche…',
+  'search.loadError': 'Deine Datensätze konnten nicht geladen werden. Schließe das Panel und versuche es erneut.',
   'search.noResults': 'Keine Treffer.',
   'search.hint': 'Durchsucht Verlauf, Profil, Bewerbungen und Dokumente.',
   'search.sourceProfile': 'Profil',

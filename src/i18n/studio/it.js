@@ -4,6 +4,7 @@ export default {
   'search.title': 'Cerca nel tuo studio',
   'search.placeholder': 'Trova parole nei tuoi curriculum…',
   'search.searching': 'Ricerca…',
+  'search.loadError': 'Impossibile caricare i tuoi dati. Chiudi il pannello e riprova.',
   'search.noResults': 'Nessun risultato.',
   'search.hint': 'Cerca in storico, profilo, candidature e documenti.',
   'search.sourceProfile': 'Profilo',

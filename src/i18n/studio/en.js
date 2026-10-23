@@ -8,6 +8,7 @@ export default {
   'search.title': 'Search your studio',
   'search.placeholder': 'Find words in your resumes…',
   'search.searching': 'Searching…',
+  "search.loadError": "Couldn't load your records. Close the panel and try again.",
   'search.noResults': 'No matches found.',
   'search.hint': 'Looks through your history, profile, applications, and documents.',
   'search.sourceProfile': 'Profile',

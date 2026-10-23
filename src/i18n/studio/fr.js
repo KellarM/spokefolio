@@ -5,6 +5,7 @@ export default {
   'search.title': 'Rechercher dans votre studio',
   'search.placeholder': 'Trouvez des mots dans vos CV…',
   'search.searching': 'Recherche…',
+  'search.loadError': 'Impossible de charger vos données. Fermez le panneau et réessayez.',
   'search.noResults': 'Aucun résultat.',
   'search.hint': 'Parcourt votre historique, votre profil, vos candidatures et vos documents.',
   'search.sourceProfile': 'Profil',

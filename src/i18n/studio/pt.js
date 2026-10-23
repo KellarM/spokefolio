@@ -4,6 +4,7 @@ export default {
   'search.title': 'Buscar no seu estúdio',
   'search.placeholder': 'Encontre palavras nos seus currículos…',
   'search.searching': 'Buscando…',
+  'search.loadError': 'Não foi possível carregar seus registros. Feche o painel e tente de novo.',
   'search.noResults': 'Nenhuma correspondência.',
   'search.hint': 'Percorre seu histórico, perfil, candidaturas e documentos.',
   'search.sourceProfile': 'Perfil',
