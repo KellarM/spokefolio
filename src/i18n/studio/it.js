@@ -18,7 +18,8 @@ export default {
   'status.declined': 'Rifiutata',
   'status.not_hired': 'Non selezionato',
   'status.rejected': 'Chiusa',
-  'common.saving': 'Salvataggio…',
+  'common.saving': 'Salvataggio…',  'common.clearField': 'Cancella campo',
+
   'common.loading': 'Caricamento…',
   'common.tailorResume': 'Personalizza un curriculum',
   'common.openPosting': 'Apri offerta',

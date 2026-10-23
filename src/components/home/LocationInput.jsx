@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, X } from 'lucide-react';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 // The location field with suggestions below it. As the person types, matching
 // communities appear underneath in "City, Province/State, Country" form:
 // picking one fills the field in exactly that format. Free text still works -
 // a suggestion is a convenience, not a requirement.
 export default function LocationInput({ id, value, placeholder, className, onChange, required }) {
+  const { t } = useStudioLanguage();
   const [open, setOpen] = useState(false);
   const [options, setOptions] = useState([]);
   const [active, setActive] = useState(0);
@@ -82,8 +84,22 @@ export default function LocationInput({ id, value, placeholder, className, onCha
           if (!skipBlur.current) setOpen(false);
         }}
         onKeyDown={onKeyDown}
-        className={className}
+        className={`${className || ''}${value ? ' pr-8' : ''}`}
       />
+      {value ? (
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-label={t('common.clearField')}
+          onClick={() => {
+            onChange('');
+            setOpen(false);
+          }}
+          className="absolute right-1.5 top-1/2 z-10 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground/80 transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      ) : null}
       {open && options.length > 0 && (
         <ul
           role="listbox"

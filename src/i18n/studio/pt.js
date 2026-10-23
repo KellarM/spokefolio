@@ -18,7 +18,8 @@ export default {
   'status.declined': 'Recusado',
   'status.not_hired': 'Não contratado',
   'status.rejected': 'Encerrado',
-  'common.saving': 'Guardando…',
+  'common.saving': 'Guardando…',  'common.clearField': 'Limpar campo',
+
   'common.loading': 'Carregando…',
   'common.tailorResume': 'Adaptar um currículo',
   'common.openPosting': 'Abrir vaga',

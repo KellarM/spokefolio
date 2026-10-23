@@ -25,7 +25,9 @@ export default {
   'status.not_hired': 'Not Hired',
   'status.rejected': 'Closed',
 
+  'common.clearField': 'Clear field',
   // Common words shared across the surfaces.
+
   'common.loading': 'Loading…',
   'common.saving': 'Saving…',
   'common.tailorResume': 'Tailor a résumé',

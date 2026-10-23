@@ -21,7 +21,8 @@ export default {
   'status.not_hired': 'Nicht eingestellt',
   'status.rejected': 'Abgeschlossen',
 
-  'common.saving': 'Speichern…',
+  'common.saving': 'Speichern…',  'common.clearField': 'Feld löschen',
+
   'common.loading': 'Wird geladen…',
   'common.tailorResume': 'Résumé zuschneiden',
   'common.openPosting': 'Stellenangebot öffnen',

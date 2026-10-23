@@ -20,6 +20,7 @@ export default {
   'status.declined': "Refusée",
   'status.not_hired': "Non retenu",
   'status.rejected': "Fermée",
+  'common.clearField': 'Effacer le champ',
 
   'common.loading': "Chargement…",
   'common.saving': "Enregistrement…",
