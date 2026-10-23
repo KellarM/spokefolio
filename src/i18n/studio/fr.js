@@ -40,6 +40,7 @@ export default {
   'home.heroBody':
     "Capturez votre carrière à la voix, une entrée à la fois. Collez ensuite n'importe quelle offre d'emploi et obtenez un curriculum taillé pour elle, prêt à télécharger en document Word.",
   'home.captureHistory': "Capturer votre parcours",
+  'home.navUpload': 'Téléverser le CV',
   'home.draftLineSingular': "{count} entrée est encore en cours — reprenez où vous vous êtes arrêté",
   'home.draftLinePlural': "{count} entrées sont encore en cours — reprenez où vous vous êtes arrêté",
   'home.tickerEntries': "Entrées",

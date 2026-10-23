@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { FileText, Mic, Search, Upload } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import useProfile from '@/hooks/useProfile';
 import { trackAppOpen } from '@/lib/analytics';
@@ -48,6 +50,29 @@ export default function Home() {
   return (
     <div>
       <StudioHero draftCount={loading ? 0 : draftCount} />
+
+      {/* The four working rooms, one click away, in Michael's order. */}
+      <section className="mt-10 grid grid-cols-1 gap-3 px-[80px] sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { to: '/history', icon: Mic, label: t('home.captureHistory') },
+          { to: '/documents', icon: Upload, label: t('home.navUpload') },
+          { to: '/postings', icon: Search, label: t('nav.postings') },
+          { to: '/applications', icon: FileText, label: t('nav.applications') }
+        ].map(({ to, icon: Icon, label }) => (
+          <Link
+            key={to}
+            to={to}
+            className="group flex items-center gap-3 rounded-xl border border-[#D4AF37]/30 bg-[#161E2E] px-4 py-3.5 transition-colors hover:border-[#D4AF37]/70 hover:bg-[#1B2436]"
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#D4AF37]/30 bg-[#D4AF37]/10">
+              <Icon className="h-4 w-4 text-[#D4AF37]" />
+            </span>
+            <span className="font-body text-[14.5px] font-medium text-[#F9FAFB] transition-colors group-hover:text-[#D4AF37]">
+              {label}
+            </span>
+          </Link>
+        ))}
+      </section>
 
       <div className="mec-ticker">
         <div className="mec-tk">

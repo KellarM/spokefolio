@@ -35,6 +35,7 @@ export default {
   'home.heroTitle': 'Convierte tu historial laboral real en un currículum escrito a la medida del trabajo que deseas.',
   'home.heroBody': 'Registra tu carrera por voz, una experiencia a la vez. Luego pega cualquier oferta de empleo y obtén un currículum adaptado a ella, listo para descargar como documento de Word.',
   'home.captureHistory': 'Registrar historial laboral',
+  'home.navUpload': 'Subir currículum',
   'home.draftLineSingular': '{count} entrada sigue en progreso: retómala donde la dejaste',
   'home.draftLinePlural': '{count} entradas siguen en progreso: retómalas donde las dejaste',
   'home.tickerEntries': 'Entradas',
