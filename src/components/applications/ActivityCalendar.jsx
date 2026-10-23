@@ -57,6 +57,7 @@ export default function ActivityCalendar({ applications }) {
   const [events, setEvents] = useState([]);
   const [noteDraft, setNoteDraft] = useState('');
   const [savingNote, setSavingNote] = useState(false);
+  const [navDir, setNavDir] = useState(1);
 
   const locale = LOCALES[language] || 'en-CA';
   const byDay = useMemo(() => dayCounts(applications), [applications]);
@@ -176,6 +177,24 @@ export default function ActivityCalendar({ applications }) {
 
   const todayKey = localDayKey(new Date());
 
+  // The month's story at a glance: how many applications were created this
+  // month, how many interviews were scheduled in it, and how many offers
+  // landed in it.
+  const monthSummary = useMemo(() => {
+    const prefix = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
+    let applicationsCount = 0;
+    for (const [key, counts] of byDay) {
+      if (key.startsWith(prefix)) applicationsCount += Object.values(counts).reduce((sum, n) => sum + n, 0);
+    }
+    let interviews = 0;
+    let offers = 0;
+    for (const event of events || []) {
+      if (event.interview_at && localDayKey(event.interview_at).startsWith(prefix)) interviews += 1;
+      if (event.status === 'offer' && localDayKey(event.created_date).startsWith(prefix)) offers += 1;
+    }
+    return { applications: applicationsCount, interviews, offers };
+  }, [month, byDay, events]);
+
   const monthLabel = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(month);
   const selectedDate = selectedDay ? new Date(`${selectedDay}T12:00:00`) : null;
   const selectedApplications = (applications || []).filter(
@@ -254,41 +273,68 @@ export default function ActivityCalendar({ applications }) {
               </button>
             </div>
 
-            <div className="mt-4 flex items-center justify-between gap-3">
+            {/* The month's story: navigation on either side, the label and
+                its summary numbers in the middle. */}
+            <div className="mt-5 flex items-center justify-between gap-3">
               <button
                 type="button"
                 aria-label={t('applications.previousMonth')}
                 onClick={() => {
+                  setNavDir(-1);
                   setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1));
                   setSelectedDay(null);
                 }}
-                className="rounded-full border border-border/70 p-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                className="rounded-full border border-border/70 bg-accent/40 p-2 text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-[18px] w-[18px]" />
               </button>
-              <p className="font-heading text-[18px] tracking-tight">{monthLabel}</p>
+              <div className="text-center">
+                <p className="font-heading text-[20px] tracking-tight sm:text-[22px]">{monthLabel}</p>
+                {(monthSummary.applications > 0 || monthSummary.interviews > 0 || monthSummary.offers > 0) && (
+                  <div className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5">
+                    {monthSummary.applications > 0 && (
+                      <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
+                        {t('applications.monthApplications', { count: monthSummary.applications })}
+                      </span>
+                    )}
+                    {monthSummary.interviews > 0 && (
+                      <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
+                        {t('applications.monthInterviews', { count: monthSummary.interviews })}
+                      </span>
+                    )}
+                    {monthSummary.offers > 0 && (
+                      <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
+                        {t('applications.monthOffers', { count: monthSummary.offers })}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
               <button
                 type="button"
                 aria-label={t('applications.nextMonth')}
                 onClick={() => {
+                  setNavDir(1);
                   setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1));
                   setSelectedDay(null);
                 }}
-                className="rounded-full border border-border/70 p-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                className="rounded-full border border-border/70 bg-accent/40 p-2 text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-[18px] w-[18px]" />
               </button>
             </div>
 
+            {/* The loudest thing in the room, but only when it needs to be. */}
             {upcomingInterview && (
-              <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-primary/50 bg-primary/10 px-4 py-2.5 text-[13px]">
-                <CalendarDays className="h-4 w-4 shrink-0 text-primary" />
-                <span className="font-semibold text-primary">{t('applications.upcomingInterview')}:</span>
-                <span className="text-foreground">
+              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-primary/50 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent px-4 py-3">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-primary">
+                  <CalendarDays className="h-3.5 w-3.5" /> {t('applications.upcomingInterview')}
+                </span>
+                <span className="text-[14px] font-semibold text-foreground">
                   {upcomingInterview.job_title || t('applications.untitled')}
                   {upcomingInterview.company ? ` · ${upcomingInterview.company}` : ''}
                 </span>
-                <span className="text-muted-foreground">
+                <span className="text-[13px] text-muted-foreground">
                   {new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(
                     new Date(upcomingInterview.interview_at)
                   )}
@@ -300,58 +346,86 @@ export default function ActivityCalendar({ applications }) {
               </div>
             )}
 
-            <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="mt-5 grid grid-cols-7 gap-1.5 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {weekdays.map((name, index) => (
                 <span key={`${name}-${index}`}>{name}</span>
               ))}
             </div>
 
-            <div className="mt-1 grid grid-cols-7 gap-1">
+            {/* Tiles, not a table: raised surfaces for the days that carry
+                something, quiet gaps for the ones that do not. The month
+                slides in from the side it was navigated from. */}
+            <style>{`
+              @keyframes cal-in-next { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }
+              @keyframes cal-in-prev { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: translateX(0); } }
+            `}</style>
+            <div
+              className="mt-1.5 grid grid-cols-7 gap-1.5"
+              key={monthLabel}
+              style={{ animation: `${navDir === 1 ? 'cal-in-next' : 'cal-in-prev'} 240ms ease-out` }}
+            >
               {cells.map((cell, index) => {
-                if (!cell) return <span key={`blank-${index}`} className="min-h-[72px]" />;
+                if (!cell) return <span key={`blank-${index}`} className="min-h-[86px]" />;
                 const counts = byDay.get(cell.key) || {};
                 const marks = STATUS_ORDER.filter((status) => counts[status]);
                 const hasNote = notesByDay.has(cell.key);
                 const isToday = cell.key === todayKey;
+                const carries = marks.length > 0 || hasNote || interviewByDay.has(cell.key);
+                const shown = marks.slice(0, 3);
+                const overflow = marks.slice(3).reduce((total, status) => total + counts[status], 0);
                 return (
                   <button
                     key={cell.key}
                     type="button"
                     onClick={() => openDay(cell.key)}
-                    className={`flex min-h-[72px] flex-col rounded-lg border p-1.5 text-left transition-colors ${
+                    className={`group flex min-h-[86px] flex-col rounded-xl border p-2 text-left transition-all duration-200 hover:-translate-y-0.5 ${
                       selectedDay === cell.key
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border/50 hover:border-primary/40 hover:bg-accent/50'
-                    } ${isToday ? 'ring-1 ring-primary' : ''}`}
+                        ? 'border-primary bg-primary/10 shadow-[0_0_0_1px_rgba(212,175,55,0.35)]'
+                        : carries
+                          ? 'border-border/60 bg-background/40 hover:border-primary/40 hover:bg-accent/40'
+                          : 'border-transparent hover:border-border/60 hover:bg-accent/30'
+                    }`}
                   >
                     <span className="flex w-full items-center justify-between gap-1">
-                      <span className={`text-[12.5px] ${marks.length || hasNote ? 'text-foreground' : 'text-muted-foreground'}`}>
-                        {cell.day}
-                      </span>
+                      {isToday ? (
+                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[11.5px] font-bold text-primary-foreground">
+                          {cell.day}
+                        </span>
+                      ) : (
+                        <span className={`text-[12.5px] ${carries ? 'text-foreground' : 'text-muted-foreground'}`}>
+                          {cell.day}
+                        </span>
+                      )}
                       {hasNote && <StickyNote className="h-3 w-3 shrink-0 text-primary/70" aria-label={t('applications.noteLabel')} />}
                     </span>
                     <span className="mt-auto flex flex-wrap gap-1 pt-1">
                       {interviewByDay.has(cell.key) && (
-                        <span className="inline-flex items-center rounded-full bg-primary px-1.5 text-[10px] font-semibold leading-4 text-primary-foreground">
+                        <span className="inline-flex items-center rounded-md bg-primary px-1.5 py-[1px] text-[10px] font-semibold leading-4 text-primary-foreground">
                           {t('applications.interviewLabel')}
                         </span>
                       )}
-                      {marks.map((status) => (
+                      {shown.map((status) => (
                         <span
                           key={status}
-                          className="inline-flex items-center gap-0.5 rounded-full bg-background/60 px-1 text-[10px] leading-4 text-foreground"
+                          className="inline-flex items-center gap-1 rounded-md bg-background/70 px-1.5 py-[1px] text-[10px] font-medium leading-4 text-foreground ring-1 ring-border/50"
                         >
                           <span className={`h-1.5 w-1.5 rounded-full ${STATUS_COLORS[status]}`} />
                           {counts[status]}
                         </span>
                       ))}
+                      {overflow > 0 && (
+                        <span className="inline-flex items-center rounded-md px-1.5 py-[1px] text-[10px] font-medium leading-4 text-muted-foreground ring-1 ring-border/50">
+                          +{overflow}
+                        </span>
+                      )}
                     </span>
                   </button>
                 );
               })}
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 border-t border-border/60 pt-3 text-[12px] text-muted-foreground">
+            {/* The key to the dots - calm, small, two tidy rows at most. */}
+            <div className="mt-5 flex flex-wrap gap-x-3.5 gap-y-1.5 border-t border-border/60 pt-3.5 text-[11px] text-muted-foreground">
               {STATUS_ORDER.map((status) => (
                 <span key={status} className="inline-flex items-center gap-1.5">
                   <span className={`h-2 w-2 rounded-full ${STATUS_COLORS[status]}`} />
