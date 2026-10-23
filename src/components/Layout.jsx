@@ -17,8 +17,8 @@ function Nav() {
   const NAV = [
     { label: t('nav.overview'), to: '/' },
     { label: t('nav.history'), to: '/history' },
-    { label: t('nav.postings'), to: '/postings' },
     { label: t('nav.documents'), to: '/documents' },
+    { label: t('nav.postings'), to: '/postings' },
     { label: t('nav.applications'), to: '/applications' }
   ];
 
