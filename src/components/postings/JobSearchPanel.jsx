@@ -19,14 +19,16 @@ export default function JobSearchPanel({ onResults, initial }) {
   ];
   const [mode, setMode] = useState(initial?.mode === 'profile' ? 'profile' : 'criteria');
   const [category, setCategory] = useState(String(initial?.category || ''));
-  const [location, setLocation] = useState(String(initial?.location || ''));
+  const [location, setLocation] = useState(initial?.location ?? null);
   const [distance, setDistance] = useState(Number(initial?.distance) || 0);
   const [pay, setPay] = useState(initial?.minPay ? String(initial.minPay) : '');
   const [period, setPeriod] = useState(initial?.payPeriod || 'year');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const place = location || profile.location || '';
+  // null = the person has not set one: show the home location from the profile.
+  // '' = the person cleared the field: the clear must stick, so no fallback.
+  const place = location ?? profile.location ?? '';
   const ready = mode === 'profile' ? !loadingProfile : category.trim().length > 1;
 
   const run = async () => {
