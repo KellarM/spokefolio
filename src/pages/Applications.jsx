@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight, Loader2, Plus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import StatusBadge from '@/components/applications/StatusBadge';
 import SalaryPill from '@/components/applications/SalaryPill';
 import JobLocation from '@/components/applications/JobLocation';
@@ -14,11 +15,12 @@ import { useStudioLanguage } from '@/lib/StudioLanguage';
 const FILTERS = ['all', 'ready', 'not_applied', 'applied', 'contacted', 'interviewing', 'offer', 'declined', 'not_hired', 'rejected'];
 
 export default function Applications() {
-  const { t } = useStudioLanguage();
+  const { t, language } = useStudioLanguage();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [page, setPage] = useState(0);
+  const [sort, setSort] = useState('newest');
   const [locating, setLocating] = useState(false);
   const [scores, setScores] = useState({});
 
@@ -65,7 +67,16 @@ export default function Applications() {
     };
   }, [load]);
 
-  const visible = filter === 'all' ? applications : applications.filter((application) => application.status === filter);
+  // The order the list is shown in. Locale-aware so titles with accents
+  // sort where the alphabet puts them, not by character code.
+  const SORTERS = {
+    newest: (a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0),
+    oldest: (a, b) => new Date(a.created_date || 0) - new Date(b.created_date || 0),
+    az: (a, b) => (a.job_title || '').localeCompare(b.job_title || '', language, { sensitivity: 'base' }),
+    za: (a, b) => (b.job_title || '').localeCompare(a.job_title || '', language, { sensitivity: 'base' })
+  };
+  const visible = [...(filter === 'all' ? applications : applications.filter((application) => application.status === filter))]
+    .sort(SORTERS[sort]);
 
   // Ten applications per screen; the pager steps between them.
   const PAGE_SIZE = 10;
@@ -119,6 +130,22 @@ export default function Applications() {
             {t(`status.${value}`)}
           </button>
         ))}
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-[12px] font-medium uppercase tracking-wider text-muted-foreground">
+            {t('applications.sortLabel')}
+          </span>
+          <Select value={sort} onValueChange={(value) => { setSort(value); setPage(0); }}>
+            <SelectTrigger className="h-8 w-[172px] rounded-full border-border/70 bg-transparent text-[13px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">{t('applications.sortNewest')}</SelectItem>
+              <SelectItem value="oldest">{t('applications.sortOldest')}</SelectItem>
+              <SelectItem value="az">{t('applications.sortAZ')}</SelectItem>
+              <SelectItem value="za">{t('applications.sortZA')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {locating && (
