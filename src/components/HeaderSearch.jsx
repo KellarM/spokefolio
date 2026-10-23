@@ -129,20 +129,19 @@ export default function HeaderSearch() {
   const [debounced, setDebounced] = useState('');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const loadAttempted = useRef(false);
   const [failed, setFailed] = useState(false);
+  const hasDataRef = useRef(false);
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
 
-  // The datasets load once, on first open - not on every keystroke. The
-  // once-guard is a REF, not state: a loading flag in the dependency list
-  // re-ran this effect the moment it flipped, firing the cleanup and
-  // discarding the results of a fetch that had already succeeded - the
-  // panel hung on 'Searching...' forever. The ref loads once, period.
+  // Datasets refresh every time the panel opens, so an edit made anywhere
+  // (an edited reference file, a hidden history entry) is reflected in the
+  // very next search - no stale cache. The loading state shows only on the
+  // first open; later refreshes happen silently behind the open panel.
   useEffect(() => {
-    if (!open || loadAttempted.current) return;
-    loadAttempted.current = true;
-    setLoading(true);
+    if (!open) return;
+    const firstLoad = !hasDataRef.current;
+    if (firstLoad) setLoading(true);
     const safe = (call) => call.catch(() => null);
     Promise.all([
       safe(base44.entities.ResumeProfile.list('-created_date', 10)),
@@ -152,9 +151,10 @@ export default function HeaderSearch() {
     ])
       .then(([profiles, entries, applications, documents]) => {
         if (!profiles && !entries && !applications && !documents) {
-          setFailed(true);
+          if (firstLoad) setFailed(true);
           return;
         }
+        hasDataRef.current = true;
         setData({
           profile: profiles?.[0] || null,
           entries: (entries || []).filter((entry) => !entry.hidden),
@@ -162,7 +162,9 @@ export default function HeaderSearch() {
           documents: documents || []
         });
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (firstLoad) setLoading(false);
+      });
   }, [open]);
 
   useEffect(() => {

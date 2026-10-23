@@ -316,6 +316,7 @@ export default {
   'documents.open': 'Open',
   'documents.showRead': 'Show what was read',
   'documents.hideRead': 'Hide what was read',
+  'documents.editRead': 'Edit what was read',
 
   // Applications.
   'applications.title': 'Applications',

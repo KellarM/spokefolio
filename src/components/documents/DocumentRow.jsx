@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, Loader2, Trash2 } from 'lucide-react';
+import { ChevronDown, Loader2, Pencil, Trash2, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
@@ -34,6 +34,26 @@ export default function DocumentRow({ doc, onDelete }) {
   const { t } = useStudioLanguage();
   const [open, setOpen] = useState(false);
   const [opening, setOpening] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  // The studio's reading of an uploaded file is an interpretation, not a
+  // verdict - the record belongs to Michael, so the reading is editable.
+  const startEdit = () => {
+    setDraft(doc.extracted_summary || '');
+    setEditing(true);
+  };
+
+  const saveEdit = async () => {
+    setSaving(true);
+    try {
+      await base44.entities.SupportingDocument.update(doc.id, { extracted_summary: draft });
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const view = async () => {
     setOpening(true);
@@ -75,18 +95,65 @@ export default function DocumentRow({ doc, onDelete }) {
 
       {doc.extracted_summary && (
         <div className="mt-3">
-          <button
-            type="button"
-            onClick={() => setOpen((prev) => !prev)}
-            className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
-            {open ? t('documents.hideRead') : t('documents.showRead')}
-          </button>
-          {open && (
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setOpen((prev) => !prev)}
+              className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+              {open ? t('documents.hideRead') : t('documents.showRead')}
+            </button>
+            {open && !editing && (
+              <button
+                type="button"
+                onClick={startEdit}
+                className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                {t('documents.editRead')}
+              </button>
+            )}
+          </div>
+          {open && !editing && (
             <p className="mt-2 whitespace-pre-line rounded-xl bg-secondary/60 px-4 py-3 text-[13px] leading-relaxed text-foreground/85">
               {doc.extracted_summary}
             </p>
+          )}
+          {open && editing && (
+            <div className="relative mt-2">
+              <textarea
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape') setEditing(false);
+                }}
+                rows={7}
+                className="w-full rounded-xl border border-border/60 bg-secondary/60 px-4 py-3 pr-10 text-[13px] leading-relaxed text-foreground/85 outline-none focus:border-[#D4AF37]/50"
+              />
+              <button
+                type="button"
+                aria-label={t('common.clearField')}
+                onClick={() => setDraft('')}
+                className="absolute right-2 top-2.5 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+              <div className="mt-2 flex items-center gap-2">
+                <Button variant="default" size="sm" className="rounded-full" onClick={saveEdit} disabled={saving}>
+                  {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t('common.save')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => setEditing(false)}
+                  disabled={saving}
+                >
+                  {t('common.cancel')}
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       )}

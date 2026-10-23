@@ -286,6 +286,7 @@ export default {
   'documents.open': 'Abrir',
   'documents.showRead': 'Mostrar lo que se leyó',
   'documents.hideRead': 'Ocultar lo que se leyó',
+  'documents.editRead': 'Editar lo leído',
   'applications.title': 'Postulaciones',
   'applications.lede': 'Cada currículum adaptado que has generado, junto con la oferta de empleo para la que se redactó.',
   'applications.loading': 'Cargando tus postulaciones…',

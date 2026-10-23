@@ -305,6 +305,7 @@ export default {
   'documents.open': 'Öffnen',
   'documents.showRead': 'Zeigen, was gelesen wurde',
   'documents.hideRead': 'Ausblenden, was gelesen wurde',
+  'documents.editRead': 'Gelesenes bearbeiten',
 
   'applications.title': 'Bewerbungen',
   'applications.lede': 'Jedes zugeschnittene Résumé, das du erstellt hast, mit dem Angebot, für das es geschrieben wurde.',

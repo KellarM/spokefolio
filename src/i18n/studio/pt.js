@@ -286,6 +286,7 @@ export default {
   'documents.open': 'Abrir',
   'documents.showRead': 'Mostrar o que foi lido',
   'documents.hideRead': 'Ocultar o que foi lido',
+  'documents.editRead': 'Editar o que foi lido',
   'applications.title': 'Candidaturas',
   'applications.lede': 'Todos os currículos adaptados que você gerou, junto com a vaga para a qual foram escritos.',
   'applications.loading': 'Carregando suas candidaturas…',

@@ -305,6 +305,7 @@ export default {
   'documents.open': "Ouvrir",
   'documents.showRead': "Montrer ce qui a été lu",
   'documents.hideRead': "Masquer ce qui a été lu",
+  'documents.editRead': 'Modifier le texte lu',
 
   'applications.title': "Candidatures",
   'applications.lede': "Chaque curriculum adapté que vous avez généré, avec l'offre pour laquelle il a été écrit.",

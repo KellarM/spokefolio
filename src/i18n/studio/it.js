@@ -286,6 +286,7 @@ export default {
   'documents.open': 'Apri',
   'documents.showRead': 'Mostra contenuto letto',
   'documents.hideRead': 'Nascondi contenuto letto',
+  'documents.editRead': 'Modifica il testo letto',
   'applications.title': 'Candidature',
   'applications.lede': 'Ogni curriculum personalizzato che hai generato, abbinato all\'offerta per cui è stato scritto.',
   'applications.loading': 'Caricamento delle tue candidature…',
