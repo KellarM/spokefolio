@@ -75,6 +75,12 @@ export default function Applications() {
 
   const handleDeleted = (id) => setApplications((current) => current.filter((application) => application.id !== id));
 
+  // Changing screens starts the page at the top, not wherever you scrolled to.
+  const goToPage = (nextPage) => {
+    setPage(nextPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="animate-rise">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -187,7 +193,7 @@ export default function Applications() {
         <div className="mt-7 flex items-center justify-center gap-4">
           <button
             type="button"
-            onClick={() => setPage(Math.max(0, safePage - 1))}
+            onClick={() => goToPage(Math.max(0, safePage - 1))}
             disabled={safePage === 0}
             className="inline-flex h-9 items-center rounded-full border border-border/70 px-4 text-[13px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
           >
@@ -198,7 +204,7 @@ export default function Applications() {
           </span>
           <button
             type="button"
-            onClick={() => setPage(Math.min(totalPages - 1, safePage + 1))}
+            onClick={() => goToPage(Math.min(totalPages - 1, safePage + 1))}
             disabled={safePage === totalPages - 1}
             className="inline-flex h-9 items-center rounded-full border border-border/70 px-4 text-[13px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
           >
