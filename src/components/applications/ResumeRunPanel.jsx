@@ -1,5 +1,5 @@
-import React from 'react';
-import { Loader2, Play, Plus, TrendingUp } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChevronDown, Loader2, Play, Plus, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ResumeRunDetail from '@/components/applications/ResumeRunDetail';
 import RunFixProposal from '@/components/applications/RunFixProposal';
@@ -57,21 +57,56 @@ export default function ResumeRunPanel({
   const previous = history.length > 1 ? history[1].score : null;
   const delta = run && typeof previous === 'number' ? run.score - previous : 0;
 
+  // The breakdown folds away so the panel keeps its place on the page; the
+  // score line stays in the header so a glance still answers 'how did it land'.
+  // A fresh run opens the breakdown on its own - nobody runs the check to
+  // then click it open again.
+  const [open, setOpen] = useState(false);
+  const lastRunId = useRef(run?.id);
+  useEffect(() => {
+    if (run?.id && lastRunId.current !== run.id) {
+      lastRunId.current = run.id;
+      setOpen(true);
+    }
+  }, [run?.id]);
+
   return (
     <section className="mt-7 rounded-2xl border border-border/70 bg-card p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-xl">
           <p className="eyebrow">Résumé Run</p>
           <h2 className="mt-2 font-heading text-[22px] leading-tight tracking-tight">How this résumé lands</h2>
-          <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground">
-            One scored pass against this posting: what it answers, how strong the evidence reads, and whether the
-            screening software can read it. Run it again after any edit to see the mark move.
-          </p>
+          {run && !open ? (
+            <p className="mt-2 flex flex-wrap items-center gap-2.5">
+              <span className={`font-heading text-[20px] leading-none ${band.text}`}>{run.score}</span>
+              <span className="text-[13px] text-muted-foreground">out of 100</span>
+              <span className={`rounded-full border px-2.5 py-0.5 text-[12.5px] font-medium ${band.chip}`}>{run.band}</span>
+              {delta !== 0 && (
+                <span className={`flex items-center gap-1 text-[12.5px] ${delta > 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  {delta > 0 ? `+${delta}` : delta} since the last run
+                </span>
+              )}
+            </p>
+          ) : (
+            <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground">
+              One scored pass against this posting: what it answers, how strong the evidence reads, and whether the
+              screening software can read it. Run it again after any edit to see the mark move.
+            </p>
+          )}
         </div>
-        <Button className="rounded-full" onClick={onRun} disabled={running}>
-          {running ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
-          {run ? 'Run again' : 'Run the check'}
-        </Button>
+        <div className="flex items-center gap-2">
+          {run && (
+            <Button variant="outline" size="sm" className="rounded-full" onClick={() => setOpen((prev) => !prev)} aria-expanded={open}>
+              <ChevronDown className={`mr-1 h-4 w-4 transition-transform ${open ? '' : '-rotate-90'}`} />
+              {open ? 'Hide the breakdown' : 'Show the breakdown'}
+            </Button>
+          )}
+          <Button className="rounded-full" onClick={onRun} disabled={running}>
+            {running ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+            {run ? 'Run again' : 'Run the check'}
+          </Button>
+        </div>
       </div>
 
       {running && !run && (
@@ -84,7 +119,7 @@ export default function ResumeRunPanel({
         </p>
       )}
 
-      {run && (
+      {run && open && (
         <>
           <div className="mt-6 grid gap-6 lg:grid-cols-[230px_1fr]">
             <div className={`rounded-2xl border px-5 py-6 text-center ${band.ring}`}>
