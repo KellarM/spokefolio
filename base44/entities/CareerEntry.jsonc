@@ -145,6 +145,11 @@
         "confirmed"
       ],
       "default": "draft"
+    },
+    "hidden": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the person keeps this entry captured but out of the resume: hidden entries stay on the history page, tagged, and never reach the current resume, tailoring, or interview prep."
     }
   },
   "required": [

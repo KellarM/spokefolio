@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Pencil, Trash2 } from 'lucide-react';
+import { Clock, Eye, EyeOff, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
@@ -15,7 +15,7 @@ const TYPES = {
   other: 'history.typeOther'
 };
 
-export default function EntryList({ entries = [], activeId, selectedIds = [], onToggle, onEdit, onDelete, onReview }) {
+export default function EntryList({ entries = [], activeId, selectedIds = [], onToggle, onEdit, onDelete, onReview, onHide }) {
   const { t } = useStudioLanguage();
   if (!entries.length) {
     return (
@@ -35,12 +35,13 @@ export default function EntryList({ entries = [], activeId, selectedIds = [], on
           : entry.accomplishments || [];
         const dates = [entry.start_date, entry.end_date].filter(Boolean).join(' – ');
         const selected = selectedIds.includes(entry.id);
+        const hidden = Boolean(entry.hidden);
         return (
           <li
             key={entry.id}
             className={`group flex items-start gap-4 rounded-2xl border bg-card px-5 py-4 transition-colors ${
               entry.id === activeId ? 'border-accent/50' : 'border-border/70 hover:border-border'
-            }`}
+            } ${hidden ? 'opacity-55' : ''}`}
           >
             <Checkbox
               checked={selected}
@@ -56,6 +57,11 @@ export default function EntryList({ entries = [], activeId, selectedIds = [], on
                 {entry.grouped && (
                   <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10.5px] uppercase tracking-[0.1em] text-accent">
                     {(entry.roles || []).length} {t('history.rolesInside')}
+                  </span>
+                )}
+                {hidden && (
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-[10.5px] uppercase tracking-[0.1em] text-muted-foreground ring-1 ring-border">
+                    {t('history.hiddenTag')}
                   </span>
                 )}
                 {entry.status === 'draft' ? (
@@ -90,6 +96,18 @@ export default function EntryList({ entries = [], activeId, selectedIds = [], on
               <span className="mr-1 hidden text-[11.5px] text-muted-foreground sm:inline">
                 {bullets.length} {bullets.length === 1 ? t('history.bullet') : t('history.bullets')}
               </span>
+              {onHide && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
+                  aria-label={hidden ? t('history.unhideEntry') : t('history.hideEntry')}
+                  title={hidden ? t('history.unhideEntry') : t('history.hideEntry')}
+                  onClick={() => onHide(entry)}
+                >
+                  {hidden ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                </Button>
+              )}
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => onEdit(entry)}>
                 <Pencil className="h-3.5 w-3.5" />
               </Button>

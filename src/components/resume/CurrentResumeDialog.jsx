@@ -38,7 +38,8 @@ export default function CurrentResumeDialog({ open, onClose }) {
     let active = true;
     base44.entities.CareerEntry.list('-created_date', 500)
       .then((records) => {
-        if (active) setEntries(records || []);
+        // Hidden entries stay captured but never reach the current resume.
+        if (active) setEntries((records || []).filter((entry) => !entry.hidden));
       })
       .catch(() => {
         if (active) setEntries([]);

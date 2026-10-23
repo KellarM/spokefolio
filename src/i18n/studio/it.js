@@ -110,7 +110,11 @@ export default {
   'history.rolesInside': 'ruoli all\'interno',
   'history.inProgress': 'In corso',
   'history.confirmed': 'Confermata',
-  'history.continueEntry': 'Continua questa voce',
+  'history.continueEntry': 'Continua questa voce',  'history.hiddenTag': 'Nascosto',
+  'history.hideEntry': 'Resta acquisito, nascosto dal curriculum',
+  'history.unhideEntry': 'Mostra di nuovo nel curriculum',
+  'history.toastHideFailed': 'Impossibile aggiornare la voce. Riprova.',
+
   'history.reviewOrganize': 'Rivedi e organizza',
   'history.bullet': 'punto elenco',
   'history.bullets': 'punti elenco',

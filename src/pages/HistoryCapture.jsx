@@ -127,7 +127,7 @@ export default function HistoryCapture() {
     return () => clearTimeout(timer);
   }, [draft, busy]);
 
-  const confirmed = entries.filter((entry) => entry.status === 'confirmed');
+  const confirmed = entries.filter((entry) => entry.status === 'confirmed' && !entry.hidden);
   const openDrafts = entries.filter((entry) => entry.status !== 'confirmed');
   const historyComplete = !!profile.history_complete;
   const selectedEntries = entries.filter((entry) => selectedIds.includes(entry.id));
@@ -303,6 +303,18 @@ export default function HistoryCapture() {
     if (draft && draft.id !== entry.id) await persistDraft(draft);
     setDraft(entry);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Hide keeps the entry captured but out of the resume. One tap, reversible.
+  const hideEntry = async (entry) => {
+    const next = !entry.hidden;
+    try {
+      await base44.entities.CareerEntry.update(entry.id, { hidden: next });
+      setEntries((prev) => prev.map((item) => (item.id === entry.id ? { ...item, hidden: next } : item)));
+      if (draft && draft.id === entry.id) setDraft({ ...draft, hidden: next });
+    } catch (error) {
+      reportError(t('history.toastHideFailed'), error);
+    }
   };
 
   const deleteEntry = async (entry) => {
@@ -635,6 +647,7 @@ export default function HistoryCapture() {
             onEdit={editEntry}
             onDelete={deleteEntry}
             onReview={openReview}
+            onHide={hideEntry}
           />
         </div>
         <HistoryReviewPanel revision={reviewRevision} onOpen={openSavedReview} onRestore={restoreReview} />

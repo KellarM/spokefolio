@@ -120,7 +120,11 @@ export default {
   'history.rolesInside': 'Rollen enthalten',
   'history.inProgress': 'In Bearbeitung',
   'history.confirmed': 'Bestätigt',
-  'history.continueEntry': 'Eintrag fortsetzen',
+  'history.continueEntry': 'Eintrag fortsetzen',  'history.hiddenTag': 'Ausgeblendet',
+  'history.hideEntry': 'Erfasst lassen, aus dem Lebenslauf ausblenden',
+  'history.unhideEntry': 'Wieder im Lebenslauf anzeigen',
+  'history.toastHideFailed': 'Der Eintrag konnte nicht aktualisiert werden. Bitte erneut versuchen.',
+
   'history.reviewOrganize': 'Prüfen & ordnen',
   'history.bullet': 'Stichpunkt',
   'history.bullets': 'Stichpunkte',

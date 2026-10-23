@@ -110,7 +110,11 @@ export default {
   'history.rolesInside': 'puestos incluidos',
   'history.inProgress': 'En progreso',
   'history.confirmed': 'Confirmado',
-  'history.continueEntry': 'Continuar esta entrada',
+  'history.continueEntry': 'Continuar esta entrada',  'history.hiddenTag': 'Oculto',
+  'history.hideEntry': 'Mantener capturado, ocultar del currículum',
+  'history.unhideEntry': 'Mostrar de nuevo en el currículum',
+  'history.toastHideFailed': 'No se pudo actualizar la entrada. Inténtalo de nuevo.',
+
   'history.reviewOrganize': 'Revisar y organizar',
   'history.bullet': 'viñeta',
   'history.bullets': 'viñetas',

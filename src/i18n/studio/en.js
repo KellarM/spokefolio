@@ -128,7 +128,11 @@ export default {
   'history.rolesInside': 'roles inside',
   'history.inProgress': 'In progress',
   'history.confirmed': 'Confirmed',
-  'history.continueEntry': 'Continue this entry',
+  'history.continueEntry': 'Continue this entry',  'history.hiddenTag': 'Hidden',
+  'history.hideEntry': 'Keep captured, hide from resume',
+  'history.unhideEntry': 'Show in resume again',
+  'history.toastHideFailed': 'Could not update the entry. Please try again.',
+
   'history.reviewOrganize': 'Review & organize',
   'history.bullet': 'bullet',
   'history.bullets': 'bullets',

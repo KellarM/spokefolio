@@ -23,7 +23,7 @@ export default function Home() {
         base44.entities.SupportingDocument.list('-created_date', 100),
         base44.entities.JobApplication.list('-created_date', 20)
       ]);
-      setEntries(entryRecords || []);
+      setEntries((entryRecords || []).filter((entry) => !entry.hidden));
       setDocuments(documentRecords || []);
       setApplications(applicationRecords || []);
     } catch {

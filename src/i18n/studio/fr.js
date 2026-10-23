@@ -120,7 +120,11 @@ export default {
   'history.rolesInside': "rôles inclus",
   'history.inProgress': "En cours",
   'history.confirmed': "Confirmée",
-  'history.continueEntry': "Continuer cette entrée",
+  'history.continueEntry': "Continuer cette entrée",  'history.hiddenTag': 'Masqué',
+  'history.hideEntry': 'Garder capturé, masquer du CV',
+  'history.unhideEntry': 'Réafficher dans le CV',
+  'history.toastHideFailed': 'Impossible de mettre à jour l\'entrée. Veuillez réessayer.',
+
   'history.reviewOrganize': "Réviser et organiser",
   'history.bullet': "point",
   'history.bullets': "points",

@@ -84,7 +84,8 @@ export default function ApplicationDetail() {
         ]);
         if (cancelled) return;
         setApplication(record);
-        setEntries(entryRecords || []);
+        // Hidden entries stay captured but never reach the tailored view.
+        setEntries((entryRecords || []).filter((entry) => !entry.hidden));
         setRuns(runPage?.items || []);
         setResume(record.resume || {});
         setCoverLetter(record.cover_letter || '');
@@ -227,7 +228,7 @@ export default function ApplicationDetail() {
         job_title: application.job_title,
         job_description: application.job_description,
         profile,
-        entries: (entryRecords || []).filter((entry) => entry.title && entry.title.trim()),
+        entries: (entryRecords || []).filter((entry) => entry.title && entry.title.trim() && !entry.hidden),
         documents: (documentRecords || []).filter((doc) => doc.extracted_summary)
       });
       trackEvent('tailoring_run', 'cover-letter');
@@ -256,7 +257,7 @@ export default function ApplicationDetail() {
         job_title: application.job_title,
         job_description: application.job_description,
         profile,
-        entries: (entryRecords || []).filter((entry) => entry.title && entry.title.trim()),
+        entries: (entryRecords || []).filter((entry) => entry.title && entry.title.trim() && !entry.hidden),
         documents: (documentRecords || []).filter((doc) => doc.extracted_summary),
         template: resolveTemplateId(pickedTemplate || application.resume_template, profile.resume_template)
       });
