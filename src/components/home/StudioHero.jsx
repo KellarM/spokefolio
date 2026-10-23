@@ -26,7 +26,7 @@ const HERO_IMAGE = 'https://media.base44.com/images/public/6acfb4bf0fc7d7424c847
 export default function StudioHero({ draftCount = 0, profile }) {
   const { t } = useStudioLanguage();
   const name = greetingName(profile);
-  const greeting = t(greetingKey()) + (name ? `, ${name}.` : '.');
+  const greeting = `${t(greetingKey())}${name ? `, ${name}.` : '.'}`;
 
   // The Step Order, numbered so the order is unmistakable: capture the
   // history, bring the reference files in, find the postings, then tailor.
@@ -42,7 +42,13 @@ export default function StudioHero({ draftCount = 0, profile }) {
     <>
       <section className="mec-hero">
         <div>
-          <div className="mec-eyebrow">{greeting}</div>
+          <div className="mec-greet" role="text" aria-label={greeting}>
+            <span className="mec-greet-wave" aria-hidden="true">&#128075;</span>
+            <span>
+              {t(greetingKey())}
+              {name ? <>,&nbsp;<b>{name}</b>.</> : '.'}
+            </span>
+          </div>
           <h1 className="mec-h1">{t('home.heroTitle')}</h1>
           <p className="mec-body">{t('home.heroBody')}</p>
 
