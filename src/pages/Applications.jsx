@@ -97,7 +97,13 @@ export default function Applications() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
           <p className="eyebrow">{t('common.yourSearch')}</p>
-          <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('applications.title')}</h1>
+          <h1 className="mt-3 flex flex-wrap items-center gap-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">
+            {t('applications.title')}
+            {/* The live count: always the number the current filter is showing. */}
+            <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-3 py-1 align-middle text-[15px] font-semibold tabular-nums text-primary">
+              {visible.length}
+            </span>
+          </h1>
           <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
             {t('applications.lede')}
           </p>
