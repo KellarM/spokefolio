@@ -23,12 +23,22 @@ function countByDay(events, days) {
   const buckets = [];
   for (let i = days - 1; i >= 0; i--) buckets.push({ date: daysAgo(i), opens: 0, actions: 0 });
   const index = new Map(buckets.map((b, i) => [b.date, i]));
+  // One person opening many times in a day is one open that day.
+  const openPeopleByDay = new Map();
   for (const event of events) {
     const key = String(event.created_date || '').slice(0, 10);
     const i = index.get(key);
     if (i == null) continue;
-    if (event.event_type === 'app_open') buckets[i].opens += 1;
-    else buckets[i].actions += 1;
+    if (event.event_type === 'app_open') {
+      const people = openPeopleByDay.get(key) || new Set();
+      people.add(event.created_by_id);
+      openPeopleByDay.set(key, people);
+    } else {
+      buckets[i].actions += 1;
+    }
+  }
+  for (const b of buckets) {
+    b.opens = (openPeopleByDay.get(b.date) || new Set()).size;
   }
   return buckets;
 }
@@ -87,17 +97,26 @@ export default async function (req) {
     const openUsers = new Set();
     openEvents.forEach((e) => distinct(openUsers, e.created_by_id));
 
+    // "Opened the app" counts a person once per day, however many times
+    // they opened it that day.
+    const openDays = new Set();
+    openEvents.forEach((e) => {
+      if (e.created_by_id) openDays.add(`${e.created_by_id}|${String(e.created_date || '').slice(0, 10)}`);
+    });
+
     // Per-account usage detail for the signups table.
     // events are sorted newest first, so the first hit per user is the latest.
     const lastOpen = new Map();
     const lastAction = new Map();
-    const totalOpens = new Map();
+    const openDaysByUser = new Map();
     for (const e of events) {
       const id = e.created_by_id;
       if (!id) continue;
       if (e.event_type === 'app_open') {
         if (!lastOpen.has(id)) lastOpen.set(id, e.created_date);
-        totalOpens.set(id, (totalOpens.get(id) || 0) + 1);
+        const days = openDaysByUser.get(id) || new Set();
+        days.add(String(e.created_date || '').slice(0, 10));
+        openDaysByUser.set(id, days);
       } else if (!lastAction.has(id)) {
         lastAction.set(id, e.created_date);
       }
@@ -162,7 +181,7 @@ export default async function (req) {
         created: u.created_date || null,
         lastOpen: lastOpen.get(u.id) || null,
         lastAction: lastAction.get(u.id) || null,
-        opens: totalOpens.get(u.id) || 0,
+        opens: (openDaysByUser.get(u.id) || new Set()).size,
         resumes: resumesByUser.get(u.id) || 0,
         applications: appsByUser.get(u.id) || 0,
         stage: stageOf(u.id)
@@ -173,7 +192,7 @@ export default async function (req) {
       signups: users.length,
       totalResumes: resumes.length,
       applicationsTracked: applications.length,
-      appOpens: openEvents.length,
+      appOpens: openDays.size,
       appOpenUsers: openUsers.size,
       usedApp: usedUsers.size,
       daily: countByDay(events, 14),
