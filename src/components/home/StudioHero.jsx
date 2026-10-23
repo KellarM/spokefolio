@@ -42,22 +42,43 @@ export default function StudioHero({ draftCount = 0, profile }) {
     const BASE = 30; // px, matches the base size in the stylesheet
     const MIN = 20;
     const MAX = 64;
-    const fit = () => {
+    let frame = 0;
+    let lastWidth = -1;
+
+    const fit = (force) => {
+      frame = 0;
+      const width = pill.clientWidth;
+      // Only a change of width asks for a new fit. Growing the type makes the
+      // pill taller, and answering that height change would ask for another
+      // fit forever - the browser reports exactly that as a ResizeObserver loop.
+      if (!force && width === lastWidth) return;
+      lastWidth = width;
       pill.style.fontSize = `${BASE}px`;
       const wave = pill.querySelector('.mec-greet-wave');
       const reserved = 40 /* pill side padding */ + (wave ? wave.offsetWidth + 10 : 0);
-      const room = pill.clientWidth - reserved;
+      const room = width - reserved;
       const natural = line.scrollWidth;
       if (!room || !natural) return;
       const size = Math.min(MAX, Math.max(MIN, (BASE * room) / natural));
       pill.style.fontSize = `${size}px`;
     };
 
-    fit();
-    const watcher = new ResizeObserver(fit);
+    // The fit runs on the next frame, never inside the observer's own callback,
+    // so the size it writes is measured fresh instead of mid-delivery.
+    const schedule = (force) => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => fit(force));
+    };
+
+    schedule(true);
+    const watcher = new ResizeObserver(() => schedule(false));
     watcher.observe(pill);
-    document.fonts?.ready?.then(fit).catch(() => {});
-    return () => watcher.disconnect();
+    // A webfont landing changes how wide the words are at the same pill width.
+    document.fonts?.ready?.then(() => schedule(true)).catch(() => {});
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      watcher.disconnect();
+    };
   }, [greeting]);
 
   // The Step Order, numbered so the order is unmistakable: capture the

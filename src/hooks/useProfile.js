@@ -20,7 +20,7 @@ const EMPTY = {
 // useProfile reads it, so a save is visible everywhere at once.
 const ProfileContext = createContext(null);
 
-function useProfileState() {
+function useProfileState(enabled = true) {
   const [profile, setProfile] = useState(EMPTY);
   const [profileId, setProfileId] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -39,8 +39,9 @@ function useProfileState() {
   }, []);
 
   useEffect(() => {
-    reload();
-  }, [reload]);
+    // Only the provider's copy loads; a fallback copy next to it stays quiet.
+    if (enabled) reload();
+  }, [enabled, reload]);
 
   const save = useCallback(
     async (patch) => {
@@ -73,5 +74,8 @@ export function ProfileProvider({ children }) {
 // outside it (there are none today) still works on its own state.
 export default function useProfile() {
   const shared = useContext(ProfileContext);
-  return shared || useProfileState();
+  // Both hooks are always called, in the same order on every render; the
+  // private copy is simply idle whenever the provider's copy is in hand.
+  const own = useProfileState(!shared);
+  return shared || own;
 }
