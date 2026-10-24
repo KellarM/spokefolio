@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useSearchParams } from 'react-router-dom';
 import useProfile from '@/hooks/useProfile';
 import { trackAppOpen } from '@/lib/analytics';
 import { useAuth } from '@/lib/AuthContext';
@@ -10,6 +11,11 @@ import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 export default function Home() {
   const { t } = useStudioLanguage();
+  // ?onboarding=1 previews the first-run card with every step pending -
+  // for a studio this full, that is the only way to see what a new
+  // signup sees, without burning an email on a test account.
+  const [searchParams] = useSearchParams();
+  const onboardingPreview = searchParams.get('onboarding') === '1';
   const { profile, loadingProfile } = useProfile();
   const { user } = useAuth();
   const [entries, setEntries] = useState([]);
@@ -70,11 +76,12 @@ export default function Home() {
       </div>
 
       <FirstRunChecklist
-        userId={user?.id}
-        ready={!busy}
-        entriesCount={entries.length}
-        applicationsCount={applications.length}
-        hasIdentity={!!(profile && profile.full_name)}
+        userId={onboardingPreview ? 'preview' : user?.id}
+        ready={onboardingPreview ? true : !busy}
+        preview={onboardingPreview}
+        entriesCount={onboardingPreview ? 0 : entries.length}
+        applicationsCount={onboardingPreview ? 0 : applications.length}
+        hasIdentity={onboardingPreview ? false : !!(profile && profile.full_name)}
       />
 
       <div className="mec-work">

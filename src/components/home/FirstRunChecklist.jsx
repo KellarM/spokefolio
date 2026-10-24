@@ -30,7 +30,7 @@ const firedKey = (userId, step) => `sf_checklist_event:${userId || 'anon'}:${ste
 // completes itself when the studio sees the real thing exist - an entry,
 // a name, a résumé - so there is nothing to click through and nothing to
 // skip past. When every row is real, the card is done and gets out of the way.
-export default function FirstRunChecklist({ userId, ready, entriesCount, applicationsCount, hasIdentity }) {
+export default function FirstRunChecklist({ userId, ready, entriesCount, applicationsCount, hasIdentity, preview = false }) {
   const { t } = useStudioLanguage();
   const [dismissed, setDismissed] = useState(() => flag.read(dismissedKey(userId)));
 
@@ -72,14 +72,14 @@ export default function FirstRunChecklist({ userId, ready, entriesCount, applica
       const key = firedKey(userId, step.key);
       if (step.done && !flag.read(key)) {
         flag.set(key);
-        trackEvent(`onboarding_step_${step.key}_done`);
+        if (!preview) trackEvent(`onboarding_step_${step.key}_done`);
       }
     });
     if (allDone) {
       const key = firedKey(userId, 'complete');
       if (!flag.read(key)) {
         flag.set(key);
-        trackEvent('onboarding_complete');
+        if (!preview) trackEvent('onboarding_complete');
       }
     }
   }, [ready, allDone, userId, entriesCount, applicationsCount, hasIdentity]);
@@ -89,7 +89,7 @@ export default function FirstRunChecklist({ userId, ready, entriesCount, applica
   const hide = () => {
     flag.set(dismissedKey(userId));
     setDismissed(true);
-    trackEvent('onboarding_dismissed');
+    if (!preview) trackEvent('onboarding_dismissed');
   };
 
   return (
