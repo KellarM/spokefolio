@@ -2173,3 +2173,26 @@ select option {
   .tour-shadow { animation: none; opacity: 0.4; }
   .tour-hop, .tour-celebrate, .tour-farewell { animation: none; }
 }
+
+/* ---- The helper: the ball's quieter second life ----
+   Smaller, calmer, cornered. It glows a touch brighter only when it
+   actually has something to say. */
+.tour-ball-wrap.helper .tour-move {
+  width: 40px;
+  height: 40px;
+}
+
+.tour-ball-wrap.helper .tour-ball {
+  width: 40px;
+  height: 40px;
+  animation-duration: 3.4s;
+}
+
+.tour-ball-wrap.helper .tour-shadow {
+  width: 32px;
+  bottom: -11px;
+}
+
+.tour-ball-wrap.helper.has-nudge .tour-ball {
+  animation-duration: 1.8s;
+}

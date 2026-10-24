@@ -69,6 +69,7 @@ export function TourProvider({ children }) {
       // The record is only trustworthy once storage has been read for this
       // account; pages hold their auto-start decisions until then.
       ready: record !== undefined,
+      userId,
       active,
       step: active ? record.step : null,
       preview: active ? !!record.preview : false,

@@ -1,22 +1,24 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import { useTour } from '@/lib/TourContext';
+import { computeNudge, dismissNudge, markNudgeShown, markNudgeTapped } from '@/lib/nudges';
 
-// The gold companion itself. One ball, always fixed to the viewport: parked
-// in the lower right while traveling, anchored beside the very thing it is
-// pointing at (the name field, the dictation box) when the client is on the
-// right page. It never moves until it is tapped, and never covers what it
-// points at - it sits beside it.
+// The gold companion. It leads the first-time walkthrough (tap to move, it
+// waits, it celebrates real completion), and after the farewell it stays as
+// a quiet helper in the corner: it only speaks when the studio gives it
+// something real to say - an interview coming up, a story half-told, a
+// posting never tailored - and never repeats a nudge the client already
+// dismissed that day.
 
 const BALL_SIZE = 52;
 const EDGE = 16;
 // Room for the speech bubble above the ball without crowding the header.
 const TOP_FLOOR = 132;
 
-// What the ball points at, by step and route. Anchored only while the step
-// is still in progress - a celebrated step means "tap me", not "look here".
+// What the ball points at during the walkthrough, by step and route.
 const anchorElement = (step, pathname, celebrated) => {
   if (step === 'identity' && pathname === '/profile' && !celebrated) {
     return document.getElementById('full_name');
@@ -34,26 +36,32 @@ export default function BouncingBallTour() {
   const navigate = useNavigate();
 
   const { active, step, celebrated, ready } = tour;
+  // Helper mode: the ball's second life, after (or without) the walkthrough.
+  const helper = ready && !active;
+
   const [pos, setPos] = useState(null);
   const [hopKey, setHopKey] = useState(0);
   const [bubbleBelow, setBubbleBelow] = useState(false);
   const [bubbleShift, setBubbleShift] = useState(false);
 
-  // Position: anchored to the target element when there is one, parked in
-  // the lower right corner when there is not. Recomputed on scroll and
-  // resize, plus settle beats after a route change while the page's own
-  // entrance animations finish.
+  // Helper state: the studio's own data, the nudge it produced, and the
+  // quiet "all caught up" reply a tap earns when nothing needs the client.
+  const [studioData, setStudioData] = useState(null);
+  const [nudge, setNudge] = useState(null);
+  const [quiet, setQuiet] = useState(false);
+  const fetchedAt = useRef(0);
+
+  // Position: anchored to the target element during the walkthrough, parked
+  // in the lower right corner otherwise. Recomputed on scroll and resize,
+  // plus settle beats after a route change while entrance animations finish.
   const compute = useCallback(() => {
-    if (!active) return;
-    const el = anchorElement(step, pathname, celebrated);
+    if (!active && !helper) return;
+    const el = active ? anchorElement(step, pathname, celebrated) : null;
     if (!el) {
-      setPos({
-        left: window.innerWidth - BALL_SIZE - 26,
-        top: window.innerHeight - BALL_SIZE - 30,
-        anchored: false
-      });
+      const left = window.innerWidth - BALL_SIZE - 26;
+      setPos({ left, top: window.innerHeight - BALL_SIZE - 30, anchored: false });
       setBubbleBelow(false);
-      setBubbleShift(window.innerWidth - BALL_SIZE - 26 > window.innerWidth - 170);
+      setBubbleShift(left + BALL_SIZE > window.innerWidth - 180);
       return;
     }
     const rect = el.getBoundingClientRect();
@@ -65,7 +73,7 @@ export default function BouncingBallTour() {
     setPos({ left, top, anchored: true });
     setBubbleBelow(top <= TOP_FLOOR + 30);
     setBubbleShift(left + BALL_SIZE > window.innerWidth - 180);
-  }, [active, step, pathname, celebrated]);
+  }, [active, helper, step, pathname, celebrated]);
 
   useEffect(() => {
     compute();
@@ -87,8 +95,8 @@ export default function BouncingBallTour() {
 
   // A fresh hop every time the ball arrives somewhere new.
   useEffect(() => {
-    if (active) setHopKey((key) => key + 1);
-  }, [step, pathname, active]);
+    if (active || helper) setHopKey((key) => key + 1);
+  }, [step, pathname, active, helper]);
 
   // The farewell ends itself - animation or not - so no client is left
   // with a ball that will not leave.
@@ -98,8 +106,117 @@ export default function BouncingBallTour() {
     return () => clearTimeout(done);
   }, [active, step, tour]);
 
-  if (!ready || !active || !pos) return null;
+  // Helper mode: read the client's own studio - applications, postings,
+  // stories - and only speak when there is something real to say.
+  useEffect(() => {
+    if (!helper) return undefined;
+    let cancelled = false;
+    const fetchStudio = async () => {
+      const now = Date.now();
+      if (now - fetchedAt.current < 30000) return;
+      fetchedAt.current = now;
+      try {
+        const [applications, postings, entries] = await Promise.all([
+          base44.entities.JobApplication.list('-created_date', 100),
+          base44.entities.JobPosting.list('-created_date', 100),
+          base44.entities.CareerEntry.list('-created_date', 200)
+        ]);
+        if (!cancelled) {
+          setStudioData({
+            applications: applications || [],
+            postings: postings || [],
+            entries: entries || []
+          });
+        }
+      } catch {
+        // A silent helper is allowed: nothing read, nothing said.
+      }
+    };
+    fetchStudio();
+    const interval = setInterval(fetchStudio, 120000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [helper, pathname]);
 
+  // The nudge itself, recomputed as data or route changes.
+  useEffect(() => {
+    if (!helper || !studioData) {
+      setNudge(null);
+      return;
+    }
+    setNudge(computeNudge({ userId: tour.userId, pathname, ...studioData }));
+  }, [helper, studioData, pathname, tour.userId]);
+
+  useEffect(() => {
+    markNudgeShown(nudge);
+  }, [nudge]);
+
+  // The quiet reply closes itself; a client who taps an idle ball should
+  // not have to dismiss anything.
+  useEffect(() => {
+    if (!quiet) return undefined;
+    const done = setTimeout(() => setQuiet(false), 4200);
+    return () => clearTimeout(done);
+  }, [quiet]);
+
+  if (!ready || !pos || (!active && !helper)) return null;
+
+  const handleHelperTap = () => {
+    if (nudge) {
+      markNudgeTapped(nudge);
+      dismissNudge(tour.userId, nudge.id);
+      setNudge(null);
+      navigate(nudge.target);
+      return;
+    }
+    setQuiet(true);
+  };
+
+  // ---- Helper mode: small, corner, speaks only on real facts ----
+  if (helper) {
+    const helperCaption = nudge ? t(nudge.captionKey) : quiet ? t('nudge.quiet') : null;
+    return (
+      <div
+        className={`tour-ball-wrap helper ${nudge ? 'has-nudge' : ''}`}
+        style={{ top: pos.top, left: pos.left }}
+      >
+        <div key={hopKey} className="tour-move tour-hop">
+          <span className="tour-shadow" aria-hidden="true" />
+          <button
+            type="button"
+            className="tour-ball"
+            onClick={handleHelperTap}
+            aria-label={helperCaption || t('nudge.idle')}
+          />
+        </div>
+        {helperCaption && (
+          <div
+            className={`tour-bubble ${bubbleBelow ? 'below' : ''} ${bubbleShift ? 'shift' : ''}`}
+            role="status"
+          >
+            {helperCaption}
+            {nudge && (
+              <button
+                type="button"
+                className="tour-x"
+                onClick={() => {
+                  dismissNudge(tour.userId, nudge.id);
+                  setNudge(null);
+                }}
+                aria-label={t('tour.close')}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ---- Walkthrough mode: the guided journey ----
   const onProfile = pathname === '/profile';
   const onHome = pathname === '/';
   const onHistory = pathname === '/history';
