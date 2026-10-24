@@ -58,10 +58,12 @@ export default function BouncingBallTour() {
     if (!active && !helper) return;
     const el = active ? anchorElement(step, pathname, celebrated) : null;
     if (!el) {
-      const left = window.innerWidth - BALL_SIZE - 26;
-      setPos({ left, top: window.innerHeight - BALL_SIZE - 30, anchored: false });
+      const mobile = window.innerWidth < 640;
+      const left = window.innerWidth - BALL_SIZE - (mobile ? 18 : 26);
+      const top = window.innerHeight - BALL_SIZE - (mobile ? 58 : 36);
+      setPos({ left, top, anchored: false });
       setBubbleBelow(false);
-      setBubbleShift(left + BALL_SIZE > window.innerWidth - 180);
+      setBubbleShift(false);
       return;
     }
     const rect = el.getBoundingClientRect();
@@ -189,11 +191,17 @@ export default function BouncingBallTour() {
             className="tour-ball"
             onClick={handleHelperTap}
             aria-label={helperCaption || t('nudge.idle')}
-          />
+          >
+            <span className="tour-face" aria-hidden="true">
+              <span className="tour-eye left" />
+              <span className="tour-eye right" />
+              <span className="tour-smile" />
+            </span>
+          </button>
         </div>
         {helperCaption && (
           <div
-            className={`tour-bubble ${bubbleBelow ? 'below' : ''} ${bubbleShift ? 'shift' : ''}`}
+            className="tour-bubble side"
             role="status"
           >
             {helperCaption}
@@ -276,10 +284,16 @@ export default function BouncingBallTour() {
           className="tour-ball"
           onClick={handleTap}
           aria-label={t(captionKey)}
-        />
+        >
+          <span className="tour-face" aria-hidden="true">
+            <span className="tour-eye left" />
+            <span className="tour-eye right" />
+            <span className="tour-smile" />
+          </span>
+        </button>
       </div>
       <div
-        className={`tour-bubble ${bubbleBelow ? 'below' : ''} ${bubbleShift ? 'shift' : ''}`}
+        className={`tour-bubble ${pos.anchored ? `${bubbleBelow ? 'below ' : ''}${bubbleShift ? 'shift' : ''}` : 'side'}`}
         role="status"
       >
         {t(captionKey)}

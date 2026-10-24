@@ -2042,7 +2042,50 @@ select option {
   padding: 0;
   cursor: pointer;
   background: radial-gradient(circle at 32% 28%, #FFF6D8 0%, #F5D06B 24%, #D4AF37 58%, #8C6D1F 100%);
-  animation: tourBreathe 2.4s ease-in-out infinite;
+  animation: tourBreathe 2.4s ease-in-out infinite, tourIdle 3.2s ease-in-out infinite;
+}
+
+/* The face: two eyes that blink, a small smile. This is what makes it a
+   companion rather than a glow. All sizes in percent so one set of rules
+   serves the 52px walkthrough ball and the 40px helper alike. */
+.tour-face {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tour-eye {
+  position: absolute;
+  top: 34%;
+  width: 11%;
+  height: 15%;
+  border-radius: 50%;
+  background: #4A3410;
+  animation: tourBlink 4.6s ease-in-out infinite;
+}
+
+.tour-eye.left { left: 31%; }
+.tour-eye.right { right: 31%; }
+
+@keyframes tourBlink {
+  0%, 91%, 100% { transform: scaleY(1); }
+  94%, 96% { transform: scaleY(0.1); }
+}
+
+.tour-smile {
+  position: absolute;
+  left: 50%;
+  bottom: 24%;
+  width: 24%;
+  height: 12%;
+  border-bottom: 2.5px solid #4A3410;
+  border-radius: 0 0 999px 999px;
+  transform: translateX(-50%);
+}
+
+@keyframes tourIdle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
 .tour-ball:focus-visible {
@@ -2104,7 +2147,7 @@ select option {
   left: 50%;
   transform: translateX(-50%);
   width: max-content;
-  max-width: 250px;
+  max-width: min(250px, calc(100vw - 90px));
   padding: 9px 12px 9px 13px;
   border-radius: 13px;
   background: #131B2E;
@@ -2168,8 +2211,40 @@ select option {
   background: rgba(212, 175, 55, 0.15);
 }
 
+
+/* Parked in the corner, the ball speaks sideways: the bubble opens to the
+   ball's left, growing inward, vertically centered beside it. No clamp
+   math needed - it structurally cannot touch the right edge. */
+.tour-bubble.side {
+  bottom: auto;
+  top: 50%;
+  left: auto;
+  right: calc(100% + 14px);
+  transform: translateY(-50%);
+  max-width: min(250px, calc(100vw - 130px));
+  text-align: left;
+  font-size: 13.5px;
+}
+
+.tour-bubble.side::after {
+  top: 50%;
+  left: auto;
+  right: -14px;
+  transform: translateY(-50%);
+  border: 7px solid transparent;
+  border-top-color: transparent;
+  border-left-color: #131B2E;
+}
+
+.tour-bubble.side .tour-x {
+  top: 3px;
+  right: 4px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tour-ball-wrap { transition: none; }
+  .tour-ball { animation: tourBreathe 2.4s ease-in-out infinite; }
+  .tour-eye { animation: none; }
   .tour-shadow { animation: none; opacity: 0.4; }
   .tour-hop, .tour-celebrate, .tour-farewell { animation: none; }
 }
