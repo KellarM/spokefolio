@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, ChevronRight, FileText, Mic, User, X } from 'lucide-react';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
@@ -20,19 +20,28 @@ const flag = {
     } catch {
       // Private mode: the card simply reappears next visit. Harmless.
     }
+  },
+  clear: (key) => {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Same tolerance: worst case the flag lingers and we overwrite it.
+    }
   }
 };
 
-const dismissedKey = (userId) => `sf_checklist_dismissed:${userId || 'anon'}`;
+// The dismissal flag is shared with the Overview page so the 'first time'
+// trigger can appear exactly when this card is not on screen. Preview mode
+// keeps its flags under the 'preview' key and never touches the account's.
+export const dismissedKey = (userId) => `sf_checklist_dismissed:${userId || 'anon'}`;
 const firedKey = (userId, step) => `sf_checklist_event:${userId || 'anon'}:${step}`;
 
 // First-run guidance that teaches by watching, not by touring. Each row
 // completes itself when the studio sees the real thing exist - an entry,
 // a name, a résumé - so there is nothing to click through and nothing to
 // skip past. When every row is real, the card is done and gets out of the way.
-export default function FirstRunChecklist({ userId, ready, entriesCount, applicationsCount, hasIdentity, preview = false }) {
+export default function FirstRunChecklist({ userId, ready, entriesCount, applicationsCount, hasIdentity, preview = false, dismissed, onDismiss }) {
   const { t } = useStudioLanguage();
-  const [dismissed, setDismissed] = useState(() => flag.read(dismissedKey(userId)));
 
   const steps = [
     {
@@ -87,9 +96,7 @@ export default function FirstRunChecklist({ userId, ready, entriesCount, applica
   if (!ready || dismissed || allDone) return null;
 
   const hide = () => {
-    flag.set(dismissedKey(userId));
-    setDismissed(true);
-    if (!preview) trackEvent('onboarding_dismissed');
+    if (onDismiss) onDismiss();
   };
 
   return (

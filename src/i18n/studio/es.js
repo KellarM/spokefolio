@@ -81,6 +81,8 @@ export default {
   'home.tailoredResumes': 'Currículums adaptados',
   'home.viewAll': 'Ver todos →',
   'home.noResumes': 'Aún no tienes currículums. Pega una oferta de empleo para crear el primero.',
+  "home.firstTimeQ": "¿Primera vez aquí?",
+  "home.runWalkthrough": "Ver la guía de inicio",
   "checklist.title": "Tres pasos para tu primer currículum",
   "checklist.ofThree": "{count} de 3 completados",
   "checklist.storyTitle": "Cuenta la historia de un trabajo que hayas tenido",

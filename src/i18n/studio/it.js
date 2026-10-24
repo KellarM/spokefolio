@@ -81,6 +81,8 @@ export default {
   'home.tailoredResumes': 'Curriculum personalizzati',
   'home.viewAll': 'Vedi tutti →',
   'home.noResumes': 'Nessun curriculum ancora. Incolla un\'offerta di lavoro per creare il tuo primo.',
+  "home.firstTimeQ": "Prima volta qui?",
+  "home.runWalkthrough": "Avvia la guida",
   "checklist.title": "Tre passi per il tuo primo curriculum",
   "checklist.ofThree": "{count} di 3 completati",
   "checklist.storyTitle": "Racconta la storia di un lavoro che hai fatto",

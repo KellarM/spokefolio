@@ -86,6 +86,8 @@ export default {
   'home.tailoredResumes': "Curriculums adaptés",
   'home.viewAll': "Tout voir →",
   'home.noResumes': "Aucun curriculum pour l'instant. Collez une offre d'emploi pour créer le premier.",
+  "home.firstTimeQ": "Première visite ?",
+  "home.runWalkthrough": "Lancer la visite guidée",
   "checklist.title": "Trois étapes vers votre premier CV",
   "checklist.ofThree": "{count} sur 3 terminées",
   "checklist.storyTitle": "Racontez l’histoire d’un emploi que vous avez occupé",

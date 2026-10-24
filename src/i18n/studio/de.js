@@ -86,6 +86,8 @@ export default {
   'home.tailoredResumes': 'Zugeschnittene Résumés',
   'home.viewAll': 'Alle ansehen →',
   'home.noResumes': 'Noch keine Résumés. Füge ein Stellenangebot ein, um dein erstes zu erstellen.',
+  "home.firstTimeQ": "Zum ersten Mal hier?",
+  "home.runWalkthrough": "Geführten Rundgang starten",
   "checklist.title": "Drei Schritte zu Ihrem ersten Lebenslauf",
   "checklist.ofThree": "{count} von 3 erledigt",
   "checklist.storyTitle": "Erzählen Sie die Geschichte eines Jobs, den Sie hatten",

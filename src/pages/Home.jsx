@@ -5,7 +5,9 @@ import useProfile from '@/hooks/useProfile';
 import { trackAppOpen } from '@/lib/analytics';
 import { useAuth } from '@/lib/AuthContext';
 import StudioHero from '@/components/home/StudioHero';
-import FirstRunChecklist from '@/components/home/FirstRunChecklist';
+import FirstRunChecklist, { dismissedKey } from '@/components/home/FirstRunChecklist';
+import { Sparkles } from 'lucide-react';
+import { trackEvent } from '@/lib/analytics';
 import RecentApplications from '@/components/home/RecentApplications';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 
@@ -14,8 +16,21 @@ export default function Home() {
   // ?onboarding=1 previews the first-run card with every step pending -
   // for a studio this full, that is the only way to see what a new
   // signup sees, without burning an email on a test account.
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const onboardingPreview = searchParams.get('onboarding') === '1';
+
+  // The checklist's dismissal lives here so this page knows, at all times,
+  // whether the card is on screen - and can offer the 'first time' trigger
+  // at exactly the moments it is not.
+  const checklistUser = onboardingPreview ? 'preview' : user?.id;
+  const [checklistDismissed, setChecklistDismissed] = useState(false);
+  useEffect(() => {
+    try {
+      setChecklistDismissed(!!localStorage.getItem(dismissedKey(checklistUser)));
+    } catch {
+      setChecklistDismissed(false);
+    }
+  }, [checklistUser]);
   const { profile, loadingProfile } = useProfile();
   const { user } = useAuth();
   const [entries, setEntries] = useState([]);
@@ -75,14 +90,70 @@ export default function Home() {
         </div>
       </div>
 
-      <FirstRunChecklist
-        userId={onboardingPreview ? 'preview' : user?.id}
-        ready={onboardingPreview ? true : !busy}
-        preview={onboardingPreview}
-        entriesCount={onboardingPreview ? 0 : entries.length}
-        applicationsCount={onboardingPreview ? 0 : applications.length}
-        hasIdentity={onboardingPreview ? false : !!(profile && profile.full_name)}
-      />
+      {(() => {
+        // The card is on screen when the data is loaded, nobody has dismissed
+        // it, and not every step is already real (a full studio never needs
+        // it). Preview mode always shows it.
+        const stepsDone =
+          entries.length > 0 && !!(profile && profile.full_name) && applications.length > 0;
+        const cardVisible =
+          (onboardingPreview ? true : !busy) && !checklistDismissed && (onboardingPreview || !stepsDone);
+
+        const startWalkthrough = () => {
+          // A fresh runthrough clears any old dismissal under the preview key,
+          // so the trigger always works, no matter how it was left before.
+          try {
+            localStorage.removeItem(dismissedKey('preview'));
+          } catch {
+            // Private mode: the flag simply is not there to remove.
+          }
+          setChecklistDismissed(false);
+          setSearchParams(
+            (params) => {
+              const next = new URLSearchParams(params);
+              next.set('onboarding', '1');
+              return next;
+            },
+            { replace: true }
+          );
+        };
+
+        const dismissChecklist = () => {
+          try {
+            localStorage.setItem(dismissedKey(checklistUser), '1');
+          } catch {
+            // Private mode: the card reappears next visit. Harmless.
+          }
+          setChecklistDismissed(true);
+          if (!onboardingPreview) trackEvent('onboarding_dismissed');
+          if (onboardingPreview) setSearchParams({}, { replace: true });
+        };
+
+        return cardVisible ? (
+          <FirstRunChecklist
+            userId={onboardingPreview ? 'preview' : user?.id}
+            ready={onboardingPreview ? true : !busy}
+            preview={onboardingPreview}
+            entriesCount={onboardingPreview ? 0 : entries.length}
+            applicationsCount={onboardingPreview ? 0 : applications.length}
+            hasIdentity={onboardingPreview ? false : !!(profile && profile.full_name)}
+            dismissed={checklistDismissed}
+            onDismiss={dismissChecklist}
+          />
+        ) : onboardingPreview || busy ? null : (
+          <section className="flex justify-center">
+            <button
+              type="button"
+              onClick={startWalkthrough}
+              className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-5 py-2.5 text-[14px] text-foreground transition-colors hover:border-[#D4AF37]/50"
+            >
+              <Sparkles className="h-4 w-4 text-[#D4AF37]" />
+              <span>{t('home.firstTimeQ')}</span>
+              <span className="font-medium text-[#D4AF37]">{t('home.runWalkthrough')}</span>
+            </button>
+          </section>
+        );
+      })()}
 
       <div className="mec-work">
         <RecentApplications applications={applications.slice(0, 2)} />

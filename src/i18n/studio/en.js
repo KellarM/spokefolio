@@ -93,6 +93,8 @@ export default {
   'home.tailoredResumes': 'Tailored résumés',
   'home.viewAll': 'View all →',
   'home.noResumes': 'No résumés yet. Paste a job posting to create your first one.',
+  "home.firstTimeQ": "First time here?",
+  "home.runWalkthrough": "Run the walkthrough",
   "checklist.title": "Three steps to your first résumé",
   "checklist.ofThree": "{count} of 3 done",
   "checklist.storyTitle": "Tell the story of one job you have held",
