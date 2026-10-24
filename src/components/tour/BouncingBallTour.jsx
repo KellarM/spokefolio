@@ -367,9 +367,23 @@ export default function BouncingBallTour() {
             aria-expanded={menuOpen}
           >
             <span className="tour-face" aria-hidden="true">
-              <span className="tour-eye left" />
-              <span className="tour-eye right" />
-              <span className="tour-smile" />
+              <svg viewBox="0 0 64 64" aria-hidden="true">
+                <g className="tour-eyes">
+                  <ellipse cx="23" cy="27" rx="9.5" ry="11" fill="#ffffff" />
+                  <ellipse cx="41" cy="27" rx="9.5" ry="11" fill="#ffffff" />
+                  <circle cx="24.5" cy="29" r="3.4" fill="#1a1408" />
+                  <circle cx="39.5" cy="29" r="3.4" fill="#1a1408" />
+                  <g stroke="#1a1408" strokeWidth="1.7" strokeLinecap="round">
+                    <line x1="23" y1="15.5" x2="23" y2="11" />
+                    <line x1="17.5" y1="18" x2="14.5" y2="15" />
+                    <line x1="28.5" y1="18" x2="31.5" y2="15" />
+                    <line x1="41" y1="15.5" x2="41" y2="11" />
+                    <line x1="46.5" y1="18" x2="49.5" y2="15" />
+                    <line x1="35.5" y1="18" x2="32.5" y2="15" />
+                  </g>
+                </g>
+                <path d="M 24 42 Q 32 49 40 42" fill="none" stroke="#1a1408" strokeWidth="2.6" strokeLinecap="round" />
+              </svg>
             </span>
           </button>
         </div>
@@ -527,9 +541,23 @@ export default function BouncingBallTour() {
           aria-label={t(captionKey)}
         >
           <span className="tour-face" aria-hidden="true">
-            <span className="tour-eye left" />
-            <span className="tour-eye right" />
-            <span className="tour-smile" />
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <g className="tour-eyes">
+                <ellipse cx="23" cy="27" rx="9.5" ry="11" fill="#ffffff" />
+                <ellipse cx="41" cy="27" rx="9.5" ry="11" fill="#ffffff" />
+                <circle cx="24.5" cy="29" r="3.4" fill="#1a1408" />
+                <circle cx="39.5" cy="29" r="3.4" fill="#1a1408" />
+                <g stroke="#1a1408" strokeWidth="1.7" strokeLinecap="round">
+                  <line x1="23" y1="15.5" x2="23" y2="11" />
+                  <line x1="17.5" y1="18" x2="14.5" y2="15" />
+                  <line x1="28.5" y1="18" x2="31.5" y2="15" />
+                  <line x1="41" y1="15.5" x2="41" y2="11" />
+                  <line x1="46.5" y1="18" x2="49.5" y2="15" />
+                  <line x1="35.5" y1="18" x2="32.5" y2="15" />
+                </g>
+              </g>
+              <path d="M 24 42 Q 32 49 40 42" fill="none" stroke="#1a1408" strokeWidth="2.6" strokeLinecap="round" />
+            </svg>
           </span>
         </button>
       </div>
