@@ -4,6 +4,7 @@ import useProfile from '@/hooks/useProfile';
 import { trackAppOpen } from '@/lib/analytics';
 import { useAuth } from '@/lib/AuthContext';
 import StudioHero from '@/components/home/StudioHero';
+import FirstRunChecklist from '@/components/home/FirstRunChecklist';
 import RecentApplications from '@/components/home/RecentApplications';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 
@@ -67,6 +68,14 @@ export default function Home() {
           <span>{t('home.tickerResumes')}</span>
         </div>
       </div>
+
+      <FirstRunChecklist
+        userId={user?.id}
+        ready={!busy}
+        entriesCount={entries.length}
+        applicationsCount={applications.length}
+        hasIdentity={!!(profile && profile.full_name)}
+      />
 
       <div className="mec-work">
         <RecentApplications applications={applications.slice(0, 2)} />

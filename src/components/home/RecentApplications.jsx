@@ -38,7 +38,15 @@ export default function RecentApplications({ applications = [] }) {
       )}
 
       {applications.length === 0 && (
-        <div className="mec-empty">{t('home.noResumes')}</div>
+        <div className="mec-empty">
+          <p>{t('home.noResumes')}</p>
+          <Link
+            to="/tailor-application"
+            className="mec-va mt-2 inline-flex items-center gap-1 text-[#D4AF37] transition-opacity hover:opacity-80"
+          >
+            {t('home.pastePostingCta')}
+          </Link>
+        </div>
       )}
     </section>
   );

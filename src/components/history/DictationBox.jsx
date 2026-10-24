@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import VoiceDictation from '@/components/history/VoiceDictation';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 
-export default function DictationBox({ value, onChange, onSubmit, busy }) {
+export default function DictationBox({ value, onChange, onSubmit, busy, firstHint = false }) {
   const { t } = useStudioLanguage();
   const appendTranscript = (transcript) => {
     const current = value.trim();
@@ -21,6 +21,12 @@ export default function DictationBox({ value, onChange, onSubmit, busy }) {
       </div>
 
       <VoiceDictation onTranscript={appendTranscript} />
+
+      {firstHint && (
+        <p className="mt-3 rounded-xl border border-[#D4AF37]/30 bg-[#D4AF37]/5 px-4 py-2.5 text-[13.5px] leading-snug text-foreground/85">
+          {t('history.firstMicHint')}
+        </p>
+      )}
 
       <textarea
         value={value}

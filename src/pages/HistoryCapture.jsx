@@ -553,7 +553,13 @@ export default function HistoryCapture() {
 
       {!historyComplete && !loadingProfile && (
         <div className="mt-6">
-          <DictationBox value={dictation} onChange={setDictation} onSubmit={capture} busy={busy} />
+          <DictationBox
+            value={dictation}
+            onChange={setDictation}
+            onSubmit={capture}
+            busy={busy}
+            firstHint={entries.length === 0}
+          />
         </div>
       )}
 
