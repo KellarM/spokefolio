@@ -18,6 +18,7 @@ export default function Home() {
   // signup sees, without burning an email on a test account.
   const [searchParams, setSearchParams] = useSearchParams();
   const onboardingPreview = searchParams.get('onboarding') === '1';
+  const { user } = useAuth();
 
   // The checklist's dismissal lives here so this page knows, at all times,
   // whether the card is on screen - and can offer the 'first time' trigger
@@ -32,7 +33,6 @@ export default function Home() {
     }
   }, [checklistUser]);
   const { profile, loadingProfile } = useProfile();
-  const { user } = useAuth();
   const [entries, setEntries] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [applications, setApplications] = useState([]);
