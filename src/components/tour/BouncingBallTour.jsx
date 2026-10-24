@@ -429,6 +429,7 @@ export default function BouncingBallTour() {
   // answer is a step transition with its own analytics.
   const choose = (choice) => {
     tour.event(`tour_tap_${step}_${choice}`);
+    setHopKey((key) => key + 1);
     if (step === 'story') {
       tour.tapAdvance(choice === 'yes' ? 'story_edits' : 'story_prompts');
       return;
@@ -445,6 +446,9 @@ export default function BouncingBallTour() {
 
   const handleTap = () => {
     tour.event(`tour_tap_${step}`);
+    // Every tap visibly lands - the ball never sits unresponsive, even in
+    // the moments where it deliberately holds its position.
+    setHopKey((key) => key + 1);
     if (step === 'farewell') {
       tour.finish();
       return;

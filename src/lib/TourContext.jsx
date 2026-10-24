@@ -23,12 +23,24 @@ const TourContext = createContext(null);
 
 export const TOUR_START_STEP = 'identity';
 
+// The steps this build understands. The journey's step names changed as
+// it grew (the studio step retired, history became story, the story phase
+// grew sub-steps) - a record written by an older build can hold a step no
+// code path advances, wedging the ball in a state whose tap leads nowhere.
+// Zombies retire themselves on read, no matter which era wrote them.
+const KNOWN_STEPS = ['identity', 'story', 'story_edits', 'story_prompts', 'posting', 'apply', 'farewell'];
+
 const storageKey = (userId) => `sf_tour:${userId || 'anon'}`;
 
 const readRecord = (userId) => {
   try {
     const raw = localStorage.getItem(storageKey(userId));
-    return raw ? JSON.parse(raw) : null;
+    const saved = raw ? JSON.parse(raw) : null;
+    if (saved && saved.step !== 'done' && !KNOWN_STEPS.includes(saved.step)) {
+      writeRecord(userId, { step: 'done' });
+      return { step: 'done' };
+    }
+    return saved;
   } catch {
     return null;
   }
