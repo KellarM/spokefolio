@@ -28,7 +28,7 @@ export const TOUR_START_STEP = 'identity';
 // grew sub-steps) - a record written by an older build can hold a step no
 // code path advances, wedging the ball in a state whose tap leads nowhere.
 // Zombies retire themselves on read, no matter which era wrote them.
-const KNOWN_STEPS = ['identity', 'story', 'story_edits', 'story_prompts', 'posting', 'apply', 'farewell'];
+const KNOWN_STEPS = ['identity', 'story', 'story_edits', 'story_prompts', 'files', 'posting', 'apply', 'farewell'];
 
 const storageKey = (userId) => `sf_tour:${userId || 'anon'}`;
 
@@ -103,7 +103,8 @@ export function TourProvider({ children }) {
         const expects = {
           identity: 'name_done',
           story: 'entry_done',
-          story_prompts: 'entry_saved'
+          story_prompts: 'entry_saved',
+          files: 'files_done'
         }[current.step];
         if (signal !== expects) return;
         persist({ ...current, celebrated: true });

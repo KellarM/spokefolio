@@ -40,6 +40,7 @@ const TOP_FLOOR = 132;
 const NEXT_STEP = {
   identity: 'story',
   story_edits: 'story_prompts',
+  files: 'posting',
   posting: 'apply',
   apply: 'farewell'
 };
@@ -48,6 +49,7 @@ const STEP_PAGE = {
   story: '/history',
   story_edits: '/history',
   story_prompts: '/history',
+  files: '/documents',
   posting: '/postings',
   apply: '/postings',
   farewell: '/'
@@ -77,6 +79,9 @@ const anchorElement = (step, pathname, celebrated) => {
   if (step === 'story' && pathname === '/history' && !celebrated) {
     return document.querySelector('[data-tour="dictation"]');
   }
+  if (step === 'files' && pathname === '/documents' && !celebrated) {
+    return document.querySelector('[data-tour="uploader"]');
+  }
   return null;
 };
 
@@ -96,6 +101,9 @@ const focusElement = (step, celebrated) => {
   if (step === 'story' && !celebrated) {
     return document.querySelector('[data-tour="dictation"]');
   }
+  if (step === 'files' && !celebrated) {
+    return document.querySelector('[data-tour="uploader"]');
+  }
   return null;
 };
 
@@ -104,6 +112,7 @@ const focusElement = (step, celebrated) => {
 // sees to that), so the order is entries -> postings -> applications.
 const firstJourneyStep = (studioData) => {
   if (!studioData || studioData.entries.length === 0) return 'identity';
+  if (studioData.documents.length === 0) return 'files';
   if (studioData.postings.length === 0) return 'posting';
   return 'apply';
 };
@@ -223,16 +232,18 @@ export default function BouncingBallTour() {
       if (now - fetchedAt.current < 30000) return;
       fetchedAt.current = now;
       try {
-        const [applications, postings, entries] = await Promise.all([
+        const [applications, postings, entries, documents] = await Promise.all([
           base44.entities.JobApplication.list('-created_date', 100),
           base44.entities.JobPosting.list('-created_date', 100),
-          base44.entities.CareerEntry.list('-created_date', 200)
+          base44.entities.CareerEntry.list('-created_date', 200),
+          base44.entities.SupportingDocument.list('-created_date', 100)
         ]);
         if (!cancelled) {
           setStudioData({
             applications: applications || [],
             postings: postings || [],
-            entries: entries || []
+            entries: entries || [],
+            documents: documents || []
           });
         }
       } catch {
@@ -256,6 +267,9 @@ export default function BouncingBallTour() {
     }
     if (step === 'apply' && studioData.applications.length > 0) {
       tour.announce('apply_done');
+    }
+    if (step === 'files' && studioData.documents.length > 0) {
+      tour.announce('files_done');
     }
   }, [active, step, celebrated, studioData, tour]);
 
@@ -301,6 +315,7 @@ export default function BouncingBallTour() {
   const onProfile = pathname === '/profile';
   const onHistory = pathname === '/history';
   const onPostings = pathname === '/postings';
+  const onDocuments = pathname === '/documents';
   const onTailor = pathname.startsWith('/tailor-application');
 
   // ---- Launcher mode: the menu, the journey, the four destinations ----
@@ -422,7 +437,13 @@ export default function BouncingBallTour() {
               : onHistory
                 ? 'tour.prompts'
                 : 'tour.comeAlong'
-            : step === 'posting'
+            : step === 'files'
+              ? celebrated
+                ? 'tour.filesDone'
+                : onDocuments
+                  ? 'tour.files'
+                  : 'tour.filesAway'
+              : step === 'posting'
           ? celebrated
             ? 'tour.postingDone'
             : onPostings
@@ -450,8 +471,8 @@ export default function BouncingBallTour() {
         tour.tapAdvance('story');
         return;
       }
-      tour.tapAdvance('posting');
-      navigate('/postings');
+      tour.tapAdvance('files');
+      navigate('/documents');
     }
   };
 

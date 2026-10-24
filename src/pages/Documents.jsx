@@ -57,7 +57,9 @@ export default function Documents() {
       </section>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1.15fr]">
-        <DocumentUploader onChanged={load} />
+        <div data-tour="uploader">
+          <DocumentUploader onChanged={load} />
+        </div>
 
         <section>
           <div className="flex items-center justify-between gap-3">
