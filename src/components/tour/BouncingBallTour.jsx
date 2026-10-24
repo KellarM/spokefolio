@@ -41,6 +41,7 @@ const NEXT_STEP = {
   identity: 'story',
   story_edits: 'story_prompts',
   files: 'posting',
+  files_add: 'posting',
   posting: 'apply',
   apply: 'farewell'
 };
@@ -50,6 +51,7 @@ const STEP_PAGE = {
   story_edits: '/history',
   story_prompts: '/history',
   files: '/documents',
+  files_add: '/documents',
   posting: '/postings',
   apply: '/postings',
   farewell: '/'
@@ -79,7 +81,7 @@ const anchorElement = (step, pathname, celebrated) => {
   if (step === 'story' && pathname === '/history' && !celebrated) {
     return document.querySelector('[data-tour="dictation"]');
   }
-  if (step === 'files' && pathname === '/documents' && !celebrated) {
+  if ((step === 'files' || step === 'files_add') && pathname === '/documents' && !celebrated) {
     return document.querySelector('[data-tour="uploader"]');
   }
   return null;
@@ -101,7 +103,7 @@ const focusElement = (step, celebrated) => {
   if (step === 'story' && !celebrated) {
     return document.querySelector('[data-tour="dictation"]');
   }
-  if (step === 'files' && !celebrated) {
+  if ((step === 'files' || step === 'files_add') && !celebrated) {
     return document.querySelector('[data-tour="uploader"]');
   }
   return null;
@@ -450,8 +452,12 @@ export default function BouncingBallTour() {
               ? celebrated
                 ? 'tour.filesDone'
                 : onDocuments
-                  ? 'tour.files'
+                  ? 'tour.filesAsk'
                   : 'tour.filesAway'
+            : step === 'files_add'
+              ? celebrated
+                ? 'tour.filesDone'
+                : 'tour.filesAdd'
               : step === 'posting'
           ? celebrated
             ? 'tour.postingDone'
@@ -482,6 +488,16 @@ export default function BouncingBallTour() {
       }
       tour.tapAdvance('files');
       navigate('/documents');
+    }
+    if (step === 'files') {
+      if (choice === 'yes') {
+        tour.tapAdvance('files_add');
+        return;
+      }
+      // No files to add: straight to the job hunt - reference files are an
+      // enhancement, never a gate.
+      tour.tapAdvance('posting');
+      navigate('/postings');
     }
   };
 
@@ -566,6 +582,16 @@ export default function BouncingBallTour() {
         role="status"
       >
         {t(captionKey)}
+        {(step === 'files' && !celebrated && onDocuments) && (
+          <div className="tour-choices">
+            <button type="button" className="tour-choice" onClick={() => choose('yes')}>
+              {t('tour.yes')}
+            </button>
+            <button type="button" className="tour-choice no" onClick={() => choose('no')}>
+              {t('tour.no')}
+            </button>
+          </div>
+        )}
         {celebrated && (step === 'story' || step === 'story_prompts') && (
           <div className="tour-choices">
             <button type="button" className="tour-choice" onClick={() => choose('yes')}>

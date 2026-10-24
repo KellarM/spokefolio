@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { FileText, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import DocumentUploader from '@/components/documents/DocumentUploader';
+import { useTour } from '@/lib/TourContext';
 import DocumentRow from '@/components/documents/DocumentRow';
 import CurrentResumeDialog from '@/components/resume/CurrentResumeDialog';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 export default function Documents() {
   const { t } = useStudioLanguage();
+  const tour = useTour();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [resumeOpen, setResumeOpen] = useState(false);
@@ -26,6 +28,15 @@ export default function Documents() {
     });
     return unsubscribe;
   }, [load]);
+
+  // The journey's files step celebrates the moment a real document exists -
+  // detected live from the page (and the subscription above), not from a
+  // stale snapshot.
+  useEffect(() => {
+    if (tour.active && (tour.step === 'files' || tour.step === 'files_add') && documents.length > 0) {
+      tour.announce('files_done');
+    }
+  }, [documents, tour]);
 
   const remove = async (doc) => {
     if (!window.confirm(t('documents.deleteConfirm', { name: doc.name }))) return;
