@@ -470,6 +470,20 @@ export default function BouncingBallTour() {
       navigate(page);
       return;
     }
+    // Not there yet: the tap LEADS. If the step's target has scrolled out
+    // of view - the client read the form, the prompts panel drifted off -
+    // the ball brings the target back into view instead of pointing at
+    // empty space. The ball directs; it never decorates.
+    if (!celebrated) {
+      const target = focusElement(step, celebrated);
+      if (target) {
+        const rect = target.getBoundingClientRect();
+        if (rect.bottom > window.innerHeight - 90 || rect.top < 130) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+      return;
+    }
     if (celebrated) {
       // The captured-and-saved moments advance on the bubble's answers,
       // never on a stray tap of the ball.
