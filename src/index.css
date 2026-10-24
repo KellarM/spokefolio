@@ -2392,3 +2392,225 @@ select option {
 .tour-choice.no:hover {
   background: rgba(255, 255, 255, 0.08);
 }
+
+/* The mock run: the whole loop in one minute, then the real journey. */
+.demo-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 6, 10, 0.74);
+  padding: 16px;
+}
+
+.demo-card {
+  position: relative;
+  width: 100%;
+  max-width: 620px;
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  background: #10141d;
+  color: #f1e7c9;
+  padding: 26px 28px;
+  animation: riseIn 0.35s both;
+}
+
+.demo-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: rgba(241, 231, 201, 0.6);
+  padding: 4px;
+  border-radius: 999px;
+}
+
+.demo-close:hover {
+  color: #f1e7c9;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.demo-dots {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.demo-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.demo-dot.on {
+  background: #d4af37;
+}
+
+.demo-screen {
+  animation: riseIn 0.3s both;
+}
+
+.demo-head {
+  margin-top: 8px;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.demo-body {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(241, 231, 201, 0.75);
+}
+
+.demo-mock {
+  margin-top: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 13px 15px;
+}
+
+.demo-mock-label {
+  font-size: 10.5px;
+  letter-spacing: 0.09em;
+  font-weight: 700;
+  color: #d4af37;
+}
+
+.demo-mock-quote {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.demo-mock-answer {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(241, 231, 201, 0.85);
+}
+
+.demo-entry-title {
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.demo-entry-meta {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: rgba(241, 231, 201, 0.6);
+}
+
+.demo-jordan {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.demo-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  color: #d4af37;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.demo-jordan-name {
+  font-weight: 600;
+}
+
+.demo-jordan-role {
+  font-size: 12.5px;
+  color: rgba(241, 231, 201, 0.6);
+}
+
+.demo-arrow {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+  color: #d4af37;
+}
+
+.demo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.demo-chip {
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(241, 231, 201, 0.85);
+}
+
+.demo-chip.match {
+  border-color: rgba(212, 175, 55, 0.55);
+  background: rgba(212, 175, 55, 0.1);
+  color: #d4af37;
+}
+
+.demo-caption {
+  margin-top: 14px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: rgba(241, 231, 201, 0.7);
+}
+
+.demo-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.demo-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.demo-btn {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.demo-btn.primary {
+  background: #d4af37;
+  color: #1a1408;
+}
+
+.demo-btn.primary:hover {
+  background: #e3bf4d;
+}
+
+.demo-btn.ghost {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #f1e7c9;
+}
+
+.demo-btn.ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+}

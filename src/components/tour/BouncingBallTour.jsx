@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
+import FirstTimeDemo from '@/components/tour/FirstTimeDemo';
 import { useTour } from '@/lib/TourContext';
 import { computeNudge, dismissNudge, markNudgeShown, markNudgeTapped } from '@/lib/nudges';
 import { trackEvent } from '@/lib/analytics';
@@ -132,6 +133,7 @@ export default function BouncingBallTour() {
   const [bubbleBelow, setBubbleBelow] = useState(false);
   const [bubbleShift, setBubbleShift] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
   const wrapRef = useRef(null);
 
   // The studio's own data: what the journey celebrates and the launcher's
@@ -344,6 +346,28 @@ export default function BouncingBallTour() {
       navigate(STEP_PAGE[first]);
     };
 
+    // First time = see the whole loop before living it: a one-minute mock
+    // run (story -> sharpen -> posting -> tailored application), then the
+    // real journey takes over with the ball coaching every live step.
+    const openDemo = () => {
+      trackEvent('demo_open');
+      setMenuOpen(false);
+      setDemoOpen(true);
+    };
+
+    const finishDemo = () => {
+      trackEvent('demo_complete');
+      setDemoOpen(false);
+      const first = firstJourneyStep(studioData);
+      tour.start({ step: first });
+      navigate(STEP_PAGE[first]);
+    };
+
+    const skipDemo = () => {
+      trackEvent('demo_skip');
+      setDemoOpen(false);
+    };
+
     const takeNudge = () => {
       if (!nudge) return;
       markNudgeTapped(nudge);
@@ -357,6 +381,8 @@ export default function BouncingBallTour() {
     const centered = !pos.anchored && onHome;
 
     return (
+      <>
+      {demoOpen && <FirstTimeDemo onFinish={finishDemo} onSkip={skipDemo} />}
       <div
         ref={wrapRef}
         className={`tour-ball-wrap helper ${nudge ? 'has-nudge' : ''} ${centered ? 'center' : ''}`}
@@ -386,7 +412,7 @@ export default function BouncingBallTour() {
                 <span>{t(nudge.captionKey)}</span>
               </button>
             )}
-            <button type="button" className="tour-menu-item featured" onClick={startJourney} role="menuitem">
+            <button type="button" className="tour-menu-item featured" onClick={openDemo} role="menuitem">
               <Sparkles className="mi" aria-hidden="true" />
               <span>{t('menu.firstTime')}</span>
             </button>
@@ -408,6 +434,7 @@ export default function BouncingBallTour() {
           </div>
         )}
       </div>
+      </>
     );
   }
 
