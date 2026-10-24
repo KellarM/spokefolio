@@ -79,27 +79,6 @@ export default function HistoryCapture() {
   const [entries, setEntries] = useState([]);
   const tour = useTour();
 
-  // The story step completes the moment a capture truly lands - a draft
-  // open in the editor, never a ticked box. Round-safe: a saved entry
-  // closes the draft, so the ball waits for the next real capture.
-  useEffect(() => {
-    if (!tour.active || tour.step !== 'story') return;
-    if (draft && draft.status !== 'confirmed') tour.announce('entry_done');
-  }, [draft, tour]);
-
-  // The prompts step completes when the entry is saved to the master
-  // history - measured against the confirmed count when the step began,
-  // so a pause-and-resume never fakes a save.
-  const saveBaseRef = useRef(null);
-  useEffect(() => {
-    if (!tour.active) return;
-    if (tour.step === 'story_prompts') {
-      if (saveBaseRef.current === null) saveBaseRef.current = confirmed.length;
-      if (!draft && confirmed.length > saveBaseRef.current) tour.announce('entry_saved');
-    } else {
-      saveBaseRef.current = null;
-    }
-  }, [tour, draft, confirmed.length]);
   const [loading, setLoading] = useState(true);
   const [resumeOpen, setResumeOpen] = useState(false);
   const [dictation, setDictation] = useState(() => localStorage.getItem(DICTATION_KEY) || '');
@@ -155,6 +134,28 @@ export default function HistoryCapture() {
   const openDrafts = entries.filter((entry) => entry.status !== 'confirmed');
   const historyComplete = !!profile.history_complete;
   const selectedEntries = entries.filter((entry) => selectedIds.includes(entry.id));
+
+  // The story step completes the moment a capture truly lands - a draft
+  // open in the editor, never a ticked box. Round-safe: a saved entry
+  // closes the draft, so the ball waits for the next real capture.
+  useEffect(() => {
+    if (!tour.active || tour.step !== 'story') return;
+    if (draft && draft.status !== 'confirmed') tour.announce('entry_done');
+  }, [draft, tour]);
+
+  // The prompts step completes when the entry is saved to the master
+  // history - measured against the confirmed count when the step began,
+  // so a pause-and-resume never fakes a save.
+  const saveBaseRef = useRef(null);
+  useEffect(() => {
+    if (!tour.active) return;
+    if (tour.step === 'story_prompts') {
+      if (saveBaseRef.current === null) saveBaseRef.current = confirmed.length;
+      if (!draft && confirmed.length > saveBaseRef.current) tour.announce('entry_saved');
+    } else {
+      saveBaseRef.current = null;
+    }
+  }, [tour, draft, confirmed.length]);
 
   const reportError = (title, error) => {
     const raw = error?.response?.data?.error || error.message || '';
