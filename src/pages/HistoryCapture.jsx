@@ -82,7 +82,7 @@ export default function HistoryCapture() {
   // The history step completes the moment a first entry truly exists - never
   // because the client ticked anything. The ball celebrates on its own.
   useEffect(() => {
-    if (!tour.active || tour.step !== 'history') return;
+    if (!tour.active || tour.step !== 'story') return;
     if (entries.length > 0) tour.announce('entry_done');
   }, [entries.length, tour]);
   const [loading, setLoading] = useState(true);

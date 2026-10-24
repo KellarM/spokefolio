@@ -2271,3 +2271,92 @@ select option {
 .tour-ball-wrap.helper.has-nudge .tour-ball {
   animation-duration: 1.8s;
 }
+
+/* ---- The launcher: centered on the Overview, menu on tap ----
+   In the middle of the Overview the ball returns to full size - it is
+   the thing the page is asking you to notice. In the corner of every
+   other page it stays small. */
+.tour-ball-wrap.center .tour-move {
+  width: 52px;
+  height: 52px;
+}
+
+.tour-ball-wrap.center .tour-ball {
+  width: 52px;
+  height: 52px;
+}
+
+.tour-ball-wrap.center .tour-shadow {
+  width: 42px;
+  bottom: -14px;
+}
+
+/* The menu the ball opens: the nudge it holds (if any), the "First time"
+   journey, and the four header destinations. */
+.tour-menu {
+  position: absolute;
+  z-index: 210;
+  min-width: 228px;
+  max-width: min(280px, calc(100vw - 40px));
+  padding: 6px;
+  background: #131b2e;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-radius: 12px;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+}
+
+.tour-menu.below {
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.tour-menu.side {
+  top: 50%;
+  right: calc(100% + 14px);
+  left: auto;
+  transform: translateY(-50%);
+}
+
+.tour-menu-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #f1e7c9;
+  transition: background 0.15s ease;
+}
+
+.tour-menu-item:hover {
+  background: rgba(212, 175, 55, 0.12);
+}
+
+.tour-menu-item .mi {
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  flex: none;
+  color: #d4af37;
+}
+
+.tour-menu-item.featured {
+  color: #d4af37;
+  font-weight: 600;
+}
+
+.tour-menu-item.nudge {
+  color: #fff8e1;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  margin-bottom: 4px;
+}
+
+.tour-menu-item.nudge .mi {
+  color: #fdb813;
+}

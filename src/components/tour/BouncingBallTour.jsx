@@ -1,32 +1,82 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { X } from 'lucide-react';
+import {
+  Briefcase,
+  Calendar,
+  FileText,
+  FolderOpen,
+  History as HistoryIcon,
+  PenLine,
+  Sparkles,
+  X
+} from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import { useTour } from '@/lib/TourContext';
 import { computeNudge, dismissNudge, markNudgeShown, markNudgeTapped } from '@/lib/nudges';
+import { trackEvent } from '@/lib/analytics';
 
-// The gold companion. It leads the first-time walkthrough (tap to move, it
-// waits, it celebrates real completion), and after the farewell it stays as
-// a quiet helper in the corner: it only speaks when the studio gives it
-// something real to say - an interview coming up, a story half-told, a
-// posting never tailored - and never repeats a nudge the client already
-// dismissed that day.
+// The gold companion, in two lives.
+//
+// The journey: a tap on "First time" walks a new client through everything
+// it takes to complete ONE application - name and profile, one story told,
+// one job posting saved, one application tailored. Every step waits for a
+// real fact before it celebrates, and the farewell lands only when the
+// first application truly exists.
+//
+// The launcher: whenever the ball is idle, a tap opens its menu - the nudge
+// it is holding (if any), the "First time" journey, and the four header
+// destinations. On the Overview it sits in the middle of the screen; on any
+// other page it waits in the corner.
 
 const BALL_SIZE = 52;
 const EDGE = 16;
 // Room for the speech bubble above the ball without crowding the header.
 const TOP_FLOOR = 132;
 
-// What the ball points at during the walkthrough, by step and route.
+// The journey, in order: identity -> story -> posting -> apply -> farewell.
+const NEXT_STEP = {
+  identity: 'story',
+  story: 'posting',
+  posting: 'apply',
+  apply: 'farewell'
+};
+const STEP_PAGE = {
+  identity: '/profile',
+  story: '/history',
+  posting: '/postings',
+  apply: '/postings',
+  farewell: '/'
+};
+
+// The four header destinations beyond the Overview the ball lives on.
+const NAV = [
+  { key: 'history', labelKey: 'nav.history', to: '/history', Icon: HistoryIcon },
+  { key: 'documents', labelKey: 'nav.documents', to: '/documents', Icon: FolderOpen },
+  { key: 'postings', labelKey: 'nav.postings', to: '/postings', Icon: Briefcase },
+  { key: 'applications', labelKey: 'nav.applications', to: '/applications', Icon: FileText }
+];
+
+const NUDGE_ICON = { interview: Calendar, draft: PenLine, posting: Briefcase };
+
+// What the ball points at during the journey, by step and route.
 const anchorElement = (step, pathname, celebrated) => {
   if (step === 'identity' && pathname === '/profile' && !celebrated) {
     return document.getElementById('full_name');
   }
-  if (step === 'history' && pathname === '/history' && !celebrated) {
+  if (step === 'story' && pathname === '/history' && !celebrated) {
     return document.querySelector('[data-tour="dictation"]');
   }
   return null;
+};
+
+// Where "First time" resumes: the first real gap on the road to a first
+// application. A profile gap is impossible once entries exist (the gate
+// sees to that), so the order is entries -> postings -> applications.
+const firstJourneyStep = (studioData) => {
+  if (!studioData || studioData.entries.length === 0) return 'identity';
+  if (studioData.postings.length === 0) return 'posting';
+  return 'apply';
 };
 
 export default function BouncingBallTour() {
@@ -36,32 +86,42 @@ export default function BouncingBallTour() {
   const navigate = useNavigate();
 
   const { active, step, celebrated, ready } = tour;
-  // Helper mode: the ball's second life, after (or without) the walkthrough.
-  const helper = ready && !active;
+  // Launcher mode: the ball's idle life, whenever no journey is running.
+  const idle = ready && !active;
 
   const [pos, setPos] = useState(null);
   const [hopKey, setHopKey] = useState(0);
   const [bubbleBelow, setBubbleBelow] = useState(false);
   const [bubbleShift, setBubbleShift] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const wrapRef = useRef(null);
 
-  // Helper state: the studio's own data, the nudge it produced, and the
-  // quiet "all caught up" reply a tap earns when nothing needs the client.
+  // The studio's own data: what the journey celebrates and the launcher's
+  // nudges are made of.
   const [studioData, setStudioData] = useState(null);
   const [nudge, setNudge] = useState(null);
-  const [quiet, setQuiet] = useState(false);
   const fetchedAt = useRef(0);
 
-  // Position: anchored to the target element during the walkthrough, parked
-  // in the lower right corner otherwise. Recomputed on scroll and resize,
-  // plus settle beats after a route change while entrance animations finish.
+  // Position: anchored to the target element during the journey's profile
+  // and story steps, centered on the Overview, cornered on every other page.
   const compute = useCallback(() => {
-    if (!active && !helper) return;
+    if (!active && !idle) return;
     const el = active ? anchorElement(step, pathname, celebrated) : null;
     if (!el) {
       const mobile = window.innerWidth < 640;
-      const left = window.innerWidth - BALL_SIZE - (mobile ? 18 : 26);
-      const top = window.innerHeight - BALL_SIZE - (mobile ? 58 : 36);
-      setPos({ left, top, anchored: false });
+      if (pathname === '/') {
+        setPos({
+          left: (window.innerWidth - BALL_SIZE) / 2,
+          top: (window.innerHeight - BALL_SIZE) / 2,
+          anchored: false
+        });
+      } else {
+        setPos({
+          left: window.innerWidth - BALL_SIZE - (mobile ? 18 : 26),
+          top: window.innerHeight - BALL_SIZE - (mobile ? 58 : 36),
+          anchored: false
+        });
+      }
       setBubbleBelow(false);
       setBubbleShift(false);
       return;
@@ -75,7 +135,7 @@ export default function BouncingBallTour() {
     setPos({ left, top, anchored: true });
     setBubbleBelow(top <= TOP_FLOOR + 30);
     setBubbleShift(left + BALL_SIZE > window.innerWidth - 180);
-  }, [active, helper, step, pathname, celebrated]);
+  }, [active, idle, step, pathname, celebrated]);
 
   useEffect(() => {
     compute();
@@ -97,8 +157,8 @@ export default function BouncingBallTour() {
 
   // A fresh hop every time the ball arrives somewhere new.
   useEffect(() => {
-    if (active || helper) setHopKey((key) => key + 1);
-  }, [step, pathname, active, helper]);
+    if (active || idle) setHopKey((key) => key + 1);
+  }, [step, pathname, active, idle]);
 
   // The farewell ends itself - animation or not - so no client is left
   // with a ball that will not leave.
@@ -108,10 +168,11 @@ export default function BouncingBallTour() {
     return () => clearTimeout(done);
   }, [active, step, tour]);
 
-  // Helper mode: read the client's own studio - applications, postings,
-  // stories - and only speak when there is something real to say.
+  // Read the client's studio - applications, postings, stories - for the
+  // journey's celebrations and the launcher's nudges. A failed read leaves
+  // the ball silent, never guessing.
   useEffect(() => {
-    if (!helper) return undefined;
+    if (!idle && !active) return undefined;
     let cancelled = false;
     const fetchStudio = async () => {
       const now = Date.now();
@@ -131,7 +192,7 @@ export default function BouncingBallTour() {
           });
         }
       } catch {
-        // A silent helper is allowed: nothing read, nothing said.
+        // Nothing read, nothing said.
       }
     };
     fetchStudio();
@@ -140,48 +201,106 @@ export default function BouncingBallTour() {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [helper, pathname]);
+  }, [idle, active, pathname]);
 
-  // The nudge itself, recomputed as data or route changes.
+  // The journey's own celebrations, for the steps no page can see: a
+  // posting saved, an application created.
   useEffect(() => {
-    if (!helper || !studioData) {
+    if (!active || !studioData || celebrated) return;
+    if (step === 'posting' && studioData.postings.length > 0) {
+      tour.announce('posting_done');
+    }
+    if (step === 'apply' && studioData.applications.length > 0) {
+      tour.announce('apply_done');
+    }
+  }, [active, step, celebrated, studioData, tour]);
+
+  // The launcher's nudge, recomputed as data or route changes.
+  useEffect(() => {
+    if (!idle || !studioData) {
       setNudge(null);
       return;
     }
     setNudge(computeNudge({ userId: tour.userId, pathname, ...studioData }));
-  }, [helper, studioData, pathname, tour.userId]);
+  }, [idle, studioData, pathname, tour.userId]);
 
   useEffect(() => {
     markNudgeShown(nudge);
   }, [nudge]);
 
-  // The quiet reply closes itself; a client who taps an idle ball should
-  // not have to dismiss anything.
+  // The menu closes on outside clicks and Escape - a client should never
+  // have to hunt for a dismiss control.
   useEffect(() => {
-    if (!quiet) return undefined;
-    const done = setTimeout(() => setQuiet(false), 4200);
-    return () => clearTimeout(done);
-  }, [quiet]);
+    if (!menuOpen) return undefined;
+    const onDoc = (event) => {
+      if (wrapRef.current && !wrapRef.current.contains(event.target)) setMenuOpen(false);
+    };
+    const onKey = (event) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
 
-  if (!ready || !pos || (!active && !helper)) return null;
+  // Starting a journey always closes the launcher first.
+  useEffect(() => {
+    if (active) setMenuOpen(false);
+  }, [active]);
 
-  const handleHelperTap = () => {
-    if (nudge) {
+  if (!ready || !pos || (!active && !idle)) return null;
+
+  const onHome = pathname === '/';
+  const onProfile = pathname === '/profile';
+  const onHistory = pathname === '/history';
+  const onPostings = pathname === '/postings';
+  const onTailor = pathname.startsWith('/tailor-application');
+
+  // ---- Launcher mode: the menu, the journey, the four destinations ----
+  if (idle) {
+    const openMenu = () => {
+      setMenuOpen((open) => {
+        const next = !open;
+        if (next) {
+          trackEvent('menu_open');
+          setHopKey((key) => key + 1);
+        }
+        return next;
+      });
+    };
+
+    const go = (to) => {
+      setMenuOpen(false);
+      navigate(to);
+    };
+
+    const startJourney = () => {
+      const first = firstJourneyStep(studioData);
+      tour.start({ step: first });
+      trackEvent('menu_first_time');
+      setMenuOpen(false);
+      navigate(STEP_PAGE[first]);
+    };
+
+    const takeNudge = () => {
+      if (!nudge) return;
       markNudgeTapped(nudge);
       dismissNudge(tour.userId, nudge.id);
       setNudge(null);
+      setMenuOpen(false);
       navigate(nudge.target);
-      return;
-    }
-    setQuiet(true);
-  };
+    };
 
-  // ---- Helper mode: small, corner, speaks only on real facts ----
-  if (helper) {
-    const helperCaption = nudge ? t(nudge.captionKey) : quiet ? t('nudge.quiet') : null;
+    const NudgeIcon = nudge ? NUDGE_ICON[nudge.kind] : null;
+    const centered = !pos.anchored && onHome;
+
     return (
       <div
-        className={`tour-ball-wrap helper ${nudge ? 'has-nudge' : ''}`}
+        ref={wrapRef}
+        className={`tour-ball-wrap helper ${nudge ? 'has-nudge' : ''} ${centered ? 'center' : ''}`}
         style={{ top: pos.top, left: pos.left }}
       >
         <div key={hopKey} className="tour-move tour-hop">
@@ -189,8 +308,9 @@ export default function BouncingBallTour() {
           <button
             type="button"
             className="tour-ball"
-            onClick={handleHelperTap}
-            aria-label={helperCaption || t('nudge.idle')}
+            onClick={openMenu}
+            aria-label={t('nudge.idle')}
+            aria-expanded={menuOpen}
           >
             <span className="tour-face" aria-hidden="true">
               <span className="tour-eye left" />
@@ -199,35 +319,41 @@ export default function BouncingBallTour() {
             </span>
           </button>
         </div>
-        {helperCaption && (
-          <div
-            className="tour-bubble side"
-            role="status"
-          >
-            {helperCaption}
+        {menuOpen && (
+          <div className={`tour-menu ${centered ? 'below' : 'side'}`} role="menu">
             {nudge && (
-              <button
-                type="button"
-                className="tour-x"
-                onClick={() => {
-                  dismissNudge(tour.userId, nudge.id);
-                  setNudge(null);
-                }}
-                aria-label={t('tour.close')}
-              >
-                <X className="h-3.5 w-3.5" />
+              <button type="button" className="tour-menu-item nudge" onClick={takeNudge} role="menuitem">
+                <NudgeIcon className="mi" aria-hidden="true" />
+                <span>{t(nudge.captionKey)}</span>
               </button>
             )}
+            <button type="button" className="tour-menu-item featured" onClick={startJourney} role="menuitem">
+              <Sparkles className="mi" aria-hidden="true" />
+              <span>{t('menu.firstTime')}</span>
+            </button>
+            {NAV.map(({ key, labelKey, to, Icon }) => (
+              <button
+                type="button"
+                className="tour-menu-item"
+                key={key}
+                onClick={() => {
+                  trackEvent(`menu_nav_${key}`);
+                  go(to);
+                }}
+                role="menuitem"
+              >
+                <Icon className="mi" aria-hidden="true" />
+                <span>{t(labelKey)}</span>
+              </button>
+            ))}
           </div>
         )}
       </div>
     );
   }
 
-  // ---- Walkthrough mode: the guided journey ----
-  const onProfile = pathname === '/profile';
-  const onHome = pathname === '/';
-  const onHistory = pathname === '/history';
+  // ---- Journey mode: the guided walk to a first application ----
+  const onApplyPage = onPostings || onTailor;
 
   const captionKey =
     step === 'identity'
@@ -236,40 +362,42 @@ export default function BouncingBallTour() {
         : onProfile
           ? 'tour.nameField'
           : 'tour.start'
-      : step === 'studio'
-        ? onHome
-          ? 'tour.studio'
-          : 'tour.studioAway'
-        : step === 'history'
+      : step === 'story'
+        ? celebrated
+          ? 'tour.entryDone'
+          : onHistory
+            ? 'tour.history'
+            : 'tour.comeAlong'
+        : step === 'posting'
           ? celebrated
-            ? 'tour.entryDone'
-            : onHistory
-              ? 'tour.history'
-              : 'tour.comeAlong'
-          : 'tour.farewell';
+            ? 'tour.postingDone'
+            : onPostings
+              ? 'tour.posting'
+              : 'tour.postingAway'
+          : step === 'apply'
+            ? celebrated
+              ? 'tour.applyDone'
+              : onApplyPage
+                ? 'tour.apply'
+                : 'tour.applyAway'
+            : 'tour.farewell';
 
   const handleTap = () => {
     tour.event(`tour_tap_${step}`);
-    if (step === 'identity') {
-      if (!onProfile) navigate('/profile');
-      else if (celebrated) {
-        tour.tapAdvance('studio');
-        navigate('/');
-      }
-    } else if (step === 'studio') {
-      if (!onHome) navigate('/');
-      else {
-        tour.tapAdvance('history');
-        navigate('/history');
-      }
-    } else if (step === 'history') {
-      if (!onHistory) navigate('/history');
-      else if (celebrated) {
-        tour.tapAdvance('farewell');
-        navigate('/');
-      }
-    } else {
+    if (step === 'farewell') {
       tour.finish();
+      return;
+    }
+    const page = STEP_PAGE[step];
+    const onPage = page === pathname || (step === 'apply' && onTailor);
+    if (!onPage) {
+      navigate(page);
+      return;
+    }
+    if (celebrated) {
+      const next = NEXT_STEP[step];
+      tour.tapAdvance(next);
+      navigate(STEP_PAGE[next]);
     }
   };
 

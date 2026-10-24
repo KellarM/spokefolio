@@ -55,7 +55,7 @@ export default function Home() {
     if (busy || !user || !tour.ready || tour.hasRecord) return;
     const stepsDone = entries.length > 0 && !!(profile && profile.full_name);
     if (stepsDone) return;
-    tour.start({ step: profile && profile.full_name ? 'studio' : 'identity' });
+    tour.start({ step: profile && profile.full_name ? 'story' : 'identity' });
   }, [busy, user, profile, entries.length, tour]);
 
   return (
