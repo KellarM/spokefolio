@@ -5,6 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import useProfile from '@/hooks/useProfile';
 import DictationBox from '@/components/history/DictationBox';
+import { useTour } from '@/lib/TourContext';
 import KeywordDetailBuilder from '@/components/history/KeywordDetailBuilder';
 import DraftEntryEditor from '@/components/history/DraftEntryEditor';
 import EntryList from '@/components/history/EntryList';
@@ -76,6 +77,14 @@ export default function HistoryCapture() {
   const { toast } = useToast();
   const { profile, loadingProfile, save } = useProfile();
   const [entries, setEntries] = useState([]);
+  const tour = useTour();
+
+  // The history step completes the moment a first entry truly exists - never
+  // because the client ticked anything. The ball celebrates on its own.
+  useEffect(() => {
+    if (!tour.active || tour.step !== 'history') return;
+    if (entries.length > 0) tour.announce('entry_done');
+  }, [entries.length, tour]);
   const [loading, setLoading] = useState(true);
   const [resumeOpen, setResumeOpen] = useState(false);
   const [dictation, setDictation] = useState(() => localStorage.getItem(DICTATION_KEY) || '');
@@ -558,7 +567,7 @@ export default function HistoryCapture() {
             onChange={setDictation}
             onSubmit={capture}
             busy={busy}
-            firstHint={entries.length === 0}
+            firstHint={entries.length === 0 && !tour.active}
           />
         </div>
       )}

@@ -10,7 +10,7 @@ export default function VoiceDictation({ onTranscript }) {
   const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-border/70 bg-secondary/40 px-4 py-3">
+    <div data-tour="dictation" className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-border/70 bg-secondary/40 px-4 py-3">
       {recording ? (
         <Button type="button" onClick={stop} disabled={busy} className="rounded-full">
           <Square className="mr-2 h-3.5 w-3.5" /> {t('history.vstop')}

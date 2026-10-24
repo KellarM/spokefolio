@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AlertTriangle, ArrowRight, Loader2, Trash2 } from 'lucide-react';
 import useProfile from '@/hooks/useProfile';
@@ -7,6 +7,7 @@ import TemplateCard from '@/components/home/TemplateCard';
 import { useAuth } from '@/lib/AuthContext';
 import { missingProfileFields, profileIsComplete } from '@/lib/profileGate';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
+import { useTour } from '@/lib/TourContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +26,7 @@ export default function Profile() {
   const [wipeWord, setWipeWord] = useState('');
   const [wiping, setWiping] = useState(false);
   const { profile, loadingProfile, save } = useProfile();
+  const tour = useTour();
   const missingLabels = missingProfileFields(profile);
   // The gate speaks in catalog keys so the banner reads in the chosen language.
   const GATE_LABELS = {
@@ -38,6 +40,22 @@ export default function Profile() {
   const complete = profileIsComplete(profile);
   // A brand new account holds no contact details yet, so its own email address is offered.
   const details = profile.email ? profile : { ...profile, email: user?.email || '' };
+
+  // The ball begins where every client begins: the profile page. It only
+  // starts itself for an account that has never met it and still has the
+  // gate's details to fill.
+  useEffect(() => {
+    if (loadingProfile || !user || !tour.ready || tour.hasRecord || tour.active) return;
+    if (profileIsComplete(profile)) return;
+    tour.start({});
+  }, [loadingProfile, user, profile, tour]);
+
+  // The identity step completes when the profile passes its gate - the
+  // moment the studio's front door opens. The ball celebrates on its own.
+  useEffect(() => {
+    if (!tour.active || tour.step !== 'identity') return;
+    if (profileIsComplete(profile)) tour.announce('name_done');
+  }, [profile, tour]);
 
   // The full clean slate: every owned record is erased server-side, then the
   // session ends and the studio shows its front door, as to any new visitor.

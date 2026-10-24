@@ -4,6 +4,8 @@ import AccountMenu from '@/components/AccountMenu';
 import HeaderSearch from '@/components/HeaderSearch';
 import { StudioLanguageProvider, useStudioLanguage } from '@/lib/StudioLanguage';
 import { ProfileProvider } from '@/hooks/useProfile';
+import { TourProvider } from '@/lib/TourContext';
+import BouncingBallTour from '@/components/tour/BouncingBallTour';
 
 const LOGO = 'https://media.base44.com/images/public/6ac71edebc00261f3487fa3e/9f96553a6_logo.png';
 
@@ -120,7 +122,10 @@ export default function Layout() {
   return (
     <ProfileProvider>
       <StudioLanguageProvider>
-        <Nav />
+        <TourProvider>
+          <Nav />
+          <BouncingBallTour />
+        </TourProvider>
       </StudioLanguageProvider>
     </ProfileProvider>
   );
