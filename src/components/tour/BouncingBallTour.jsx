@@ -146,20 +146,15 @@ export default function BouncingBallTour() {
     if (!active && !idle) return;
     const el = active ? anchorElement(step, pathname, celebrated) : null;
     if (!el) {
-      const mobile = window.innerWidth < 640;
-      if (pathname === '/') {
-        setPos({
-          left: (window.innerWidth - BALL_SIZE) / 2,
-          top: (window.innerHeight - BALL_SIZE) / 2,
-          anchored: false
-        });
-      } else {
-        setPos({
-          left: window.innerWidth - BALL_SIZE - (mobile ? 18 : 26),
-          top: window.innerHeight - BALL_SIZE - (mobile ? 58 : 36),
-          anchored: false
-        });
-      }
+      // Parked: always middle-high on the screen - never the corner. The
+      // menu opens below the ball and must stay fully in frame and
+      // reachable on every page (Michael, Oct 23: the corner dropped the
+      // dropdown off the bottom of the screen).
+      setPos({
+        left: (window.innerWidth - BALL_SIZE) / 2,
+        top: Math.max(TOP_FLOOR, Math.round(window.innerHeight * 0.2)),
+        anchored: false
+      });
       setBubbleBelow(false);
       setBubbleShift(false);
       return;
@@ -379,7 +374,7 @@ export default function BouncingBallTour() {
           </button>
         </div>
         {menuOpen && (
-          <div className={`tour-menu ${centered ? 'below' : 'side'}`} role="menu">
+          <div className="tour-menu below" role="menu">
             {nudge && (
               <button type="button" className="tour-menu-item nudge" onClick={takeNudge} role="menuitem">
                 <NudgeIcon className="mi" aria-hidden="true" />
