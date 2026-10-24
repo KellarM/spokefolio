@@ -2360,3 +2360,35 @@ select option {
 .tour-menu-item.nudge .mi {
   color: #fdb813;
 }
+
+/* The bubble's yes/no answers: the story phase asks real questions. */
+.tour-choices {
+  display: flex;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.tour-choice {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #d4af37;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  transition: background 0.15s ease;
+}
+
+.tour-choice:hover {
+  background: rgba(212, 175, 55, 0.2);
+}
+
+.tour-choice.no {
+  color: #f1e7c9;
+  border-color: rgba(255, 255, 255, 0.25);
+  background: transparent;
+}
+
+.tour-choice.no:hover {
+  background: rgba(255, 255, 255, 0.08);
+}

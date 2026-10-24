@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, FileText, Layers, Loader2, Lock, LockOpen } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
@@ -79,12 +79,27 @@ export default function HistoryCapture() {
   const [entries, setEntries] = useState([]);
   const tour = useTour();
 
-  // The history step completes the moment a first entry truly exists - never
-  // because the client ticked anything. The ball celebrates on its own.
+  // The story step completes the moment a capture truly lands - a draft
+  // open in the editor, never a ticked box. Round-safe: a saved entry
+  // closes the draft, so the ball waits for the next real capture.
   useEffect(() => {
     if (!tour.active || tour.step !== 'story') return;
-    if (entries.length > 0) tour.announce('entry_done');
-  }, [entries.length, tour]);
+    if (draft && draft.status !== 'confirmed') tour.announce('entry_done');
+  }, [draft, tour]);
+
+  // The prompts step completes when the entry is saved to the master
+  // history - measured against the confirmed count when the step began,
+  // so a pause-and-resume never fakes a save.
+  const saveBaseRef = useRef(null);
+  useEffect(() => {
+    if (!tour.active) return;
+    if (tour.step === 'story_prompts') {
+      if (saveBaseRef.current === null) saveBaseRef.current = confirmed.length;
+      if (!draft && confirmed.length > saveBaseRef.current) tour.announce('entry_saved');
+    } else {
+      saveBaseRef.current = null;
+    }
+  }, [tour, draft, confirmed.length]);
   const [loading, setLoading] = useState(true);
   const [resumeOpen, setResumeOpen] = useState(false);
   const [dictation, setDictation] = useState(() => localStorage.getItem(DICTATION_KEY) || '');
@@ -586,7 +601,7 @@ export default function HistoryCapture() {
       )}
 
       {draft && (
-        <div className="mt-6">
+        <div className="mt-6" data-tour="draft-editor">
           <DraftEntryEditor
             entry={draft}
             busy={busy}

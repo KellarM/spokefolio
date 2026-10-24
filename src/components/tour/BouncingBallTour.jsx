@@ -34,16 +34,20 @@ const EDGE = 16;
 // Room for the speech bubble above the ball without crowding the header.
 const TOP_FLOOR = 132;
 
-// The journey, in order: identity -> story -> posting -> apply -> farewell.
+// The journey: identity -> story (capture -> edits -> prompts -> more?) ->
+// posting -> apply -> farewell. The story phase asks real questions with
+// real answers; its sub-steps advance on yes/no choices and real saves.
 const NEXT_STEP = {
   identity: 'story',
-  story: 'posting',
+  story_edits: 'story_prompts',
   posting: 'apply',
   apply: 'farewell'
 };
 const STEP_PAGE = {
   identity: '/profile',
   story: '/history',
+  story_edits: '/history',
+  story_prompts: '/history',
   posting: '/postings',
   apply: '/postings',
   farewell: '/'
@@ -59,14 +63,30 @@ const NAV = [
 
 const NUDGE_ICON = { interview: Calendar, draft: PenLine, posting: Briefcase };
 
-// What the ball points at during the journey, by step and route.
+// What the ball points at during the journey, by step and route. The
+// story phase follows the work: mic before capture, the draft editor the
+// moment a capture lands, the prompts panel while questions are open.
 const anchorElement = (step, pathname, celebrated) => {
+  const draftEditor = document.querySelector('[data-tour="draft-editor"]');
+  const prompts = document.querySelector('[data-tour="prompts"]');
   if (step === 'identity' && pathname === '/profile' && !celebrated) {
     return document.getElementById('full_name');
   }
+  if ((step === 'story' || step === 'story_edits') && draftEditor) return draftEditor;
+  if (step === 'story_prompts' && prompts) return prompts;
   if (step === 'story' && pathname === '/history' && !celebrated) {
     return document.querySelector('[data-tour="dictation"]');
   }
+  return null;
+};
+
+// The element a story-phase step should bring into view - the ball moves
+// the client to the work, not just to a page.
+const focusElement = (step, celebrated) => {
+  if (step === 'story_edits' || (step === 'story' && celebrated)) {
+    return document.querySelector('[data-tour="draft-editor"]');
+  }
+  if (step === 'story_prompts') return document.querySelector('[data-tour="prompts"]');
   return null;
 };
 
@@ -159,6 +179,19 @@ export default function BouncingBallTour() {
   useEffect(() => {
     if (active || idle) setHopKey((key) => key + 1);
   }, [step, pathname, active, idle]);
+
+  // The story phase follows the work: when a capture lands or the prompts
+  // open, the ball brings the results into view - the client should be
+  // looking at what they made, not at the top of the page.
+  useEffect(() => {
+    if (!active) return;
+    const el = focusElement(step, celebrated);
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.bottom > window.innerHeight - 90 || rect.top < 130) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [active, step, celebrated]);
 
   // The farewell ends itself - animation or not - so no client is left
   // with a ball that will not leave.
@@ -364,11 +397,21 @@ export default function BouncingBallTour() {
           : 'tour.start'
       : step === 'story'
         ? celebrated
-          ? 'tour.entryDone'
+          ? 'tour.editsAsk'
           : onHistory
             ? 'tour.history'
             : 'tour.comeAlong'
-        : step === 'posting'
+        : step === 'story_edits'
+          ? onHistory
+            ? 'tour.edits'
+            : 'tour.comeAlong'
+          : step === 'story_prompts'
+            ? celebrated
+              ? 'tour.savedAsk'
+              : onHistory
+                ? 'tour.prompts'
+                : 'tour.comeAlong'
+            : step === 'posting'
           ? celebrated
             ? 'tour.postingDone'
             : onPostings
@@ -381,6 +424,24 @@ export default function BouncingBallTour() {
                 ? 'tour.apply'
                 : 'tour.applyAway'
             : 'tour.farewell';
+
+  // A yes or no in the bubble: the story phase's real questions. Every
+  // answer is a step transition with its own analytics.
+  const choose = (choice) => {
+    tour.event(`tour_tap_${step}_${choice}`);
+    if (step === 'story') {
+      tour.tapAdvance(choice === 'yes' ? 'story_edits' : 'story_prompts');
+      return;
+    }
+    if (step === 'story_prompts') {
+      if (choice === 'yes') {
+        tour.tapAdvance('story');
+        return;
+      }
+      tour.tapAdvance('posting');
+      navigate('/postings');
+    }
+  };
 
   const handleTap = () => {
     tour.event(`tour_tap_${step}`);
@@ -395,6 +456,13 @@ export default function BouncingBallTour() {
       return;
     }
     if (celebrated) {
+      // The captured-and-saved moments advance on the bubble's answers,
+      // never on a stray tap of the ball.
+      if (step === 'story' || step === 'story_prompts') return;
+      if (step === 'story_edits') {
+        tour.tapAdvance('story_prompts');
+        return;
+      }
       const next = NEXT_STEP[step];
       tour.tapAdvance(next);
       navigate(STEP_PAGE[next]);
@@ -425,6 +493,16 @@ export default function BouncingBallTour() {
         role="status"
       >
         {t(captionKey)}
+        {celebrated && (step === 'story' || step === 'story_prompts') && (
+          <div className="tour-choices">
+            <button type="button" className="tour-choice" onClick={() => choose('yes')}>
+              {t('tour.yes')}
+            </button>
+            <button type="button" className="tour-choice no" onClick={() => choose('no')}>
+              {t('tour.no')}
+            </button>
+          </div>
+        )}
         <button type="button" className="tour-x" onClick={() => tour.abandon()} aria-label={t('tour.close')}>
           <X className="h-3.5 w-3.5" />
         </button>

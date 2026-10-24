@@ -88,7 +88,11 @@ export function TourProvider({ children }) {
       announce(signal) {
         const current = recordRef.current;
         if (!current || current.step === 'done' || current.celebrated) return;
-        const expects = { identity: 'name_done', history: 'entry_done' }[current.step];
+        const expects = {
+          identity: 'name_done',
+          story: 'entry_done',
+          story_prompts: 'entry_saved'
+        }[current.step];
         if (signal !== expects) return;
         persist({ ...current, celebrated: true });
         if (!current.preview) trackEvent(`tour_done_${current.step}`);

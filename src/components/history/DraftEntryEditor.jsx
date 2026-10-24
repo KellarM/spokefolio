@@ -179,7 +179,9 @@ export default function DraftEntryEditor({ entry, busy, onChange, onAnswer, onSa
         </div>
       </div>
 
-      <SuggestionPanel entry={entry} busy={busy} onSubmit={onAnswer} onFinish={onSave} />
+      <div data-tour="prompts">
+        <SuggestionPanel entry={entry} busy={busy} onSubmit={onAnswer} onFinish={onSave} />
+      </div>
     </div>
   );
 }
