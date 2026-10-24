@@ -80,13 +80,22 @@ const anchorElement = (step, pathname, celebrated) => {
   return null;
 };
 
-// The element a story-phase step should bring into view - the ball moves
-// the client to the work, not just to a page.
+// The element each step should bring into view - the ball moves the
+// client to the work, not just to a page. An anchor the client cannot see
+// is worse than no anchor: the ball floats in the viewport pointing at
+// nothing (the round-two bug - after 'more jobs? -> yes', the page sat
+// scrolled at the save area while the mic lived off-screen above).
 const focusElement = (step, celebrated) => {
+  if (step === 'identity' && !celebrated) {
+    return document.getElementById('full_name');
+  }
   if (step === 'story_edits' || (step === 'story' && celebrated)) {
     return document.querySelector('[data-tour="draft-editor"]');
   }
   if (step === 'story_prompts') return document.querySelector('[data-tour="prompts"]');
+  if (step === 'story' && !celebrated) {
+    return document.querySelector('[data-tour="dictation"]');
+  }
   return null;
 };
 
@@ -180,9 +189,11 @@ export default function BouncingBallTour() {
     if (active || idle) setHopKey((key) => key + 1);
   }, [step, pathname, active, idle]);
 
-  // The story phase follows the work: when a capture lands or the prompts
-  // open, the ball brings the results into view - the client should be
-  // looking at what they made, not at the top of the page.
+  // Every step brings its target into view: the name field, the mic, the
+  // capture results, the prompts. The ball never anchors to something
+  // the client cannot see - round two of the story phase starts from
+  // wherever round one's save left the page scrolled, and the mic lives
+  // at the top.
   useEffect(() => {
     if (!active) return;
     const el = focusElement(step, celebrated);
