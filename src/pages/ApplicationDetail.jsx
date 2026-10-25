@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Calendar as CalendarIcon, Clock, Download, Eye, Loader2, Mail, Pencil, RefreshCw, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar as CalendarIcon, Clock, Download, ExternalLink, Eye, Loader2, Mail, Pencil, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { base44 } from '@/api/base44Client';
 import { trackEvent } from '@/lib/analytics';
@@ -17,6 +17,7 @@ import JobLocation from '@/components/applications/JobLocation';
 import JobPostingPanel from '@/components/applications/JobPostingPanel';
 import CompanyBrief from '@/components/applications/CompanyBrief';
 import SendPackageDialog from '@/components/applications/SendPackageDialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import InterviewPanel from '@/components/applications/InterviewPanel';
 import ResumeRunPanel from '@/components/applications/ResumeRunPanel';
 import ResumeDocument from '@/components/resume/ResumeDocument';
@@ -91,6 +92,7 @@ export default function ApplicationDetail() {
   const [styleOverrides, setStyleOverrides] = useState({});
   const [previewMode, setPreviewMode] = useState(false);
   const [sendOpen, setSendOpen] = useState(false);
+  const [applyOpen, setApplyOpen] = useState(false);
   const [runs, setRuns] = useState([]);
   const [running, setRunning] = useState(false);
   const [applyingFix, setApplyingFix] = useState(null);
@@ -237,6 +239,24 @@ export default function ApplicationDetail() {
       reportError('Could not build the cover letter PDF', error);
     }
     setDownloadingLetterPdf(false);
+  };
+
+  // The real application happens on the employer's portal. Spokefolio
+  // opens that door, puts the tailored Word document in the client's
+  // hand, and then asks - honestly - whether they applied. The status
+  // only ever moves on their word; the timestamp stays trustworthy.
+  const applyNow = async () => {
+    if (application.source_url) {
+      window.open(application.source_url, '_blank', 'noopener,noreferrer');
+    }
+    await download();
+    setApplyOpen(true);
+  };
+
+  const markApplied = async () => {
+    setApplyOpen(false);
+    await changeStatus('applied');
+    trackEvent('application_applied', [application.job_title, application.company].filter(Boolean).join(' - '));
   };
 
   const writeLetter = async () => {
@@ -568,6 +588,10 @@ export default function ApplicationDetail() {
             {rewriting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
             Rewrite
           </Button>
+          <Button className="rounded-full" onClick={applyNow} disabled={downloading}>
+            {downloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ExternalLink className="mr-2 h-4 w-4" />}
+            {t('apply.cta')}
+          </Button>
           <Button className="rounded-full" onClick={download} disabled={downloading}>
             {downloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
             Download Word
@@ -750,6 +774,23 @@ export default function ApplicationDetail() {
           </Button>
         </div>
       </div>
+
+      <Dialog open={applyOpen} onOpenChange={setApplyOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('apply.askHead')}</DialogTitle>
+            <DialogDescription>{t('apply.askBody')}</DialogDescription>
+          </DialogHeader>
+          <div className="mt-3 flex justify-end gap-3">
+            <Button variant="outline" className="rounded-full" onClick={() => setApplyOpen(false)}>
+              {t('apply.notYet')}
+            </Button>
+            <Button className="rounded-full" onClick={markApplied}>
+              {t('apply.confirm')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <SendPackageDialog
         open={sendOpen}

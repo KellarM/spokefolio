@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronLeft, ChevronRight, Loader2, Plus } from 'lucide-react';
+import { ArrowRight, Check, ChevronLeft, ChevronRight, Loader2, Plus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -11,6 +11,7 @@ import DeleteApplicationButton from '@/components/applications/DeleteApplication
 import ActivityCalendar from '@/components/applications/ActivityCalendar';
 import RunScoreBadge from '@/components/applications/RunScoreBadge';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
+import { trackEvent } from '@/lib/analytics';
 
 const FILTERS = ['all', 'ready', 'not_applied', 'applied', 'contacted', 'interviewing', 'offer', 'declined', 'not_hired', 'rejected'];
 
@@ -23,6 +24,27 @@ export default function Applications() {
   const [sort, setSort] = useState('newest');
   const [locating, setLocating] = useState(false);
   const [scores, setScores] = useState({});
+
+  // The card-level quick action: applied outside the flow, mark it here.
+  // Same honesty rule as the detail page - the client says it, the
+  // record believes it, and the status event keeps the history honest.
+  const markApplied = async (application) => {
+    try {
+      await base44.entities.JobApplication.update(application.id, { status: 'applied' });
+      await base44.entities.StatusEvent.create({
+        application_id: application.id,
+        job_title: application.job_title || '',
+        company: application.company || '',
+        status: 'applied'
+      });
+      setApplications((prev) =>
+        prev.map((a) => (a.id === application.id ? { ...a, status: 'applied' } : a))
+      );
+      trackEvent('application_applied', [application.job_title, application.company].filter(Boolean).join(' - '));
+    } catch {
+      // A status that did not stick simply stays as it was.
+    }
+  };
 
   const load = useCallback(async () => {
     const [records, runRecords] = await Promise.all([
@@ -219,6 +241,16 @@ export default function Applications() {
                   <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </div>
               </Link>
+              {(application.status === 'ready' || application.status === 'not_applied') && (
+                <button
+                  type="button"
+                  className="inline-flex h-8 items-center rounded-full border border-border/70 px-3 text-[12.5px] font-medium text-muted-foreground transition-colors hover:border-[#D4AF37]/50 hover:text-foreground"
+                  onClick={() => markApplied(application)}
+                >
+                  <Check className="mr-1.5 h-3.5 w-3.5 text-[#D4AF37]" />
+                  {t('apply.quick')}
+                </button>
+              )}
               <DeleteApplicationButton application={application} onDeleted={handleDeleted} />
             </li>
           ))}

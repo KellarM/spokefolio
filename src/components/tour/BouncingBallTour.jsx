@@ -262,7 +262,9 @@ export default function BouncingBallTour() {
     if (step === 'posting' && studioData.postings.length > 0) {
       tour.announce('posting_done');
     }
-    if (step === 'apply' && studioData.applications.length > 0) {
+    // The apply step celebrates only the truth: a status of 'applied',
+    // not merely a tailored application sitting at 'ready'.
+    if (step === 'apply' && studioData.applications.some((a) => a.status === 'applied')) {
       tour.announce('apply_done');
     }
     if (step === 'files' && studioData.documents.length > 0) {
