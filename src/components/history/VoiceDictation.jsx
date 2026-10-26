@@ -12,13 +12,13 @@ export default function VoiceDictation({ onTranscript }) {
   return (
     <div data-tour="dictation" className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-border/70 bg-secondary/40 px-4 py-3">
       {recording ? (
-        <Button type="button" onClick={stop} disabled={busy} className="rounded-full">
+        <Button type="button" onClick={stop} disabled={busy} className="dictate-live rounded-full">
           <Square className="mr-2 h-3.5 w-3.5" /> {t('history.vstop')}
         </Button>
       ) : (
         <Button type="button" variant="secondary" className="rounded-full" onClick={start} disabled={busy}>
           {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mic className="mr-2 h-4 w-4" />}
-          {busy ? t('history.vwriting') : seconds ? t('history.vrecordAnother') : t('history.vdictate')}
+          {busy ? t('history.vwriting') : seconds ? t('history.vrecordAnother') : t('history.tapToTalk')}
         </Button>
       )}
 

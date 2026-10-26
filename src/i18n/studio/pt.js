@@ -122,6 +122,7 @@ export default {
   "history.vstop": "Parar e escrever",
   "history.vwriting": "Escrevendo suas palavras…",
   "history.vrecordAnother": "Gravar outra tomada",
+  "history.tapToTalk": "Toque para falar",
   "history.vdictate": "Ditar com a voz",
   "history.vrecording": "Gravando",
   "history.vretry": "Tentar novamente",
