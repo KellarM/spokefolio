@@ -7,7 +7,7 @@ import { ProfileProvider } from '@/hooks/useProfile';
 import { TourProvider } from '@/lib/TourContext';
 import BouncingBallTour from '@/components/tour/BouncingBallTour';
 
-const LOGO = 'https://media.base44.com/images/public/6ac71edebc00261f3487fa3e/9f96553a6_logo.png';
+import LOGO from '@/assets/spokefolio-logo.png';
 
 // The nav speaks the language saved on the profile; the provider above keeps
 // every surface under it in step when the language changes.
@@ -73,10 +73,6 @@ function Nav() {
       <header ref={headerRef} className={`mec-nav ${navHidden ? 'nav-away' : ''}`}>
         <Link to="/" className="mec-brand">
           <img src={LOGO} alt="Spokefolio Personal Resume Studio" />
-          <div>
-            <div className="mec-bn">Spokefolio</div>
-            <div className="mec-bs">{t('nav.tagline')}</div>
-          </div>
         </Link>
 
         <nav className="mec-links">
