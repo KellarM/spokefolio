@@ -56,12 +56,12 @@ const storeSearch = (email, search) => {
 
 export default function Postings() {
   const { t } = useStudioLanguage();
+  const { profile } = useProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [postings, setPostings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [locating, setLocating] = useState(false);
-  const { profile } = useProfile();
   const [search, setSearchState] = useState(null);
   const [savingKey, setSavingKey] = useState('');
   const [tab, setTab] = useState('search');
@@ -88,7 +88,7 @@ export default function Postings() {
         for (let pass = 0; pass < 4 && !cancelled; pass += 1) {
           if (!records.some((item) => !item.location_checked)) break;
           setLocating(true);
-          const response = await base44.functions.invoke('locateApplications', { target: 'postings' });
+          const response = await base44.functions.invoke('locateApplications', { target: 'postings', home_address: profile?.home_address || '' });
           const { remaining } = response.data || {};
           records = await load();
           if (!remaining) break;

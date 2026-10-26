@@ -11,6 +11,7 @@ import DeleteApplicationButton from '@/components/applications/DeleteApplication
 import ActivityCalendar from '@/components/applications/ActivityCalendar';
 import RunScoreBadge from '@/components/applications/RunScoreBadge';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
+import useProfile from '@/hooks/useProfile';
 import { trackEvent } from '@/lib/analytics';
 
 const FILTERS = ['all', 'ready', 'not_applied', 'applied', 'contacted', 'interviewing', 'offer', 'declined', 'not_hired', 'rejected'];
@@ -24,6 +25,7 @@ export default function Applications() {
   const [sort, setSort] = useState('newest');
   const [locating, setLocating] = useState(false);
   const [scores, setScores] = useState({});
+  const { profile } = useProfile();
 
   // The card-level quick action: applied outside the flow, mark it here.
   // Same honesty rule as the detail page - the client says it, the
@@ -74,7 +76,7 @@ export default function Applications() {
         for (let pass = 0; pass < 4 && !cancelled; pass += 1) {
           if (!records.some((item) => !item.location_checked)) break;
           setLocating(true);
-          const response = await base44.functions.invoke('locateApplications', {});
+          const response = await base44.functions.invoke('locateApplications', { home_address: profile?.home_address || '' });
           const { remaining } = response.data || {};
           records = await load();
           if (!remaining) break;

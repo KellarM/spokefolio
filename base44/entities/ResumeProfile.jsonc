@@ -26,6 +26,10 @@
     "location_full": {
       "type": "string"
     },
+    "home_address": {
+      "type": "string",
+      "description": "The client's home street address. Anchors every commute estimate: distance from home to each application's workplace."
+    },
     "content_language": {
       "type": "string"
     },

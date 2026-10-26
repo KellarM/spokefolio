@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Loader2, Mic, Square } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import useDictation from '@/hooks/useDictation';
 import LanguageSelect, { getStoredLanguage, normalizeLanguage } from '@/components/LanguageSelect';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import LocationInput from '@/components/home/LocationInput';
@@ -12,6 +15,7 @@ const FIELDS = [
   { key: 'email', label: 'profile.email', placeholder: 'jane@email.com', required: true },
   { key: 'phone', label: 'profile.phone', placeholder: '(555) 010-2233', required: true },
   { key: 'location', label: 'profile.location', placeholder: 'Edmonton, Alberta, Canada', required: true },
+  { key: 'home_address', label: 'profile.homeAddress', placeholder: '123 Main Street, Edmonton', required: false },
   { key: 'preferred_language', label: 'profile.language', placeholder: 'profile.chooseLanguage', language: true, required: true },
   { key: 'linkedin', label: 'LinkedIn', placeholder: 'linkedin.com/in/janedoe' },
   { key: 'website', label: 'Website', placeholder: 'janedoe.com' }
@@ -20,11 +24,66 @@ const FIELDS = [
 // LinkedIn and Website keep their own labels; everything else comes from the catalog.
 const FIELDS_TITLES = { linkedin: 'LinkedIn', website: 'Website' };
 
+// Words to fields: what one spoken sentence of details becomes, in any of
+// the studio's six languages. Everything parsed lands in the form for the
+// client to check - nothing is saved until they press Save.
+const SPOKEN_LANGUAGES = {
+  english: 'English', 'espanol': 'Español', 'español': 'Español', spanish: 'Español',
+  'francais': 'Français', 'français': 'Français', french: 'Français',
+  deutsch: 'Deutsch', german: 'Deutsch',
+  italiano: 'Italiano', italian: 'Italiano',
+  'portugues': 'Português', 'português': 'Português', portuguese: 'Português'
+};
+
+const NAME_CUES = 'my name is|name is|i am|i\u2019m|i\u2019m|this is|mi chiamo|me llamo|je m\u2019appelle|ich hei\u00dfe|hei\u00dfe ich|meu nome \u00e9|me chamo|chamo-me|eu sou|soy yo';
+const ADDRESS_CUES = 'my address is|address is|i live at|live at|located at|il mio indirizzo \u00e8|indirizzo \u00e8|mi direcci\u00f3n es|direcci\u00f3n es|mon adresse est|adresse est|meine adresse ist|adresse ist|meu endere\u00e7o \u00e9|endere\u00e7o \u00e9|moro na|moro no|moro em';
+const LOCATION_CUES = 'i live in|vivo in|vivo a|vivo en|je vis \u00e0|j\u2019habite \u00e0|j\u2019habite \u00e0|ich lebe in|lebe in|moro em|habito en|habito em';
+
+export function parseSpokenDetails(raw) {
+  const clean = (raw || '').replace(/\s+/g, ' ').trim();
+  const out = {};
+  const email = clean.match(/[\w.+-]+@[\w-]+\.[\w.-]+/);
+  if (email) out.email = email[0];
+  const phone = clean.match(/\+?\d[\d\s().-]{7,}\d/);
+  if (phone) out.phone = phone[0].trim();
+
+  const nameM = clean.match(new RegExp('(?:' + NAME_CUES + ')\\s+([A-Za-z\u00C0-\u017F\' -]{2,40}?)(?=\\s*(?:,|\\.|;|!|\\s+my\\s|\\s+mi\\s|\\s+mon\\s|\\s+meine\\s|\\s+meu\\s|\\s+il\\s|\\s+i\\s+live|\\s+vivo|\\s+je\\s|\\s+ich\\s|$))', 'i'));
+  if (nameM) out.full_name = nameM[1].trim().replace(/\s+/g, ' ');
+
+  const addrM = clean.match(new RegExp('(?:' + ADDRESS_CUES + ')\\s*(.{6,120}?)(?=\\s*(?:,?\\s*(?:and\\s+|und\\s+)?(?:my|mi|mon|ma|meine|meu|minha|je|ich|yo|eu|courriel|correo|email|mail|telefon|telephone|t\\u00e9l\\u00e9phone|telefono|telefone|phone|tel|hablo|parlo|parle|spreche|vivo|vis|lebe|moro|habito)\\s|\\.\\s|\\.|;|!|$))', 'i'));
+  if (addrM) out.home_address = addrM[1].replace(/\s+/g, ' ').replace(/[,;]$/, '').trim();
+
+  if (!out.home_address) {
+    const locM = clean.match(new RegExp('(?:' + LOCATION_CUES + ')\\s+([A-Za-z\u00C0-\u017F ,\'-]{2,60}?)(?=\\s*(?:,|\\.|;|!|\\s+my\\s|\\s+mi\\s|\\s+mon\\s|\\s+meine\\s|\\s+meu\\s|$))', 'i'));
+    if (locM) out.location = locM[1].replace(/\s+/g, ' ').replace(/[,;]$/, '').trim();
+  }
+
+  const low = ' ' + clean.toLowerCase() + ' ';
+  for (const [word, value] of Object.entries(SPOKEN_LANGUAGES)) {
+    const re = new RegExp('[\\s.,;!?]' + word + '[\\s.,;!?]');
+    if (re.test(low)) { out.preferred_language = value; break; }
+  }
+  return out;
+}
+
 export default function ContactForm({ profile, onSave }) {
   const { t } = useStudioLanguage();
   const { toast } = useToast();
   const [form, setForm] = useState(profile || {});
   const [saving, setSaving] = useState(false);
+
+  // Tap and Talk: one recording fills the details - the client confirms and saves as usual.
+  const applyTranscript = (transcript) => {
+    const parsed = parseSpokenDetails(transcript);
+    if (Object.keys(parsed).length === 0) {
+      toast({ title: t('profile.heardNothingTitle'), description: t('profile.heardNothingBody') });
+      return;
+    }
+    setForm((prev) => ({ ...prev, ...parsed }));
+    toast({ title: t('profile.filledFromVoice') });
+  };
+  const { recording, busy, seconds, start, stop } = useDictation(applyTranscript);
+  const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
   useEffect(() => {
     // An existing profile without a language yet adopts whatever the person
@@ -56,6 +115,22 @@ export default function ContactForm({ profile, onSave }) {
       <p className="mec-lede">
         {t('profile.detailsLede')}
       </p>
+
+      <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-border/70 bg-secondary/40 px-4 py-3">
+        {recording ? (
+          <Button type="button" onClick={stop} disabled={busy} className="dictate-live rounded-full">
+            <Square className="mr-2 h-3.5 w-3.5" /> {t('history.vstop')} · {clock}
+          </Button>
+        ) : (
+          <Button type="button" variant="secondary" className="dictate-tap rounded-full" onClick={start} disabled={busy}>
+            {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mic className="mr-2 h-4 w-4" />}
+            {t('history.tapToTalk')}
+          </Button>
+        )}
+        <span className="text-[12px] leading-snug text-muted-foreground">
+          {recording ? t('history.vrecording') : t('profile.tapHint')}
+        </span>
+      </div>
 
       <div className="mec-fields">
         {FIELDS.map((field) => (
