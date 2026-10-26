@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
-import { clearSessionToken, consumeSignInHandoff, getSessionToken } from '@/lib/sessionToken';
+import { clearSessionToken, consumeSignInHandoff, getSessionToken, setSessionToken } from '@/lib/sessionToken';
 
 // Read once per page load: only a sign-in made just before this load carries
 // the handoff. Everything else opens at the sign-in door.
@@ -84,6 +84,13 @@ export const AuthProvider = ({ children }) => {
       }
 
       // A session-only login (remember me off) is handed to the SDK in memory, never saved here.
+      // The Google handoff keeps its key in the SDK; mirror it into this tab's
+      // session store so a refresh keeps that visit alive the same as an email
+      // sign-in's.
+      if (!sessionToken && signedInThisLoad && appParams.token) {
+        setSessionToken(appParams.token);
+      }
+
       // Whoever signed in inside THIS TAB outranks anything the SDK persisted earlier:
       // a stored key from an owner's session (an editor preview, an earlier sign-in on
       // this device) used to hijack the refresh - the app would reopen as the Admin
@@ -98,9 +105,11 @@ export const AuthProvider = ({ children }) => {
         setAppPublicSettings(publicSettings);
         
         // If we got the app public settings successfully, check if user is authenticated.
-        // A token from this visit's session store is as good as one from a fresh
-        // sign-in: the visit continues.
-        if (appParams.token || sessionToken) {
+        // ONLY two keys open the studio: this tab's session token (the visit continues)
+        // or a sign-in made moments ago. A stored SDK key captured at module load
+        // is NOT a way in by itself - otherwise a fresh browser reopens straight
+        // into whichever account last left a key on this device.
+        if (sessionToken || (signedInThisLoad && appParams.token)) {
           await checkUserAuth();
         } else {
           setIsLoadingAuth(false);
