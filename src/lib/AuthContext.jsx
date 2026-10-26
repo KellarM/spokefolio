@@ -84,8 +84,12 @@ export const AuthProvider = ({ children }) => {
       }
 
       // A session-only login (remember me off) is handed to the SDK in memory, never saved here.
+      // Whoever signed in inside THIS TAB outranks anything the SDK persisted earlier:
+      // a stored key from an owner's session (an editor preview, an earlier sign-in on
+      // this device) used to hijack the refresh - the app would reopen as the Admin
+      // instead of the client whose visit this actually is. The tab's session token wins.
       const sessionToken = getSessionToken();
-      if (sessionToken && !appParams.token) {
+      if (sessionToken) {
         base44.auth.setToken(sessionToken, false);
       }
       
