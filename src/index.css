@@ -1914,6 +1914,16 @@
   color: #6B7280;
 }
 
+/* Same rescue for the foreground token: suggestion lines (and any text
+   that carries text-foreground inside the sheet) were still picking up
+   the studio's dark-theme white - near-invisible on the cream paper.
+   Inside the sheet, foreground is ink. */
+.resume-sheet .text-foreground,
+.resume-sheet .text-foreground\/90,
+.resume-sheet .text-foreground\/80 {
+  color: #1F2937;
+}
+
 .resume-sheet textarea:focus,
 .resume-sheet textarea:focus-visible {
   background: transparent;
