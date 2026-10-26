@@ -10,6 +10,10 @@ const clearStoredAccessToken = () => {
 	window.localStorage.removeItem('token');
 }
 
+// Bumped with every publish-relevant change so the live bundle can be
+// identified with one search in the browser console or the served JS.
+export const APP_BUILD_TAG = 'auth-gate-v2';
+
 const getAppParams = () => {
 	if (isClearAccessTokenRequested()) {
 		clearStoredAccessToken();

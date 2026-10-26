@@ -112,6 +112,17 @@ export const AuthProvider = ({ children }) => {
         if (sessionToken || (signedInThisLoad && appParams.token)) {
           await checkUserAuth();
         } else {
+          // No legitimate session: strip whatever stale key the SDK captured at
+          // module load too, or data calls would keep running as its owner even
+          // while the login screen shows. Storage was already swept; this clears
+          // the in-memory copy.
+          if (appParams.token) {
+            try {
+              base44.auth.logout();
+            } catch {
+              // The SDK has nothing to strip; nothing else to do.
+            }
+          }
           setIsLoadingAuth(false);
           setIsAuthenticated(false);
           setAuthChecked(true);
