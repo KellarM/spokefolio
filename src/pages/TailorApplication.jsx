@@ -218,6 +218,18 @@ export default function TailorApplication() {
             )}
 
             <div className={postingId ? 'mt-5' : ''}>
+              {/* The mic leads the section: speak the posting details instead of typing them.
+                  Words land in the job description box, ready to check. */}
+              <div className="mb-3 flex flex-wrap items-center gap-3">
+                <DictateButton
+                  onText={(transcript) =>
+                    setForm({ ...form, job_description: appendLine(form.job_description, transcript) })
+                  }
+                />
+                <span className="text-[12px] text-muted-foreground">
+                  Say the posting out loud — the words land in the job description box below.
+                </span>
+              </div>
               <PostingImportForm
                 title="Bring in the posting"
                 hint="Read it from a link, or paste the text. Either way the details land in the fields below, for you to check first."
@@ -263,12 +275,6 @@ export default function TailorApplication() {
                 onChange={(event) => setForm({ ...form, job_description: event.target.value })}
                 placeholder="Paste the whole posting here — responsibilities, requirements, the things the company cares about."
                 className="mt-2 text-[14px] leading-relaxed"
-              />
-              <DictateButton
-                className="mt-2"
-                onText={(transcript) =>
-                  setForm({ ...form, job_description: appendLine(form.job_description, transcript) })
-                }
               />
               <p className="mt-2 text-[12px] text-muted-foreground">
                 The more of the posting you paste, the sharper the match.
