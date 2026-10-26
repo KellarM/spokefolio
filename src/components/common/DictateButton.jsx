@@ -21,7 +21,7 @@ export default function DictateButton({ onText, label = 'Tap to Talk', className
       aria-label={recording ? 'Stop talking' : 'Tap to talk'}
       className={cn(
         'rounded-full',
-        recording && 'dictate-live',
+        recording ? 'dictate-live' : 'dictate-tap',
         label ? 'text-muted-foreground hover:text-foreground' : 'h-8 w-8 shrink-0 px-0 text-muted-foreground hover:text-foreground',
         className
       )}

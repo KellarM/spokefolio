@@ -16,7 +16,7 @@ export default function VoiceDictation({ onTranscript }) {
           <Square className="mr-2 h-3.5 w-3.5" /> {t('history.vstop')}
         </Button>
       ) : (
-        <Button type="button" variant="secondary" className="rounded-full" onClick={start} disabled={busy}>
+        <Button type="button" variant="secondary" className="dictate-tap rounded-full" onClick={start} disabled={busy}>
           {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mic className="mr-2 h-4 w-4" />}
           {busy ? t('history.vwriting') : seconds ? t('history.vrecordAnother') : t('history.tapToTalk')}
         </Button>

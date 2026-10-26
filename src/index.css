@@ -2385,16 +2385,31 @@ select option {
 }
 
 
+/* Tap to Talk: a RED button, full stop. Resting = solid red, high contrast.
+   Live = deeper red with a pulsing ring so 'actively listening' reads at a glance. */
+.dictate-tap {
+  background: #DC2626 !important;
+  color: #ffffff !important;
+  border: 1px solid #F87171 !important;
+  font-weight: 600;
+  box-shadow: 0 4px 14px -6px rgba(220, 38, 38, 0.7);
+}
+
+.dictate-tap:hover {
+  background: #EF4444 !important;
+  color: #ffffff !important;
+}
+
 /* Tap to Talk, live: an unmissable red while the mic is listening. */
 .dictate-live {
-  background: #DC2626 !important;
+  background: #B91C1C !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.3);
   animation: dictatePulse 1.6s ease-in-out infinite;
 }
 
 .dictate-live:hover {
-  background: #b91c1c !important;
+  background: #991B1B !important;
   color: #ffffff !important;
 }
 
