@@ -74,12 +74,13 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
 
-      // No sign-in was made moments ago, so any key an earlier visit left on
-      // this device is withdrawn here: opening the studio always starts at the
-      // sign-in page, and nothing carries the last visit forward.
+      // No sign-in was made moments ago, but the tab's session token still
+      // counts: sessionStorage lives exactly as long as this tab's visit, so
+      // a refresh or freeze mid-visit keeps the person signed in, while a
+      // closed browser (the shared-device rule) still leaves nothing behind.
+      // Persistent remembered keys in localStorage are withdrawn either way.
       if (!signedInThisLoad) {
         clearRememberedKeys();
-        clearSessionToken();
       }
 
       // A session-only login (remember me off) is handed to the SDK in memory, never saved here.
@@ -92,8 +93,10 @@ export const AuthProvider = ({ children }) => {
         const publicSettings = await base44.app.getPublicSettings();
         setAppPublicSettings(publicSettings);
         
-        // If we got the app public settings successfully, check if user is authenticated
-        if (signedInThisLoad && (appParams.token || sessionToken)) {
+        // If we got the app public settings successfully, check if user is authenticated.
+        // A token from this visit's session store is as good as one from a fresh
+        // sign-in: the visit continues.
+        if (appParams.token || sessionToken) {
           await checkUserAuth();
         } else {
           setIsLoadingAuth(false);
@@ -154,6 +157,9 @@ export const AuthProvider = ({ children }) => {
       setAuthChecked(true);
     } catch (error) {
       console.error('User auth check failed:', error);
+      // A token that no longer checks out is dead: withdraw it so the next
+      // load does not keep trying to raise it.
+      clearSessionToken();
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       setAuthChecked(true);
@@ -170,6 +176,14 @@ export const AuthProvider = ({ children }) => {
 
   const logout = (shouldRedirect = true) => {
     clearSessionToken();
+    // The entered/route marks follow the session out: after signing out, the
+    // next load starts at the studio door like any new visit.
+    try {
+      window.sessionStorage.removeItem('sf_entered');
+      window.sessionStorage.removeItem('sf_route');
+    } catch {
+      // Storage may be unavailable; nothing else to sweep.
+    }
     // A remembered key dies with the session, not with the browser: signing
     // out must work on a shared computer, not just on the owner's own.
     clearRememberedKeys();
