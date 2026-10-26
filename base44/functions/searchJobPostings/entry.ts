@@ -299,7 +299,7 @@ export default async function (req) {
     // so a caller can pass it explicitly.
     const language = cleanText(body?.language || body?.profile?.preferred_language || '', 40) || 'English';
     const category = cleanText(body?.category, 120);
-    const homeLocation = cleanText(body?.homeLocation || body?.profile?.location, 160);
+    const homeLocation = cleanText(body?.homeLocation || body?.profile?.home_address || body?.profile?.location, 160);
     const location = cleanText(body?.location, 120) || homeLocation;
 
     const wantedDistance = Number(body?.distanceKm);

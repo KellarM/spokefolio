@@ -42,7 +42,8 @@ export default function JobSearchPanel({ onResults, initial }) {
         language: (profile.preferred_language || '').trim(),
         category: category.trim(),
         location: place.trim(),
-        homeLocation: (profile.location_full || profile.location || place || '').trim(),
+        // The commute is measured from the person's actual front door when we have it.
+        homeLocation: (profile.home_address || profile.location_full || profile.location || place || '').trim(),
         distanceKm: distance,
         minPay,
         payPeriod: period

@@ -55,6 +55,8 @@ export async function estimateCommutes(base44, items, homeLocation = '') {
         '- Never invent a street number. If only a city or area is known, name that area (for example "Edmonton, AB (South Edmonton)" or "Edmonton, AB (city centre)") and measure driving distance from the candidate\'s home to that area.',
         '- Every non-remote posting with a known city or area MUST receive a positive numeric distance_km and drive_minutes measured from the candidate\'s home.',
         '- If the role is strictly 100% work-from-home / remote with no physical site, return 0 for distance_km and drive_minutes.',
+        '- Place the candidate\'s home address EXACTLY as given - it is a real street address, geocode it before measuring. Never relocate or reinterpret it.',
+        '- If you cannot confidently place EITHER the home or the work site, return -1 for both distance_km and drive_minutes. An unknown answer is correct; a guessed one is a lie.',
         '- distance_km is driving distance in kilometres to one decimal place. drive_minutes is typical driving time in whole minutes in normal traffic.',
         '',
         'Postings:',
@@ -83,11 +85,26 @@ export async function estimateCommutes(base44, items, homeLocation = '') {
     });
 
     const map = new Map();
+    // A city token shared by home and work site (e.g. both say 'Edmonton'):
+    // a driving distance far beyond city scale is not an estimate, it is a
+    // geocoding failure. Show nothing rather than a lie.
+    const cityToken = (home.match(/[A-Za-z]+/g) || ['x', 'y']).filter(Boolean);
+    const homeCities = new Set(cityToken.map((w) => w.toLowerCase()));
+    const sameCityCap = (address) => {
+      const words = (address.match(/[A-Za-z]+/g) || []).map((w) => w.toLowerCase());
+      return words.some((w) => homeCities.has(w) && w.length > 3);
+    };
     for (const row of result?.results || []) {
       if (!row || row.id == null) continue;
       const address = typeof row.address === 'string' ? row.address.trim() : '';
-      const dist = Number(row.distance_km);
-      const mins = Number(row.drive_minutes);
+      let dist = Number(row.distance_km);
+      let mins = Number(row.drive_minutes);
+      if (sameCityCap(address) && dist > 100) {
+        // Both ends in the same city but a continent-scale number: the
+        // estimate failed. Null it; the UI shows no distance instead.
+        dist = -1;
+        mins = -1;
+      }
       map.set(String(row.id), {
         work_address: address,
         drive_distance_km: Number.isFinite(dist) && dist > 0 ? Math.round(dist * 10) / 10 : null,
