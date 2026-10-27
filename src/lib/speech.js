@@ -48,7 +48,10 @@ export const primeVoices = () => {
 
 // Known female and male voice names across Windows, macOS and Chrome's
 // network voices - the mascot reads warmer, so it leans female.
-const FEMALE = /samantha|zira|susan|hazel|aria|jenny|ana|sonia|libby|emma|michelle|ava|allison|victoria|fiona|karen|moira|tessa|serena|nicky|natasha|linda|heather|salli|joanna|kendra|kimberly|amy|ivy|aria|catherine|celine|elizabeth|clara|nat/i;
+// Word-bounded: "Online (Natural)" must never count as a female voice
+// (its "nat" is not the name "Nat"), and "Google UK English Female"
+// must - the label itself is the signal there.
+const FEMALE = /\b(female|samantha|zira|susan|hazel|aria|jenny|ana|amelie|sonia|libby|emma|michelle|ava|allison|victoria|fiona|karen|moira|tessa|serena|nicky|natasha|linda|heather|salli|joanna|kendra|kimberly|amy|ivy|catherine|celine|elizabeth|clara)\b/i;
 const MALE = /david|mark|daniel|alex|fred|george|james|ryan|thomas|guy|brian|arthur|oliver|liam|noah|steffan|christopher|eric|christopher|richard|brian/i;
 
 // Scoring is pure: given the pool, the language, the profile and the voice
@@ -80,10 +83,20 @@ export const PROFILE_SHAPE = {
 
 export function pickVoice(voices, lang, profile, taken) {
   const langBase = String(lang || 'en').slice(0, 2);
-  const ranked = voices
+  const rank = (pool) => pool
     .map((voice) => ({ voice, score: scoreVoice(voice, langBase, profile, taken) }))
     .filter((entry) => entry.score >= 0)
     .sort((a, b) => b.score - a.score);
+  if (profile === 'mascot') {
+    // The mascot has exactly one voice: a female one. If the language
+    // offers any female voice the assistant did not take, the mascot's
+    // candidates are female voices only - it can never fall back to the
+    // other voice.
+    const female = rank(voices.filter((voice) => FEMALE.test((voice.name || '').toLowerCase())));
+    const available = female.filter((entry) => entry.voice.name !== taken);
+    if (available.length) return available[0].voice;
+  }
+  const ranked = rank(voices);
   return ranked.length ? ranked[0].voice : null;
 }
 
@@ -122,6 +135,24 @@ export function shapeUtterance(utterance, { lang, profile = 'assistant' }) {
   return utterance;
 }
 
+// The browser's voice list lands a beat after the page does. The mascot
+// waits for it (bounded) so its very first line is already in its own
+// voice - never the default robot the assistant is allowed to use.
+export const whenVoicesReady = (timeoutMs = 2500) => new Promise((resolve) => {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return resolve(false);
+  primeVoices();
+  if (voicesCache.length) return resolve(true);
+  let waited = 0;
+  const poll = setInterval(() => {
+    refreshVoices();
+    waited += 200;
+    if (voicesCache.length || waited >= timeoutMs) {
+      clearInterval(poll);
+      resolve(voicesCache.length > 0);
+    }
+  }, 200);
+});
+
 // Speak a line with a profile. Resolves when the line ends (or the safety
 // net fires). Skips if something is already being said - the mascot never
 // tramples the working voice mid-sentence.
@@ -130,6 +161,19 @@ export function speak(text, { lang, profile = 'assistant' } = {}) {
     if (typeof window === 'undefined' || !window.speechSynthesis || !text) return resolve();
     try {
       if (window.speechSynthesis.speaking && profile === 'mascot') return resolve();
+      if (profile === 'mascot' && !voiceFor(lang, profile)) {
+        // No voice attached yet: wait for the pool, and if no voice can be
+        // attached, the mascot stays silent rather than speak as someone
+        // else. The bubble still shows the line.
+        whenVoicesReady().then((ready) => {
+          if (ready && voiceFor(lang, profile)) {
+            speak(text, { lang, profile }).then(resolve);
+          } else {
+            resolve();
+          }
+        });
+        return;
+      }
       const utterance = shapeUtterance(new SpeechSynthesisUtterance(text), { lang, profile });
       let settled = false;
       const done = () => {
