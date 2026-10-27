@@ -65,6 +65,38 @@ export default function ContactForm({ profile, onSave }) {
   const { recording, busy, seconds, start, stop } = useDictation(applyTranscript);
   const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
+  const submit = async () => {
+    setSaving(true);
+    try {
+      // The final guarantee before anything is stored: a home address that
+      // carries a city fills Location, whatever path it arrived by - voice,
+      // typing, a paste. The voice path already tried; this catches the rest.
+      let next = form;
+      if (!form.location && form.home_address) {
+        try {
+          const { searchInText } = await import('@/lib/locations');
+          const place = searchInText(form.home_address);
+          if (place?.label) {
+            next = { ...form, location: place.label };
+            setForm(next);
+          }
+        } catch {}
+      }
+      await onSave(next);
+      toast({ title: t('profile.detailsSaved') });
+      setSaving(false);
+      return true;
+    } catch (error) {
+      toast({
+        title: t('profile.couldNotSave'),
+        description: error?.response?.data?.error || error.message,
+        variant: 'destructive'
+      });
+      setSaving(false);
+      return false;
+    }
+  };
+
   // Voice Mode: hands-free conversation. One tap, then the person talks and
   // the app answers out loud until they say close. Details land the same way.
   const voice = useVoiceMode({
@@ -73,7 +105,10 @@ export default function ContactForm({ profile, onSave }) {
     onApply: (parsed) => {
       setForm((prev) => ({ ...prev, ...parsed }));
       applyCityFromAddress(parsed);
-    }
+    },
+    // Saying "save" in a session runs the exact same path as the button -
+    // including the save-time city derivation - then the session ends.
+    onSave: submit
   });
 
   useEffect(() => {
@@ -97,34 +132,6 @@ export default function ContactForm({ profile, onSave }) {
     }
   }, [profile]);
 
-  const submit = async () => {
-    setSaving(true);
-    try {
-      // The final guarantee before anything is stored: a home address that
-      // carries a city fills Location, whatever path it arrived by - voice,
-      // typing, a paste. The voice path already tried; this catches the rest.
-      let next = form;
-      if (!form.location && form.home_address) {
-        try {
-          const { searchInText } = await import('@/lib/locations');
-          const place = searchInText(form.home_address);
-          if (place?.label) {
-            next = { ...form, location: place.label };
-            setForm(next);
-          }
-        } catch {}
-      }
-      await onSave(next);
-      toast({ title: t('profile.detailsSaved') });
-    } catch (error) {
-      toast({
-        title: t('profile.couldNotSave'),
-        description: error?.response?.data?.error || error.message,
-        variant: 'destructive'
-      });
-    }
-    setSaving(false);
-  };
 
   return (
     <div className="mec-panel">

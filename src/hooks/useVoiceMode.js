@@ -18,6 +18,7 @@ const BARGE_SUSTAIN_MS = 400;     // ...sustained for this long, so the app neve
 
 const CLOSERS = ['close', 'stop', "that's all", 'thats all', "that's it", 'thats it', 'goodbye', 'end session', 'terminar', 'termina', 'terminer', 'auf wiedersehen', 'tschuess'];
 const CONFIRMERS = ['correct', "that's correct", 'thats correct', 'keep it', 'keep', 'save it', 'yes', 'sounds good', 'perfect', 'si', 'sí', 'oui', 'ja', 'certo', 'corretto', 'richtig', 'perfecto'];
+const SAVERS = ['save', 'save it', "save it now", 'save my details', 'save everything', 'guardar', 'guardalo', 'enregistrer', 'enregistre', 'speichern', 'salvare', 'salva', 'salvar', 'salve'];
 const REDOERS = ['redo', 'wrong', 'nope', 'try again', 'say it again', 'change it', "isn't right", 'mentira', 'nochmal', 'wiederholen', 'corrige'];
 
 // Commands match whole words only, accented or not: "Jane" must never
@@ -31,7 +32,7 @@ const LANG_TO_BCP47 = {
   Deutsch: 'de-DE', 'Italiano': 'it-IT', 'Português': 'pt-BR'
 };
 
-export default function useVoiceMode({ t, onApply, language }) {
+export default function useVoiceMode({ t, onApply, onSave, language }) {
   const [active, setActive] = useState(false);
   const [phase, setPhase] = useState('idle'); // idle | listening | writing | speaking | closing
   const [said, setSaid] = useState('');
@@ -45,9 +46,11 @@ export default function useVoiceMode({ t, onApply, language }) {
   const turnResolveRef = useRef(null);
   const tRef = useRef(t);
   const onApplyRef = useRef(onApply);
+  const onSaveRef = useRef(onSave);
   const langRef = useRef(language);
   tRef.current = t;
   onApplyRef.current = onApply;
+  onSaveRef.current = onSave;
   langRef.current = language;
 
   // Speak one line, then resolve. The text always lands on screen too, so a
@@ -186,6 +189,19 @@ export default function useVoiceMode({ t, onApply, language }) {
       await say(tRef.current('voice.closed'), { bargeable: false });
       stopSession();
       return;
+    }
+
+    // The total verbal loop: saying save stores the form and ends the
+    // session. It also carries any pending answer into the save, so
+    // "save" doubles as a final "correct".
+    if (text && matchesAny(lower, SAVERS)) {
+      applyPending();
+      setPhase('speaking');
+      let ok = false;
+      try { ok = await onSaveRef.current?.(); } catch { ok = false; }
+      await say(ok ? tRef.current('voice.saved') : tRef.current('voice.saveFailed'), { bargeable: false });
+      if (ok) stopSession();
+      return; // a failed save keeps the session alive for another try
     }
 
     const parsed = text ? parseSpokenDetails(text) : {};
