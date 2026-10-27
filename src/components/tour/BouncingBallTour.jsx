@@ -48,12 +48,30 @@ const spotIsClear = (left, top) => {
     [left + inset, top + BALL_SIZE - inset],
     [left + BALL_SIZE - inset, top + BALL_SIZE - inset]
   ];
-  return points.every(([x, y]) => {
-    const hit = document.elementFromPoint(x, y);
-    if (!hit || !hit.closest) return true;
-    if (hit.closest('.tour-ball-wrap')) return true; // its own footprint
-    return !hit.closest(TEXTISH);
-  });
+  return points.every(([x, y]) => pointIsClear(x, y));
+};
+
+// Is this exact point free of words and controls? The caret APIs resolve
+// the true text node under the point, so a padded container around text
+// (the greeting pill) no longer reads as clear space - that hole is what
+// parked the ball on the greeting.
+const pointIsClear = (x, y) => {
+  const element = document.elementFromPoint(x, y);
+  if (!element) return true;
+  if (element.closest && element.closest('.tour-ball-wrap')) return true;
+  if (element.closest && element.closest('button, a, input, textarea, select, img, svg, label')) return false;
+  try {
+    let node = null;
+    if (document.caretRangeFromPoint) {
+      const range = document.caretRangeFromPoint(x, y);
+      node = range ? range.startContainer : null;
+    } else if (document.caretPositionFromPoint) {
+      const position = document.caretPositionFromPoint(x, y);
+      node = position ? position.offsetNode : null;
+    }
+    if (node && node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()) return false;
+  } catch {}
+  return true;
 };
 
 // Center-high first (the menu opens below it), then the right column top
@@ -129,6 +147,12 @@ const anchorElement = (step, pathname, celebrated) => {
   }
   if ((step === 'files' || step === 'files_add') && pathname === '/documents' && !celebrated) {
     return document.querySelector('[data-tour="uploader"]');
+  }
+  // A step whose page is elsewhere anchors beside the Overview's hero
+  // copy - 'tap me and I'll take you there' is spoken from clear space,
+  // never parked on the greeting (Michael, Oct 26).
+  if (pathname === '/') {
+    return document.querySelector('[data-tour="overview-copy"]');
   }
   return null;
 };
@@ -251,6 +275,14 @@ export default function BouncingBallTour() {
     if (left + BALL_SIZE > window.innerWidth - EDGE) left = rect.left - BALL_SIZE - 14;
     left = Math.max(EDGE, Math.min(left, window.innerWidth - BALL_SIZE - EDGE));
     top = Math.max(TOP_FLOOR, Math.min(top, window.innerHeight - BALL_SIZE - EDGE));
+    if (!spotIsClear(left, top)) {
+      // Never on top of the words: a collision at the anchored spot
+      // steps aside to a clear position instead.
+      setPos({ ...parkPosition(), anchored: false });
+      setBubbleBelow(false);
+      setBubbleShift(false);
+      return;
+    }
     setPos({ left, top, anchored: true });
     setBubbleBelow(top <= TOP_FLOOR + 30);
     setBubbleShift(left + BALL_SIZE > window.innerWidth - 180);
