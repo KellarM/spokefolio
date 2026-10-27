@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Check, ChevronRight, Loader2, MessageSquarePlus, X } from 'lucide-react';
+import { Check, ChevronRight, Loader2, MessageSquarePlus, Mic, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import DictateButton from '@/components/common/DictateButton';
 import { appendLine } from '@/hooks/useDictation';
+import usePromptVoice from '@/hooks/usePromptVoice';
 
 export default function SuggestionPanel({ entry, busy, onSubmit, onFinish }) {
   const suggestions = entry.suggestions || [];
@@ -11,6 +12,17 @@ export default function SuggestionPanel({ entry, busy, onSubmit, onFinish }) {
   const current = suggestions[index];
   const [showComment, setShowComment] = useState(false);
   const [comment, setComment] = useState('');
+
+  // Voice Mode for the prompts: the panel speaks each question, the client
+  // answers out loud - the detail itself, or no / next / save / close.
+  const voice = usePromptVoice({
+    getPrompt: () => current || '',
+    onAnswer: async (decision, text) => {
+      if (decision === 'yes') setComment(text);
+      await onSubmit({ decision, comment: text });
+    },
+    onFinish
+  });
 
   useEffect(() => {
     setShowComment(false);
@@ -67,6 +79,33 @@ export default function SuggestionPanel({ entry, busy, onSubmit, onFinish }) {
       <p key={index} className="animate-rise mt-5 font-heading text-[19px] leading-snug">
         {current}
       </p>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {voice.active ? (
+          <>
+            <Button type="button" onClick={voice.stopSession} className="dictate-voice-live rounded-full">
+              <Mic className="mr-2 h-3.5 w-3.5" /> Stop Voice Mode
+            </Button>
+            <span className="text-[11.5px] text-muted-foreground">
+              {voice.phase === 'speaking' ? 'Speaking…' : voice.phase === 'listening' ? 'Listening…' : voice.phase === 'writing' ? 'Writing it down…' : ''}
+            </span>
+          </>
+        ) : (
+          <>
+            <Button
+              type="button"
+              onClick={voice.startSession}
+              disabled={busy}
+              className="dictate-voice rounded-full"
+            >
+              <Mic className="mr-2 h-3.5 w-3.5" /> Voice Mode
+            </Button>
+            <span className="text-[11.5px] text-muted-foreground">
+              I read each prompt aloud - answer with the detail, or say no, next, save, or close.
+            </span>
+          </>
+        )}
+      </div>
 
       {showComment ? (
         <div className="mt-4 space-y-3">
