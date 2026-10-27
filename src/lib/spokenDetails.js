@@ -41,13 +41,13 @@ export function parseSpokenDetails(raw) {
   const addrM = clean.match(new RegExp('(?:' + ADDRESS_CUES + ')\\s*(.{6,120}?)(?=\\s*(?:,?\\s*(?:and\\s+|und\\s+)?(?:' + VALUE_BOUNDARIES + ')\\s|\\.\\s*|\\.|;|!|$))', 'i'));
   if (addrM) out.home_address = addrM[1].replace(/\s+/g, ' ').replace(/[,.;]+$/, '').trim();
 
-  if (!out.home_address) {
-    // Commas stay inside the city capture so "Edmonton, Alberta" keeps its
-    // province; the lookahead stops at sentence punctuation, the next
-    // detail, "and", or the end.
-    const locM = clean.match(new RegExp('(?:' + LOCATION_CUES + ')\\s+([A-Za-z\u00C0-\u017F ,\'-]{2,60}?)(?=\\s*(?:\\.|;|!|\\s+my\\s|\\s+mi\\s|\\s+mon\\s|\\s+meine\\s|\\s+meu\\s|\\s+and\\s|\\s+i\\s+live|\\s+i\\s+speak|$))', 'i'));
-    if (locM) out.location = locM[1].replace(/\s+/g, ' ').replace(/[,.;]+$/, '').trim();
-  }
+  // The city capture runs on its own cue ("I live in..."), independent of the
+  // address capture above: a person often gives both a street address and a
+  // city in the same breath, and each belongs in its own field. Commas stay
+  // inside the capture so "Edmonton, Alberta" keeps its province; the
+  // lookahead stops at sentence punctuation, the next detail, "and", or the end.
+  const locM = clean.match(new RegExp('(?:' + LOCATION_CUES + ')\\s+([A-Za-z\u00C0-\u017F ,\'-]{2,60}?)(?=\\s*(?:\\.|;|!|\\s+my\\s|\\s+mi\\s|\\s+mon\\s|\\s+meine\\s|\\s+meu\\s|\\s+and\\s|\\s+i\\s+live|\\s+i\\s+speak|$))', 'i'));
+  if (locM) out.location = locM[1].replace(/\s+/g, ' ').replace(/[,.;]+$/, '').trim();
 
   const low = ' ' + clean.toLowerCase() + ' ';
   for (const [word, value] of Object.entries(SPOKEN_LANGUAGES)) {
