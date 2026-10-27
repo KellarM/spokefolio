@@ -87,6 +87,24 @@ const anchorElement = (step, pathname, celebrated) => {
   return null;
 };
 
+// The idle ball directs, never decorates: outside a journey it anchors
+// to the page's primary action and speaks the next step from there.
+const idleAnchorElement = (pathname) => {
+  if (pathname === '/history') return document.querySelector('[data-tour="dictation"]');
+  if (pathname === '/documents') return document.querySelector('[data-tour="uploader"]');
+  if (pathname === '/profile') return document.querySelector('[data-tour="voice"]');
+  if (pathname === '/postings') return document.querySelector('[data-tour="job-search"]');
+  return null;
+};
+
+const idleCaptionKey = (pathname) =>
+  ({
+    '/history': 'tour.idleHistory',
+    '/documents': 'tour.idleDocuments',
+    '/profile': 'tour.idleProfile',
+    '/postings': 'tour.idlePostings'
+  })[pathname];
+
 // The element each step should bring into view - the ball moves the
 // client to the work, not just to a page. An anchor the client cannot see
 // is worse than no anchor: the ball floats in the viewport pointing at
@@ -146,7 +164,7 @@ export default function BouncingBallTour() {
   // and story steps, centered on the Overview, cornered on every other page.
   const compute = useCallback(() => {
     if (!active && !idle) return;
-    const el = active ? anchorElement(step, pathname, celebrated) : null;
+    const el = active ? anchorElement(step, pathname, celebrated) : idleAnchorElement(pathname);
     if (!el) {
       // Parked: always middle-high on the screen - never the corner. The
       // menu opens below the ball and must stay fully in frame and
@@ -353,6 +371,9 @@ export default function BouncingBallTour() {
     };
 
     const NudgeIcon = nudge ? NUDGE_ICON[nudge.kind] : null;
+    // What the idle ball says at its anchor: a data-driven nudge first,
+    // otherwise the page's own next step.
+    const idleKey = nudge?.captionKey || idleCaptionKey(pathname);
     const centered = !pos.anchored && onHome;
 
     return (
@@ -391,6 +412,11 @@ export default function BouncingBallTour() {
             </span>
           </button>
         </div>
+        {pos.anchored && idleKey && !menuOpen && (
+          <div className={`tour-bubble ${bubbleBelow ? 'below ' : ''}${bubbleShift ? 'shift' : ''}`}>
+            {t(idleKey)}
+          </div>
+        )}
         {menuOpen && (
           <div className="tour-menu below" role="menu">
             {nudge && (

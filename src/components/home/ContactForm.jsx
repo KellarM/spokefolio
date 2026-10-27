@@ -140,7 +140,7 @@ export default function ContactForm({ profile, onSave }) {
         {t('profile.detailsLede')}
       </p>
 
-      <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-border/70 bg-secondary/40 px-4 py-3">
+      <div data-tour="voice" className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-border/70 bg-secondary/40 px-4 py-3">
         {recording ? (
           <Button type="button" onClick={stop} disabled={busy} className="dictate-live rounded-full">
             <Square className="mr-2 h-3.5 w-3.5" /> {t('history.vstop')} · {clock}

@@ -84,7 +84,7 @@ export default function JobSearchPanel({ onResults, initial }) {
   };
 
   return (
-    <section className="rounded-2xl border border-dashed border-border px-4 py-4 sm:px-5">
+    <section data-tour="job-search" className="rounded-2xl border border-dashed border-border px-4 py-4 sm:px-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="eyebrow">{t('postings.findPostings')}</p>
