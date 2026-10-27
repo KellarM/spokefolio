@@ -174,7 +174,7 @@ const idleAnchorElement = (pathname) => {
 const idleCaptionKey = (pathname) =>
   ({
     '/': 'tour.comeAlong',
-    '/history': 'tour.idleHistory',
+    '/history': 'tour.history',
     '/documents': 'tour.idleDocuments',
     '/profile': 'tour.idleProfile',
     '/postings': 'tour.idlePostings'
@@ -226,6 +226,9 @@ export default function BouncingBallTour() {
   const [hopKey, setHopKey] = useState(0);
   const [bubbleBelow, setBubbleBelow] = useState(false);
   const [bubbleShift, setBubbleShift] = useState(false);
+  // Pic 2's look: the bubble beside the ball, tail pointing at it,
+  // when the ball sits next to the action it is announcing.
+  const [bubbleSide, setBubbleSide] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [manual, setManual] = useState(null);
   const [retreat, setRetreat] = useState(false);
@@ -252,6 +255,7 @@ export default function BouncingBallTour() {
       setPos({ left: manual.left, top: manual.top, anchored: false });
       setBubbleBelow(false);
       setBubbleShift(false);
+      setBubbleSide(false);
       return;
     }
     // The Overview has one spot and only one spot (Michael, Oct 26): right
@@ -270,6 +274,27 @@ export default function BouncingBallTour() {
         setPos({ left, top, anchored: true });
         setBubbleBelow(false);
         setBubbleShift(false);
+        setBubbleSide(false);
+        return;
+      }
+    }
+    // Career History's spot (Michael, Oct 26): beside the action itself.
+    // When the dictation is the next action - idle, or the journey's story
+    // step before capture - the ball sits immediately left of the Tap to
+    // Talk row, level with the button, bubble pointing at it (Pic 2).
+    if (pathname === '/history' && !retreat && (!active || (step === 'story' && !celebrated))) {
+      const action = document.querySelector('[data-tour="dictation"]');
+      if (action) {
+        anchorElRef.current = action;
+        const actionRect = action.getBoundingClientRect();
+        const left = Math.max(EDGE, Math.round(actionRect.left) - BALL_SIZE - 14);
+        const top = Math.max(TOP_FLOOR, Math.round(actionRect.top + actionRect.height / 2 - BALL_SIZE / 2));
+        setPos({ left, top, anchored: true });
+        setBubbleBelow(false);
+        setBubbleShift(false);
+        // Side bubble only when the left margin actually has room for it;
+        // otherwise the bubble sits above the ball as everywhere else.
+        setBubbleSide(left > 300);
         return;
       }
     }
@@ -286,6 +311,7 @@ export default function BouncingBallTour() {
       setPos({ ...parkPosition(), anchored: false });
       setBubbleBelow(false);
       setBubbleShift(false);
+      setBubbleSide(false);
       return;
     }
     const rect = el.getBoundingClientRect();
@@ -300,11 +326,13 @@ export default function BouncingBallTour() {
       setPos({ ...parkPosition(), anchored: false });
       setBubbleBelow(false);
       setBubbleShift(false);
+      setBubbleSide(false);
       return;
     }
     setPos({ left, top, anchored: true });
     setBubbleBelow(top <= TOP_FLOOR + 30);
     setBubbleShift(left + BALL_SIZE > window.innerWidth - 180);
+    setBubbleSide(false);
   }, [active, idle, step, pathname, celebrated, manual, retreat]);
 
   useEffect(() => {
@@ -715,7 +743,7 @@ export default function BouncingBallTour() {
             tabIndex={-1}
             title={t('mascot.voiceHint')}
             onClick={toggleMute}
-            className={`tour-bubble cursor-pointer ${bubbleBelow ? 'below ' : ''}${bubbleShift ? 'shift' : ''}`}
+            className={`tour-bubble cursor-pointer ${bubbleSide ? 'side' : `${bubbleBelow ? 'below ' : ''}${bubbleShift ? 'shift' : ''}`}`}
           >
             {t(idleKey)}
           </div>
@@ -870,7 +898,7 @@ export default function BouncingBallTour() {
         </button>
       </div>
       <div
-        className={`tour-bubble ${pos.anchored ? `${bubbleBelow ? 'below ' : ''}${bubbleShift ? 'shift' : ''}` : 'side'}`}
+        className={`tour-bubble ${bubbleSide ? 'side' : pos.anchored ? `${bubbleBelow ? 'below ' : ''}${bubbleShift ? 'shift' : ''}` : 'side'}`}
         role="status"
         title={t('mascot.voiceHint')}
         onClick={(event) => {
