@@ -16,10 +16,28 @@ const SPOKEN_LANGUAGES = {
 const NAME_CUES = "my name is|name is|my name's|name's|i am|i'm|this is|call me|mi chiamo|me llamo|je m'appelle|m'appelle|ich heisse|heisse ich|ich hei\u00dfe|hei\u00dfe ich|meu nome \u00e9|me chamo|chamo-me|eu sou|soy yo";
 const ADDRESS_CUES = "my address is|address is|i live at|live at|located at|il mio indirizzo \u00e8|indirizzo \u00e8|mi direcci\u00f3n es|direcci\u00f3n es|mon adresse est|adresse est|meine adresse ist|adresse ist|meu endere\u00e7o \u00e9|endere\u00e7o \u00e9|moro na|moro no|moro em";
 const LOCATION_CUES = "i live in|vivo in|vivo a|vivo en|je vis \u00e0|j'habite \u00e0|j'habite \u00e0|ich lebe in|lebe in|moro em|habito en|habito em";
+const LINKEDIN_CUES = "my linkedin is|linkedin is|i'm on linkedin|im on linkedin|find me on linkedin|mi linkedin es|mon linkedin est";
+const WEBSITE_CUES = "my website is|website is|my site is|my webpage is|my web page is|my portfolio is|mi sitio web es|mon site web est|meine website ist|il mio sito \u00e8";
 
 // Words that end a captured value: the next detail, a language declaration,
 // or sentence punctuation.
-const VALUE_BOUNDARIES = "my|mi|mon|ma|meine|meu|minha|courriel|correo|email|mail|telefon|telephone|t\u00e9l\u00e9phone|telefono|telefone|phone|tel|hablo|parlo|parle|spreche|speak|i speak|i live|i am|vivo|vis|lebe|moro|habito|whats|what's";
+const VALUE_BOUNDARIES = "my|mi|mon|ma|meine|meu|minha|courriel|correo|email|mail|telefon|telephone|t\u00e9l\u00e9phone|telefono|telefone|phone|tel|hablo|parlo|parle|spreche|speak|i speak|i live|i am|vivo|vis|lebe|moro|habito|whats|what's|linkedin|website";
+
+// People say "linkedin dot com slash in slash michael" - turn the spoken
+// operators into the real characters before the value lands in the form.
+function normalizeSpokenUrl(value) {
+  return value
+    .replace(/\s*dot\s*/gi, '.')
+    .replace(/\s*slash\s*/gi, '/')
+    .replace(/\s*dash\s*/gi, '-')
+    .replace(/\s*underscore\s*/gi, '_')
+    .replace(/\s*at\s*sign\s*/gi, '@')
+    .replace(/^https?:\/\//i, '')
+    .replace(/^\.+/, '')
+    .replace(/\s+/g, '-')
+    .replace(/[-.,;]+$/, '')
+    .trim();
+}
 
 export function parseSpokenDetails(raw) {
   // Speech engines return curly apostrophes; the cues above are written
@@ -48,6 +66,24 @@ export function parseSpokenDetails(raw) {
   // lookahead stops at sentence punctuation, the next detail, "and", or the end.
   const locM = clean.match(new RegExp('(?:' + LOCATION_CUES + ')\\s+([A-Za-z\u00C0-\u017F ,\'-]{2,60}?)(?=\\s*(?:\\.|;|!|\\s+my\\s|\\s+mi\\s|\\s+mon\\s|\\s+meine\\s|\\s+meu\\s|\\s+and\\s|\\s+i\\s+live|\\s+i\\s+speak|$))', 'i'));
   if (locM) out.location = locM[1].replace(/\s+/g, ' ').replace(/[,.;]+$/, '').trim();
+
+  // LinkedIn: a spoken lead-in, or the URL itself said aloud.
+  const liM = clean.match(/(linkedin\.com\/(?:in|pub)\/[A-Za-z0-9._%-]+)/i) ||
+    clean.match(new RegExp('(?:' + LINKEDIN_CUES + ')\\s+([\\w ./-]{4,80}?)(?=\\s*(?:\\.\\s|;|!|\\s+my\\s|\\s+and\\s|\\s+i\\s|$))', 'i'));
+  if (liM) {
+    let value = normalizeSpokenUrl(liM[1]);
+    // The cue may have swallowed the word "linkedin"; a value that starts
+    // with "com/in" is missing its domain, and a bare handle gets the full
+    // profile URL so the field always holds a usable link.
+    if (/^com\/(?:in|pub)\//.test(value)) value = 'linkedin.' + value;
+    else if (/^(?:in|pub)\//.test(value)) value = 'linkedin.com/' + value;
+    else if (!/^linkedin\.com/i.test(value)) value = 'linkedin.com/in/' + value;
+    out.linkedin = value;
+  }
+
+  // Website: spoken lead-in; "dot com" spelled out is normalized.
+  const wsM = clean.match(new RegExp('(?:' + WEBSITE_CUES + ')\\s+([\\w .:\/~#@!$&+,;=%\'-]{3,100}?)(?=\\s*(?:\\.\\s|;|!|\\s+my\\s|\\s+and\\s|\\s+i\\s|$))', 'i'));
+  if (wsM) out.website = normalizeSpokenUrl(wsM[1]);
 
   const low = ' ' + clean.toLowerCase() + ' ';
   for (const [word, value] of Object.entries(SPOKEN_LANGUAGES)) {

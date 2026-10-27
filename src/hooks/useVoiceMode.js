@@ -13,6 +13,8 @@ const SPEECH_MIN_MS = 350;        // speech must last this long before silence-s
 const LISTEN_NUDGE_MS = 12000;    // nothing said: show the hint again
 const SESSION_MAX_TURNS = 40;     // hard stop so a forgotten tab never runs forever
 const LEVEL_THRESHOLD = 0.015;   // quiet rooms sit far below this; AGC lifts speech above it
+const BARGE_LEVEL = 0.05;         // barge-in needs a voice louder than speaker echo
+const BARGE_SUSTAIN_MS = 400;     // ...sustained for this long, so the app never cuts itself off
 
 const CLOSERS = ['close', 'stop', "that's all", 'thats all', "that's it", 'thats it', 'goodbye', 'end session', 'terminar', 'termina', 'terminer', 'auf wiedersehen', 'tschuess'];
 const CONFIRMERS = ['correct', "that's correct", 'thats correct', 'keep it', 'keep', 'save it', 'yes', 'sounds good', 'perfect', 'si', 'sí', 'oui', 'ja', 'certo', 'corretto', 'richtig', 'perfecto'];
@@ -50,10 +52,24 @@ export default function useVoiceMode({ t, onApply, language }) {
 
   // Speak one line, then resolve. The text always lands on screen too, so a
   // person who cannot hear the app still sees every answer.
-  const say = (text) => new Promise((resolve) => {
+  // Barge-in: while the app speaks, the microphone listens for a loud,
+  // sustained voice. Hearing one cuts the speech mid-sentence and hands
+  // the session straight back to the person - their command comes next.
+  const say = (text, { bargeable = true } = {}) => new Promise((resolve) => {
     setSaid(text);
     let settled = false;
-    const done = () => { if (!settled) { settled = true; resolve(); } };
+    let bargeRecorder = null;
+    let bargeSustain = 0;
+    let lastLevelAt = 0;
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      if (bargeRecorder) {
+        try { bargeRecorder.dispose(); } catch {}
+        bargeRecorder = null;
+      }
+      resolve();
+    };
     try {
       const synth = window.speechSynthesis;
       if (!synth || !window.SpeechSynthesisUtterance) return done();
@@ -64,6 +80,34 @@ export default function useVoiceMode({ t, onApply, language }) {
       utterance.onerror = done;
       setTimeout(done, 2500 + text.length * 70); // safety net: never hang the session
       synth.speak(utterance);
+      if (bargeable && activeRef.current) {
+        try {
+          bargeRecorder = createDictationRecorder({
+            onLevel: (peak) => {
+              const now = Date.now();
+              if (!lastLevelAt) { lastLevelAt = now; return; }
+              if (peak > BARGE_LEVEL) bargeSustain += now - lastLevelAt;
+              else bargeSustain = 0;
+              lastLevelAt = now;
+              if (bargeSustain >= BARGE_SUSTAIN_MS) {
+                bargeSustain = 0;
+                try { synth.cancel(); } catch {}
+                done(); // resolves early; the session opens the mic for the command
+              }
+            }
+          });
+          bargeRecorder.start().then((ok) => {
+            if (!ok || settled) done();
+          }).catch(() => {
+            // No barge microphone (iOS, denied permission): speech simply
+            // plays to the end, as before.
+            if (bargeRecorder) { try { bargeRecorder.dispose(); } catch {} }
+            bargeRecorder = null;
+          });
+        } catch {
+          bargeRecorder = null;
+        }
+      }
     } catch {
       done();
     }
@@ -119,7 +163,9 @@ export default function useVoiceMode({ t, onApply, language }) {
       phone: tRef.current('profile.phone'),
       home_address: tRef.current('profile.homeAddress'),
       location: tRef.current('profile.location'),
-      preferred_language: tRef.current('profile.language')
+      preferred_language: tRef.current('profile.language'),
+      linkedin: 'LinkedIn',
+      website: 'Website'
     };
     return Object.entries(parsed)
       .map(([key, value]) => `${names[key] || key}: ${value}`)
@@ -137,7 +183,7 @@ export default function useVoiceMode({ t, onApply, language }) {
     if (text && matchesAny(lower, CLOSERS)) {
       applyPending();
       setPhase('closing');
-      await say(tRef.current('voice.closed'));
+      await say(tRef.current('voice.closed'), { bargeable: false });
       stopSession();
       return;
     }
@@ -147,7 +193,7 @@ export default function useVoiceMode({ t, onApply, language }) {
       applyPending(); // a new answer replaces whatever was still waiting
       pendingRef.current = parsed;
       setPhase('speaking');
-      await say(`${tRef.current('voice.heardPrefix')} ${spokenDetails(parsed)}. ${tRef.current('voice.confirmPrompt')}`);
+      await say(`${tRef.current('voice.heardPrefix')} ${spokenDetails(parsed)}. ${tRef.current('voice.confirmShort')}`);
       return;
     }
 
@@ -259,7 +305,7 @@ export default function useVoiceMode({ t, onApply, language }) {
     if (activeRef.current) {
       applyPending();
       setPhase('closing');
-      await say(tRef.current('voice.closed'));
+      await say(tRef.current('voice.closed'), { bargeable: false });
       stopSession();
     }
   };
