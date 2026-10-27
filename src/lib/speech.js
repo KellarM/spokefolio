@@ -69,8 +69,10 @@ export function scoreVoice(voice, langBase, profile, taken) {
   if (name.includes('microsoft')) score += 30;
   if (name.includes('compact') || name.includes('eloquence')) score -= 80; // the robots of the pool
   if (profile === 'mascot' && FEMALE.test(name)) score += 40;
-  // The assistant once leaned toward male voices - part of why it read as
-  // stern. It now takes the best voice in the pool on merit, no lean.
+  // The working voice leans bright and friendly too: a female voice from
+  // the pool reads warmer than the flat defaults that made it sound down
+  // even with the pitch raised (Michael, Oct 26).
+  if (profile === 'assistant' && FEMALE.test(name)) score += 25;
   return score;
 }
 
@@ -81,7 +83,7 @@ export function scoreVoice(voice, langBase, profile, taken) {
 // keeps them sounding distinct.
 export const PROFILE_SHAPE = {
   mascot: { rate: 1.06, pitch: 1.14 },
-  assistant: { rate: 1.05, pitch: 1.08 }
+  assistant: { rate: 1.07, pitch: 1.18 }
 };
 
 export function pickVoice(voices, lang, profile, taken) {
