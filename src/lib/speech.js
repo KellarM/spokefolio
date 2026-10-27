@@ -83,7 +83,11 @@ export function scoreVoice(voice, langBase, profile, taken) {
 // keeps them sounding distinct.
 export const PROFILE_SHAPE = {
   mascot: { rate: 1.06, pitch: 1.14 },
-  assistant: { rate: 1.07, pitch: 1.18 }
+  // Bright but sane: 1.18 pitched the working voice into caricature
+  // ('a big Irish drunk woman', Michael, Oct 26). Voice choice now lives
+  // in the client's hands via the picker - this default only applies to
+  // whoever never opens it.
+  assistant: { rate: 1.0, pitch: 1.04 }
 };
 
 export function pickVoice(voices, lang, profile, taken) {
@@ -105,6 +109,51 @@ export function pickVoice(voices, lang, profile, taken) {
   return ranked.length ? ranked[0].voice : null;
 }
 
+// The studio's languages, as the speech engine wants them. Shared by the
+// voice picker; the working hooks keep their own copy.
+export const LANGUAGE_TO_BCP47 = {
+  English: 'en-CA', 'Español': 'es-ES', 'Français': 'fr-FR',
+  Deutsch: 'de-DE', 'Italiano': 'it-IT', 'Português': 'pt-BR'
+};
+
+// ---- The client's own voice choices ----
+// Every device carries a different voice pool, and tuning it blind
+// produced some terrible defaults (Michael, Oct 26: 'a big Irish drunk
+// woman'). A stored override wins over the automatic pick, per profile.
+const OVERRIDE_KEY = (profile) => `spokefolio.voice:${profile}`;
+
+export const getVoiceOverride = (profile) => {
+  if (typeof window === 'undefined') return null;
+  try { return window.localStorage.getItem(OVERRIDE_KEY(profile)) || null; } catch { return null; }
+};
+
+export const setVoiceOverride = (profile, name) => {
+  try {
+    if (name) window.localStorage.setItem(OVERRIDE_KEY(profile), name);
+    else window.localStorage.removeItem(OVERRIDE_KEY(profile));
+  } catch {}
+  Object.keys(chosen).forEach((key) => { chosen[key] = {}; }); // apply it now
+};
+
+// Every voice the device offers for a language, best first - the picker's
+// shelf. Pure names, no handles: the client previews and decides.
+export const getVoicesForPicker = (lang) => {
+  if (typeof window === 'undefined') return [];
+  primeVoices();
+  const base = String(lang || 'en').slice(0, 2);
+  const seen = new Set();
+  return voicesCache
+    .filter((voice) => (voice.lang || '').toLowerCase().replace('_', '-').startsWith(base))
+    .map((voice) => ({ voice, score: scoreVoice(voice, base, 'assistant', null) }))
+    .filter((entry) => {
+      if (seen.has(entry.voice.name)) return false; // some platforms list twice
+      seen.add(entry.voice.name);
+      return true;
+    })
+    .sort((a, b) => b.score - a.score)
+    .map((entry) => ({ name: entry.voice.name, lang: entry.voice.lang || '' }));
+};
+
 // The chosen voices, remembered for the session so the two profiles can
 // avoid each other: the assistant picks first at each language, the
 // mascot picks from what remains.
@@ -113,6 +162,12 @@ export function voiceFor(lang, profile) {
   if (typeof window === 'undefined') return null;
   primeVoices();
   if (!voicesCache.length) return null;
+  // The client's pick wins over every heuristic.
+  const override = getVoiceOverride(profile);
+  if (override) {
+    const match = voicesCache.find((voice) => voice.name === override);
+    if (match) return match;
+  }
   const key = String(lang || 'en').slice(0, 2);
   if (!chosen[key]) chosen[key] = {};
   if (!chosen[key].assistant) {

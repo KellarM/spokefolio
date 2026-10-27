@@ -8,12 +8,14 @@ import {
   History as HistoryIcon,
   PenLine,
   Sparkles,
+  Volume2,
   X
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import { speak, mascotMuted, setMascotMuted } from '@/lib/speech';
 import { useTour } from '@/lib/TourContext';
+import VoicePicker from '@/components/tour/VoicePicker';
 import { computeNudge, dismissNudge, markNudgeShown, markNudgeTapped } from '@/lib/nudges';
 import { trackEvent } from '@/lib/analytics';
 
@@ -258,6 +260,7 @@ export default function BouncingBallTour() {
   // nudges are made of.
   const [studioData, setStudioData] = useState(null);
   const [nudge, setNudge] = useState(null);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const fetchedAt = useRef(0);
 
   // Position: anchored to the target element during the journey's profile
@@ -442,6 +445,7 @@ export default function BouncingBallTour() {
   useEffect(() => {
     setManual(null);
     setRetreat(false);
+    setVoiceOpen(false);
   }, [pathname]);
 
   // An anchor can appear after the first pass (the page is still loading
@@ -702,6 +706,7 @@ export default function BouncingBallTour() {
         if (next) {
           trackEvent('menu_open');
           setHopKey((key) => key + 1);
+          setVoiceOpen(false);
         }
         return next;
       });
@@ -785,7 +790,10 @@ export default function BouncingBallTour() {
             {t(idleKey)}
           </div>
         )}
-        {menuOpen && (
+        {menuOpen && voiceOpen && (
+          <VoicePicker onClose={() => setVoiceOpen(false)} />
+        )}
+        {menuOpen && !voiceOpen && (
           <div className="tour-menu below" role="menu">
             {nudge && (
               <button type="button" className="tour-menu-item nudge" onClick={takeNudge} role="menuitem">
@@ -796,6 +804,18 @@ export default function BouncingBallTour() {
             <button type="button" className="tour-menu-item featured" onClick={startJourney} role="menuitem">
               <Sparkles className="mi" aria-hidden="true" />
               <span>{t('menu.firstTime')}</span>
+            </button>
+            <button
+              type="button"
+              className="tour-menu-item"
+              onClick={() => {
+                trackEvent('menu_voice_settings');
+                setVoiceOpen(true);
+              }}
+              role="menuitem"
+            >
+              <Volume2 className="mi" aria-hidden="true" />
+              <span>{t('voice.settings')}</span>
             </button>
             {NAV.map(({ key, labelKey, to, Icon }) => (
               <button

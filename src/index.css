@@ -2337,6 +2337,86 @@ select option {
   transition: background 0.15s ease;
 }
 
+.voice-picker {
+  min-width: 280px;
+  max-width: min(320px, calc(100vw - 40px));
+  padding: 10px 12px;
+  gap: 0;
+}
+
+.voice-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #f1e7c9;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.voice-picker-head button {
+  display: flex;
+  background: none;
+  border: none;
+  color: rgba(241, 231, 201, 0.7);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 6px;
+}
+
+.voice-picker-head button:hover {
+  color: #f1e7c9;
+}
+
+.voice-picker-hint {
+  margin: 4px 0 2px;
+  color: rgba(241, 231, 201, 0.6);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.voice-picker-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.voice-picker-label {
+  color: rgba(241, 231, 201, 0.8);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.voice-picker-row select {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: #1b2540;
+  color: #f1e7c9;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.voice-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  background: rgba(212, 175, 55, 0.15);
+  color: #f1e7c9;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.voice-preview:hover {
+  background: rgba(212, 175, 55, 0.28);
+}
+
 .tour-menu-item:hover {
   background: rgba(212, 175, 55, 0.12);
 }
