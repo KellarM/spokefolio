@@ -37,6 +37,21 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
     if (active && !isWorkshop) setVoiceOn(true);
   }, [active?.id, isWorkshop]); // deps: a new practice session turns the voice on
 
+  const pendingQuestion = useMemo(() => {
+    if (!active || isWorkshop || !Array.isArray(active.turns)) return null;
+    return active.turns.find((t) => !String(t.answer || '').trim()) || null;
+  }, [active, isWorkshop]);
+
+  // Only the most recent answered question can be reopened: the questions after it were
+  // asked in response to how it was answered.
+  const lastAnsweredIndex = useMemo(() => {
+    const list = Array.isArray(active?.turns) ? active.turns : [];
+    for (let i = list.length - 1; i >= 0; i -= 1) {
+      if (String(list[i]?.answer || '').trim()) return i;
+    }
+    return -1;
+  }, [active]);
+
   // The open question, with its turn index, for the voice loop.
   const voiceQuestion = useMemo(() => {
     if (!pendingQuestion || !active?.turns) return null;
@@ -53,21 +68,6 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
     const text = [fb.landed, fb.improve ? `To improve: ${fb.improve}` : ''].filter(Boolean).join(' ');
     return { index: lastAnsweredIndex, text };
   }, [active?.turns, lastAnsweredIndex]);
-
-  const pendingQuestion = useMemo(() => {
-    if (!active || isWorkshop || !Array.isArray(active.turns)) return null;
-    return active.turns.find((t) => !String(t.answer || '').trim()) || null;
-  }, [active, isWorkshop]);
-
-  // Only the most recent answered question can be reopened: the questions after it were
-  // asked in response to how it was answered.
-  const lastAnsweredIndex = useMemo(() => {
-    const list = Array.isArray(active?.turns) ? active.turns : [];
-    for (let i = list.length - 1; i >= 0; i -= 1) {
-      if (String(list[i]?.answer || '').trim()) return i;
-    }
-    return -1;
-  }, [active]);
 
   const call = async (mode, extra = {}) => {
     setBusy(mode);
