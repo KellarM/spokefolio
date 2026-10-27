@@ -125,7 +125,7 @@ export default function StudioHero({ draftCount = 0, profile }) {
       </section>
 
       {/* The four steps, edge to edge, numbered left to right. */}
-      <section className="mec-steps" aria-label={t('home.stepsAria')}>
+      <section className="mec-steps" data-tour="overview-steps" aria-label={t('home.stepsAria')}>
         {STEPS.map((step) => (
           <Link
             key={step.to}

@@ -74,9 +74,9 @@ const pointIsClear = (x, y) => {
   return true;
 };
 
-// Center-high first (the menu opens below it), then the right column top
-// to bottom, then the left, then lower center. The right column's top is
-// the final fallback: at worst the ball hugs the edge, never the copy.
+// Center first, then the left edge, right edge last - the far right is
+// Michael's least favorite spot (Oct 26). Probed with the caret check, so
+// a spot only counts when nothing textual sits under the ball.
 const parkPosition = () => {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
@@ -86,16 +86,16 @@ const parkPosition = () => {
   });
   const candidates = [
     [(vw - BALL_SIZE) / 2, Math.round(vh * 0.2)],
-    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.2)],
-    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.35)],
-    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.5)],
-    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.65)],
+    [(vw - BALL_SIZE) / 2, Math.round(vh * 0.55)],
     [EDGE, Math.round(vh * 0.2)],
     [EDGE, Math.round(vh * 0.35)],
     [EDGE, Math.round(vh * 0.5)],
-    [(vw - BALL_SIZE) / 2, Math.round(vh * 0.55)]
+    [EDGE, Math.round(vh * 0.65)],
+    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.2)],
+    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.35)],
+    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.5)]
   ].map(([left, top]) => clamp(left, top));
-  return candidates.find((spot) => spotIsClear(spot.left, spot.top)) || candidates[1];
+  return candidates.find((spot) => spotIsClear(spot.left, spot.top)) || candidates[0];
 };
 
 // The journey: identity -> story (capture -> edits -> prompts -> more?) ->
@@ -253,6 +253,25 @@ export default function BouncingBallTour() {
       setBubbleBelow(false);
       setBubbleShift(false);
       return;
+    }
+    // The Overview has one spot and only one spot (Michael, Oct 26): right
+    // of the hero copy, just above the numbered steps, bubble to its left.
+    // Not the far right of the screen, not on the copy - THE spot, every
+    // time, in every mode. No probing, no fallback.
+    if (pathname === '/' && !retreat) {
+      const copy = document.querySelector('[data-tour="overview-copy"]');
+      const steps = document.querySelector('[data-tour="overview-steps"]');
+      if (copy && steps) {
+        anchorElRef.current = copy;
+        const copyRect = copy.getBoundingClientRect();
+        const stepsRect = steps.getBoundingClientRect();
+        const left = Math.min(Math.round(copyRect.right) + 18, window.innerWidth - BALL_SIZE - EDGE);
+        const top = Math.max(TOP_FLOOR, Math.round(stepsRect.top) - BALL_SIZE - 14);
+        setPos({ left, top, anchored: true });
+        setBubbleBelow(false);
+        setBubbleShift(false);
+        return;
+      }
     }
     const el = active ? anchorElement(step, pathname, celebrated) : idleAnchorElement(pathname);
     anchorElRef.current = el || null;
