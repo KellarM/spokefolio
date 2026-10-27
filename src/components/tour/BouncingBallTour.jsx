@@ -173,12 +173,13 @@ const idleAnchorElement = (pathname) => {
 
 const idleCaptionKey = (pathname) =>
   ({
-    '/': 'tour.comeAlong',
     '/history': 'tour.history',
     '/documents': 'tour.idleDocuments',
     '/profile': 'tour.idleProfile',
     '/postings': 'tour.idlePostings'
   })[pathname];
+
+
 
 // The element each step should bring into view - the ball moves the
 // client to the work, not just to a page. An anchor the client cannot see
@@ -210,6 +211,21 @@ const firstJourneyStep = (studioData) => {
   if (studioData.documents.length === 0) return 'files';
   if (studioData.postings.length === 0) return 'posting';
   return 'apply';
+};
+
+// The Overview's idle line names the next real step - the same gap the
+// 'First time' item resumes - instead of a generic 'tap me' that never
+// says what needs doing once it takes the client there (Michael, Oct 26).
+const homeCaptionKey = (studioData) => {
+  const first = firstJourneyStep(studioData);
+  return (
+    {
+      identity: 'tour.comeHistory',
+      files: 'tour.comeFiles',
+      posting: 'tour.comePosting',
+      apply: 'tour.comeApply'
+    }[first] || 'tour.comeAlong'
+  );
 };
 
 export default function BouncingBallTour() {
@@ -622,8 +638,13 @@ export default function BouncingBallTour() {
             : 'tour.farewell';
 
   // The idle bubble's line - a data-driven nudge first, otherwise the
-  // page's own next step.
-  const idleKey = nudge ? nudge.captionKey : idleCaptionKey(pathname);
+  // page's own next step. On the Overview that next step is the client's
+  // first real gap, so the ball says what to do, not just 'tap me'.
+  const idleKey = nudge
+    ? nudge.captionKey
+    : pathname === '/' && studioData
+      ? homeCaptionKey(studioData)
+      : idleCaptionKey(pathname);
 
   // ---- The mascot talks: its bubble is spoken aloud in its own voice,
   // a different voice from the working engine's. Tap a bubble to mute. ----
@@ -643,13 +664,29 @@ export default function BouncingBallTour() {
     }
   };
 
+  // A line is spoken once per visit. The bubble text flips to '' and
+  // back whenever the menu opens, the retreat ends, or the anchor probe
+  // re-settles - each flip used to speak the same words again, which is
+  // how the ball came to repeat itself (Michael, Oct 26).
+  const lastSpokenRef = useRef('');
   useEffect(() => {
     if (!bubbleText || mascotMuted()) return;
+    if (lastSpokenRef.current === bubbleText) return; // already said this here
     // A beat after arrival, in its own voice - and never over the top of
     // the working engine mid-sentence.
-    const timer = setTimeout(() => speak(bubbleText, { profile: 'mascot' }), 250);
+    const timer = setTimeout(() => {
+      lastSpokenRef.current = bubbleText;
+      speak(bubbleText, { profile: 'mascot' });
+    }, 250);
     return () => clearTimeout(timer);
   }, [bubbleText]);
+
+  // A new page is a new conversation: on a route change the same line may
+  // be worth saying again (the ball may guide the client back to a page
+  // it already spoke on).
+  useEffect(() => {
+    lastSpokenRef.current = '';
+  }, [pathname]);
 
   if (!ready || !pos || (!active && !idle)) return null;
 
