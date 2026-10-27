@@ -152,7 +152,13 @@ export default function BouncingBallTour() {
   const [bubbleBelow, setBubbleBelow] = useState(false);
   const [bubbleShift, setBubbleShift] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [manual, setManual] = useState(null);
+  const [retreat, setRetreat] = useState(false);
   const wrapRef = useRef(null);
+  const anchorElRef = useRef(null);
+  const lastInsideRef = useRef(0);
+  const dragRef = useRef(null);
+  const dragMovedRef = useRef(false);
 
   // The studio's own data: what the journey celebrates and the launcher's
   // nudges are made of.
@@ -164,8 +170,21 @@ export default function BouncingBallTour() {
   // and story steps, centered on the Overview, cornered on every other page.
   const compute = useCallback(() => {
     if (!active && !idle) return;
+    // The client's own placement wins: once dragged, the ball stays
+    // exactly where they put it until the route changes.
+    if (manual) {
+      anchorElRef.current = null;
+      setPos({ left: manual.left, top: manual.top, anchored: false });
+      setBubbleBelow(false);
+      setBubbleShift(false);
+      return;
+    }
     const el = active ? anchorElement(step, pathname, celebrated) : idleAnchorElement(pathname);
-    if (!el) {
+    anchorElRef.current = el || null;
+    // Retreat: the client activated the action the ball was pointing at,
+    // so the ball moves away until that action ends - it never hovers over
+    // work in progress.
+    if (!el || retreat) {
       // Parked: always middle-high on the screen - never the corner. The
       // menu opens below the ball and must stay fully in frame and
       // reachable on every page (Michael, Oct 23: the corner dropped the
@@ -188,7 +207,7 @@ export default function BouncingBallTour() {
     setPos({ left, top, anchored: true });
     setBubbleBelow(top <= TOP_FLOOR + 30);
     setBubbleShift(left + BALL_SIZE > window.innerWidth - 180);
-  }, [active, idle, step, pathname, celebrated]);
+  }, [active, idle, step, pathname, celebrated, manual, retreat]);
 
   useEffect(() => {
     compute();
@@ -207,6 +226,81 @@ export default function BouncingBallTour() {
       settles.forEach(clearTimeout);
     };
   }, [compute]);
+
+  // ---- Draggable: the client places the ball wherever they want it ----
+  // A press that moves more than a few pixels is a drag, not a tap: the
+  // ball follows the finger or cursor and stays there (page default
+  // returns on the next route).
+  const onBallPointerDown = (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    try { event.currentTarget.setPointerCapture(event.pointerId); } catch {}
+    dragRef.current = {
+      id: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      baseLeft: pos ? pos.left : 0,
+      baseTop: pos ? pos.top : 0,
+      moved: false
+    };
+  };
+
+  const onBallPointerMove = (event) => {
+    const drag = dragRef.current;
+    if (!drag || event.pointerId !== drag.id || !pos) return;
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    if (!drag.moved && Math.hypot(dx, dy) < 6) return;
+    drag.moved = true;
+    dragMovedRef.current = true;
+    const left = Math.max(EDGE, Math.min(drag.baseLeft + dx, window.innerWidth - BALL_SIZE - EDGE));
+    const top = Math.max(TOP_FLOOR, Math.min(drag.baseTop + dy, window.innerHeight - BALL_SIZE - EDGE));
+    setManual({ left, top });
+  };
+
+  const onBallPointerUp = (event) => {
+    const drag = dragRef.current;
+    if (!drag || event.pointerId !== drag.id) return;
+    dragRef.current = null;
+  };
+
+  // ---- Retreat: activate the action, the ball steps aside ----
+  // Pointer down inside the anchored action starts the retreat; the ball
+  // returns only when the action is truly over - focus left the action,
+  // no recording is running, and the client's last touch inside it was
+  // more than a moment ago.
+  useEffect(() => {
+    const onDown = (event) => {
+      const anchor = anchorElRef.current;
+      if (!anchor) return;
+      if (event.target.closest && event.target.closest('.tour-ball-wrap')) return;
+      if (anchor.contains(event.target)) {
+        lastInsideRef.current = Date.now();
+        setRetreat(true);
+      }
+    };
+    document.addEventListener('pointerdown', onDown, true);
+    return () => document.removeEventListener('pointerdown', onDown, true);
+  }, []);
+
+  useEffect(() => {
+    if (!retreat) return undefined;
+    const watcher = setInterval(() => {
+      const anchor = anchorElRef.current;
+      const focusInside = anchor && anchor.contains(document.activeElement);
+      const busyInside =
+        anchor && anchor.querySelector('.dictate-live, .dictate-voice-live, button[aria-pressed="true"]');
+      const quiet = Date.now() - lastInsideRef.current > 2500;
+      if (!focusInside && !busyInside && quiet) setRetreat(false);
+    }, 700);
+    return () => clearInterval(watcher);
+  }, [retreat]);
+
+  // A new page brings the default placement back - the client re-places
+  // the ball per page, the program's position leads each time.
+  useEffect(() => {
+    setManual(null);
+    setRetreat(false);
+  }, [pathname]);
 
   // A fresh hop every time the ball arrives somewhere new.
   useEffect(() => {
@@ -338,6 +432,10 @@ export default function BouncingBallTour() {
   // ---- Launcher mode: the menu, the journey, the four destinations ----
   if (idle) {
     const openMenu = () => {
+      if (dragMovedRef.current) {
+        dragMovedRef.current = false;
+        return;
+      }
       setMenuOpen((open) => {
         const next = !open;
         if (next) {
@@ -386,8 +484,12 @@ export default function BouncingBallTour() {
           <span className="tour-shadow" aria-hidden="true" />
           <button
             type="button"
-            className="tour-ball"
+            className="tour-ball cursor-grab active:cursor-grabbing"
+            style={{ touchAction: 'none' }}
             onClick={openMenu}
+            onPointerDown={onBallPointerDown}
+            onPointerMove={onBallPointerMove}
+            onPointerUp={onBallPointerUp}
             aria-label={t('nudge.idle')}
             aria-expanded={menuOpen}
           >
@@ -530,6 +632,10 @@ export default function BouncingBallTour() {
   };
 
   const handleTap = () => {
+    if (dragMovedRef.current) {
+      dragMovedRef.current = false;
+      return;
+    }
     tour.event(`tour_tap_${step}`);
     // Every tap visibly lands - the ball never sits unresponsive, even in
     // the moments where it deliberately holds its position.
@@ -580,8 +686,12 @@ export default function BouncingBallTour() {
         <span className="tour-shadow" aria-hidden="true" />
         <button
           type="button"
-          className="tour-ball"
+          className="tour-ball cursor-grab active:cursor-grabbing"
+          style={{ touchAction: 'none' }}
           onClick={handleTap}
+          onPointerDown={onBallPointerDown}
+          onPointerMove={onBallPointerMove}
+          onPointerUp={onBallPointerUp}
           aria-label={t(captionKey)}
         >
           <span className="tour-face" aria-hidden="true">
