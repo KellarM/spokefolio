@@ -15,7 +15,7 @@ const SPOKEN_LANGUAGES = {
 // a curly apostrophe both land here.
 const NAME_CUES = "my name is|name is|my name's|name's|i am|i'm|this is|call me|mi chiamo|me llamo|je m'appelle|m'appelle|ich heisse|heisse ich|ich hei\u00dfe|hei\u00dfe ich|meu nome \u00e9|me chamo|chamo-me|eu sou|soy yo";
 const ADDRESS_CUES = "my address is|address is|i live at|live at|located at|il mio indirizzo \u00e8|indirizzo \u00e8|mi direcci\u00f3n es|direcci\u00f3n es|mon adresse est|adresse est|meine adresse ist|adresse ist|meu endere\u00e7o \u00e9|endere\u00e7o \u00e9|moro na|moro no|moro em";
-const LOCATION_CUES = "i live in|vivo in|vivo a|vivo en|je vis \u00e0|j'habite \u00e0|j'habite \u00e0|ich lebe in|lebe in|moro em|habito en|habito em";
+const LOCATION_CUES = "i'm in|i am in|im in|i'm from|i am from|im from|i live in|vivo in|vivo a|vivo en|je vis \u00e0|j'habite \u00e0|ich lebe in|lebe in|moro em|habito en|habito em|my location is|location is|my location|location|my city is|city is|my city|mi ubicaci\u00f3n es|ubicaci\u00f3n es|ma ville est|ville est|meine stadt ist|stadt ist|la mia citt\u00e0 \u00e8|citt\u00e0 \u00e8|minha cidade \u00e9|cidade \u00e9";
 const LINKEDIN_CUES = "my linkedin is|linkedin is|i'm on linkedin|im on linkedin|find me on linkedin|mi linkedin es|mon linkedin est";
 const WEBSITE_CUES = "my website is|website is|my site is|my webpage is|my web page is|my portfolio is|mi sitio web es|mon site web est|meine website ist|il mio sito \u00e8";
 
@@ -54,7 +54,14 @@ export function parseSpokenDetails(raw) {
   if (phone) out.phone = phone[0].trim().replace(/[.,;:!?]+$/, '');
 
   const nameM = clean.match(new RegExp('(?:' + NAME_CUES + ')\\s+([A-Za-z\u00C0-\u017F\' -]{2,40}?)(?=\\s*(?:,|\\.|;|!|\\s+my\\s|\\s+mi\\s|\\s+mon\\s|\\s+meine\\s|\\s+meu\\s|\\s+il\\s|\\s+and\\s|\\s+i\\s+live|\\s+vivo|\\s+je\\s|\\s+ich\\s|$))', 'i'));
-  if (nameM) out.full_name = nameM[1].trim().replace(/\s+/g, ' ');
+  if (nameM) {
+    const candidate = nameM[1].trim().replace(/\s+/g, ' ');
+    // "I'm in Edmonton" produces the candidate "in Edmonton" - a place, not
+    // a person. Values led by a preposition are location phrasing.
+    if (!/^(in|at|from|on|near|inserito|inserita|dentro)\s/i.test(candidate)) {
+      out.full_name = candidate;
+    }
+  }
 
   const addrM = clean.match(new RegExp('(?:' + ADDRESS_CUES + ')\\s*(.{6,120}?)(?=\\s*(?:,?\\s*(?:and\\s+|und\\s+)?(?:' + VALUE_BOUNDARIES + ')\\s|\\.\\s*|\\.|;|!|$))', 'i'));
   if (addrM) out.home_address = addrM[1].replace(/\s+/g, ' ').replace(/[,.;]+$/, '').trim();
@@ -64,7 +71,7 @@ export function parseSpokenDetails(raw) {
   // city in the same breath, and each belongs in its own field. Commas stay
   // inside the capture so "Edmonton, Alberta" keeps its province; the
   // lookahead stops at sentence punctuation, the next detail, "and", or the end.
-  const locM = clean.match(new RegExp('(?:' + LOCATION_CUES + ')\\s+([A-Za-z\u00C0-\u017F ,\'-]{2,60}?)(?=\\s*(?:\\.|;|!|\\s+my\\s|\\s+mi\\s|\\s+mon\\s|\\s+meine\\s|\\s+meu\\s|\\s+and\\s|\\s+i\\s+live|\\s+i\\s+speak|$))', 'i'));
+  const locM = clean.match(new RegExp('(?:' + LOCATION_CUES + ')\\s*:?\\s*([A-Za-z\u00C0-\u017F ,\'-]{2,60}?)(?=\\s*(?:\\.|;|!|\\s+my\\s|\\s+mi\\s|\\s+mon\\s|\\s+meine\\s|\\s+meu\\s|\\s+and\\s|\\s+i\\s+live|\\s+i\\s+speak|$))', 'i'));
   if (locM) out.location = locM[1].replace(/\s+/g, ' ').replace(/[,.;]+$/, '').trim();
 
   // LinkedIn: a spoken lead-in, or the URL itself said aloud.

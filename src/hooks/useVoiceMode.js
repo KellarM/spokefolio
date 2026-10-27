@@ -8,7 +8,7 @@ import { parseSpokenDetails } from '@/lib/spokenDetails';
 // parsed, and the app answers out loud. Nothing is saved until the person
 // presses Save - this engine only hands parsed details to the page.
 const TURN_MAX_MS = 25000;        // one spoken turn caps at 25 seconds
-const SILENCE_STOP_MS = 1700;     // this much quiet after speech ends the turn
+const SILENCE_STOP_MS = 2400;     // this much quiet after speech ends the turn - long enough for a deliberate pause mid-email
 const SPEECH_MIN_MS = 350;        // speech must last this long before silence-stop can arm
 const LISTEN_NUDGE_MS = 12000;    // nothing said: show the hint again
 const SESSION_MAX_TURNS = 40;     // hard stop so a forgotten tab never runs forever

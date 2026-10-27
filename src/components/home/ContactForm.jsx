@@ -37,6 +37,18 @@ export default function ContactForm({ profile, onSave }) {
   const [form, setForm] = useState(profile || {});
   const [saving, setSaving] = useState(false);
 
+  // A spoken street address usually carries the city inside it: when a person
+  // gives "123 Main Street, Edmonton", the Location field should not stay
+  // empty just because they never said "I live in". The city is looked up in
+  // the same dataset the typeahead uses - never guessed.
+  const applyCityFromAddress = (parsed) => {
+    if (!parsed?.home_address || parsed.location) return;
+    import('@/lib/locations').then(({ searchInText }) => {
+      const place = searchInText(parsed.home_address);
+      if (place?.label) setForm((prev) => ({ ...prev, location: place.label }));
+    }).catch(() => {});
+  };
+
   // Tap and Talk: one recording fills the details - the client confirms and saves as usual.
   const applyTranscript = (transcript) => {
     const parsed = parseSpokenDetails(transcript);
@@ -45,6 +57,7 @@ export default function ContactForm({ profile, onSave }) {
       return;
     }
     setForm((prev) => ({ ...prev, ...parsed }));
+    applyCityFromAddress(parsed);
     toast({ title: t('profile.filledFromVoice') });
   };
   const { recording, busy, seconds, start, stop } = useDictation(applyTranscript);
@@ -55,7 +68,10 @@ export default function ContactForm({ profile, onSave }) {
   const voice = useVoiceMode({
     t,
     language: form.preferred_language,
-    onApply: (parsed) => setForm((prev) => ({ ...prev, ...parsed }))
+    onApply: (parsed) => {
+      setForm((prev) => ({ ...prev, ...parsed }));
+      applyCityFromAddress(parsed);
+    }
   });
 
   useEffect(() => {

@@ -69,4 +69,23 @@ export async function searchLocations(value, limit = 8) {
   }));
 }
 
+// A city recognized inside free text - a spoken home address, for example.
+// The longest city names test first so longer matches win over short ones,
+// and the text must carry the city as its own word ("... in Edmonton, ...")
+// so "Fort" never matches inside "Fort McMurray".
+export function searchInText(text) {
+  const low = ' ' + String(text || '').toLowerCase().replace(/[^a-z]+/g, ' ').trim() + ' ';
+  if (low === '  ') return null;
+  if (!searchInText.cache) {
+    searchInText.cache = parseAll().slice().sort((a, b) => b.city.length - a.city.length);
+  }
+  for (const row of searchInText.cache) {
+    const city = row.city.toLowerCase().replace(/[^a-z]+/g, ' ').trim();
+    if (city && low.includes(' ' + city + ' ')) {
+      return { city: row.city, region: row.region, country: row.country, label: `${row.city}, ${row.region}, ${row.country}` };
+    }
+  }
+  return null;
+}
+
 export default searchLocations;
