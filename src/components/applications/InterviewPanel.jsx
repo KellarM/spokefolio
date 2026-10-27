@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Loader2, MessageSquare, Mic, RotateCcw, Sparkles, X } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Loader2, MessageSquare, Mic, RotateCcw, Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,6 +7,7 @@ import DictateButton from '@/components/common/DictateButton';
 import { appendLine } from '@/hooks/useDictation';
 import { useToast } from '@/components/ui/use-toast';
 import AnswerWorkshop from '@/components/applications/AnswerWorkshop';
+import InterviewVoice from '@/components/applications/InterviewVoice';
 import DeleteSessionButton from '@/components/applications/DeleteSessionButton';
 
 // The Interview section: the app plays the hiring company's HR interviewer for this
@@ -26,6 +27,32 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
   const prep = application.interview_prep || null;
 
   const isWorkshop = active?.session_type === 'answers';
+
+  // Voice mode for the drill: the interviewer asks out loud, the candidate
+  // answers out loud. It activates with the session itself (Michael, Oct
+  // 26) and can be stopped or restarted from the drill panel at any time.
+  const [voiceOn, setVoiceOn] = useState(false);
+  const [askNonce, setAskNonce] = useState(0);
+  useEffect(() => {
+    if (active && !isWorkshop) setVoiceOn(true);
+  }, [active?.id, isWorkshop]); // deps: a new practice session turns the voice on
+
+  // The open question, with its turn index, for the voice loop.
+  const voiceQuestion = useMemo(() => {
+    if (!pendingQuestion || !active?.turns) return null;
+    const index = active.turns.indexOf(pendingQuestion);
+    return index >= 0 ? { index, question: pendingQuestion.question } : null;
+  }, [active?.turns, pendingQuestion]);
+
+  // The newest graded answer, spoken once by the voice loop.
+  const voiceFeedback = useMemo(() => {
+    if (!active?.turns || lastAnsweredIndex < 0) return null;
+    const turn = active.turns[lastAnsweredIndex];
+    const fb = turn?.feedback;
+    if (!fb || (!fb.landed && !fb.improve)) return null;
+    const text = [fb.landed, fb.improve ? `To improve: ${fb.improve}` : ''].filter(Boolean).join(' ');
+    return { index: lastAnsweredIndex, text };
+  }, [active?.turns, lastAnsweredIndex]);
 
   const pendingQuestion = useMemo(() => {
     if (!active || isWorkshop || !Array.isArray(active.turns)) return null;
@@ -80,6 +107,7 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
   // Second chance on a question: their answer and its grade are cleared and the question
   // comes back open with what they wrote, so they can say it better.
   const redo = async (turn, index) => {
+    setAskNonce((n) => n + 1); // the reopened question is asked out loud again
     const data = await call('redo', { turn_index: index });
     if (data) setAnswer(String(turn?.answer || ''));
   };
@@ -141,6 +169,21 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
 
         {active && !isWorkshop && (
           <div className="mt-4 space-y-4">
+            <InterviewVoice
+              active={voiceOn}
+              greeting={active.greeting}
+              pendingQuestion={voiceQuestion}
+              feedback={voiceFeedback}
+              askNonce={askNonce}
+              onAnswer={(text) => call('answer', { answer: text })}
+              onNext={() => call('next')}
+              onExit={() => setVoiceOn(false)}
+            />
+            {!voiceOn && (
+              <Button type="button" variant="secondary" className="dictate-voice rounded-full" onClick={() => setVoiceOn(true)}>
+                <Mic className="mr-2 h-4 w-4" /> Voice mode
+              </Button>
+            )}
             <p className="rounded-xl bg-muted/50 px-4 py-3 text-[14px] italic text-muted-foreground">
               {active.greeting}
             </p>
