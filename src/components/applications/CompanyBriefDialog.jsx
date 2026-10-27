@@ -134,6 +134,12 @@ export default function CompanyBriefDialog({ open, onOpenChange, company, resear
               </Section>
             )}
 
+            {research.drug_screening && (
+              <Section title="Drug screening (incl. marijuana)">
+                <p>{research.drug_screening}</p>
+              </Section>
+            )}
+
             {research.hiring_notes && (
               <Section title="What this means when applying">
                 <p>{research.hiring_notes}</p>

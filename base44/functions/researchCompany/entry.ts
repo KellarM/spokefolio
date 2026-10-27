@@ -46,6 +46,13 @@ export default async function (req) {
         '- Labour and employee reputation: what employee review sites, unions, labour boards, safety regulators, news reporting and court or labour-board records say. Summarise the recurring themes (pay, scheduling, safety, turnover, management, culture) rather than quoting reviews. Note layoffs, strikes, lockouts, labour board complaints or safety orders when they exist.',
         '- Recent news of the last two years that a candidate would want to know: expansions, closures, contract wins, restructuring, lawsuits, safety incidents.',
         '- What this means when applying: how they hire, what they seem to value, who to address a letter to if that is knowable.',
+        '- Drug screening, marijuana included: does this employer drug test - pre-employment, random, or after incidents - '
+        + 'and for which kinds of roles (safety-sensitive, drivers, warehouse floor)? Base the answer on their published '
+        + 'policies, job postings that mention testing, employee accounts, or news reporting. Warehouse, driving and '
+        + 'heavy-equipment roles are often treated as safety-sensitive even where office roles are not tested. '
+        + 'If nothing public says either way, write that plainly - never guess. Also note the legal context when it '
+        + 'matters: in Canada, pre-employment testing is generally limited to safety-sensitive positions and random '
+        + 'testing has been struck down; in the US, testing is common and often required for these roles.',
         '',
         'Hard rules:',
         '- Use only what you actually find. Never invent a founding year, an executive name, a rating or a statistic.',
@@ -81,6 +88,7 @@ export default async function (req) {
           labour_notes: list,
           recent_news: list,
           hiring_notes: { type: 'string' },
+          drug_screening: { type: 'string' },
           cautions: list,
           confidence: { type: 'string' },
           sources: {
