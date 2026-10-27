@@ -101,12 +101,12 @@ export default function ContactForm({ profile, onSave }) {
           </Button>
         )}
         {voice.active ? (
-          <Button type="button" onClick={voice.stop} className="dictate-live rounded-full">
+          <Button type="button" onClick={voice.stop} className="dictate-voice-live rounded-full">
             <Square className="mr-2 h-3.5 w-3.5" />
             {t('profile.voiceModeStop')} · {t(`voice.phase.${voice.phase}`)}
           </Button>
         ) : (
-          <Button type="button" variant="secondary" className="dictate-tap rounded-full" onClick={voice.start} disabled={recording || busy}>
+          <Button type="button" variant="secondary" className="dictate-voice rounded-full" onClick={voice.start} disabled={recording || busy}>
             <Mic className="mr-2 h-4 w-4" />
             {t('profile.voiceMode')}
           </Button>

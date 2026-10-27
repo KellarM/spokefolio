@@ -2427,3 +2427,35 @@ select option {
   0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.55); }
   50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
 }
+
+/* Voice Mode: a GOLD button, so the two voice actions never read as twins.
+   Red = one recording (Tap to Talk). Gold = the hands-free conversation. */
+.dictate-voice {
+  background: linear-gradient(135deg, #E6C75A, #D4AF37 55%, #A8872A) !important;
+  color: #1F2937 !important;
+  border: 1px solid #E6C75A !important;
+  font-weight: 600;
+  box-shadow: 0 4px 14px -6px rgba(212, 175, 55, 0.8);
+}
+
+.dictate-voice:hover {
+  filter: brightness(1.08);
+}
+
+/* Voice Mode, live: deep gold while the session listens. */
+.dictate-voice-live {
+  background: #A8872A !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: dictateVoicePulse 1.6s ease-in-out infinite;
+}
+
+.dictate-voice-live:hover {
+  background: #8F7222 !important;
+  color: #ffffff !important;
+}
+
+@keyframes dictateVoicePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.55); }
+  50% { box-shadow: 0 0 0 8px rgba(212, 175, 55, 0); }
+}
