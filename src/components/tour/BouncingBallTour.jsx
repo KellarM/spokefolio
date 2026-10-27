@@ -218,6 +218,15 @@ const firstJourneyStep = (studioData) => {
 // The Overview's idle line names the next real step - the same gap the
 // 'First time' item resumes - instead of a generic 'tap me' that never
 // says what needs doing once it takes the client there (Michael, Oct 26).
+// The mascot's spoken memory. A line of advice is voiced ONCE per
+// session - never re-armed by re-anchoring, menu toggles or coming back
+// to a page (Michael, Oct 26: 'tap me and I'll take you there' kept
+// repeating). A repeat happens only two ways: the client taps the ball
+// to ask for it, or the advice itself changes into a line not yet said.
+// Module-level on purpose: a ref resets on remount and was still
+// letting the line loose every time he came back to a page.
+const spokenLines = new Set();
+
 const homeCaptionKey = (studioData) => {
   const first = firstJourneyStep(studioData);
   return (
@@ -668,29 +677,21 @@ export default function BouncingBallTour() {
     }
   };
 
-  // A line is spoken once per visit. The bubble text flips to '' and
-  // back whenever the menu opens, the retreat ends, or the anchor probe
-  // re-settles - each flip used to speak the same words again, which is
-  // how the ball came to repeat itself (Michael, Oct 26).
-  const lastSpokenRef = useRef('');
+  // A line is spoken exactly once per session. The bubble text flips to
+  // '' and back whenever the menu opens, the retreat ends, or the anchor
+  // probe re-settles - no flip ever re-voices a line already said. The
+  // bubble still SHOWS the guidance; the voice just stops repeating it.
   useEffect(() => {
     if (!bubbleText || mascotMuted()) return;
-    if (lastSpokenRef.current === bubbleText) return; // already said this here
+    if (spokenLines.has(bubbleText)) return; // said it - the bubble carries it now
     // A beat after arrival, in its own voice - and never over the top of
     // the working engine mid-sentence.
     const timer = setTimeout(() => {
-      lastSpokenRef.current = bubbleText;
+      spokenLines.add(bubbleText);
       speak(bubbleText, { profile: 'mascot' });
     }, 250);
     return () => clearTimeout(timer);
   }, [bubbleText]);
-
-  // A new page is a new conversation: on a route change the same line may
-  // be worth saying again (the ball may guide the client back to a page
-  // it already spoke on).
-  useEffect(() => {
-    lastSpokenRef.current = '';
-  }, [pathname]);
 
   if (!ready || !pos || (!active && !idle)) return null;
 
@@ -710,6 +711,9 @@ export default function BouncingBallTour() {
         }
         return next;
       });
+      // Tap me = ask me: the one repeat the client controls. Opening the
+      // menu re-voices the line on demand instead of on a timer.
+      if (bubbleText && !mascotMuted()) speak(bubbleText, { profile: 'mascot' });
     };
 
     const go = (to) => {
