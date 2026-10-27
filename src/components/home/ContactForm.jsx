@@ -6,6 +6,7 @@ import useDictation from '@/hooks/useDictation';
 import LanguageSelect, { getStoredLanguage, normalizeLanguage } from '@/components/LanguageSelect';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import LocationInput from '@/components/home/LocationInput';
+import { base44 } from '@/api/base44Client';
 import { parseSpokenDetails } from '@/lib/spokenDetails';
 import useVoiceMode from '@/hooks/useVoiceMode';
 
@@ -35,6 +36,7 @@ export default function ContactForm({ profile, onSave }) {
   const { t } = useStudioLanguage();
   const { toast } = useToast();
   const [form, setForm] = useState(profile || {});
+  const [accountEmail, setAccountEmail] = useState('');
   const [saving, setSaving] = useState(false);
 
   // A spoken street address usually carries the city inside it: when a person
@@ -81,6 +83,18 @@ export default function ContactForm({ profile, onSave }) {
       ...profile,
       preferred_language: normalizeLanguage(profile?.preferred_language || getStoredLanguage())
     });
+    // The email arrived at sign-in. The profile never asks for it again:
+    // an empty email is filled from the account the moment the form loads.
+    if (!profile?.email) {
+      let cancelled = false;
+      base44.auth.me().then((user) => {
+        if (!cancelled && user?.email) {
+          setAccountEmail(user.email);
+          setForm((prev) => ({ ...prev, email: user.email }));
+        }
+      }).catch(() => {});
+      return () => { cancelled = true; };
+    }
   }, [profile]);
 
   const submit = async () => {
@@ -186,6 +200,11 @@ export default function ContactForm({ profile, onSave }) {
                 onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
                 className="mec-v"
               />
+            )}
+            {field.key === 'email' && accountEmail && form.email === accountEmail && !profile?.email && (
+              <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
+                {t('profile.emailFromAccount')}
+              </p>
             )}
             {field.key === 'location' && profile?.location_full && (
               <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
