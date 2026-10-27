@@ -69,16 +69,19 @@ export function scoreVoice(voice, langBase, profile, taken) {
   if (name.includes('microsoft')) score += 30;
   if (name.includes('compact') || name.includes('eloquence')) score -= 80; // the robots of the pool
   if (profile === 'mascot' && FEMALE.test(name)) score += 40;
-  if (profile === 'assistant' && MALE.test(name) && !FEMALE.test(name)) score += 15;
+  // The assistant once leaned toward male voices - part of why it read as
+  // stern. It now takes the best voice in the pool on merit, no lean.
   return score;
 }
 
-// Profiles shape delivery too: the mascot is brighter and a touch quicker;
-// the assistant is steadier. When the pool is thin and both profiles land
-// on the same voice, the pitch gap keeps them sounding distinct.
+// Profiles shape delivery too: the mascot is the brightest voice on screen;
+// the assistant is bubbly and friendly now - it stopped being the deep,
+// lecturing tone that read as strict and stern (Michael, Oct 26). When the
+// pool is thin and both profiles land on the same voice, the pitch gap
+// keeps them sounding distinct.
 export const PROFILE_SHAPE = {
-  mascot: { rate: 1.02, pitch: 1.12 },
-  assistant: { rate: 0.98, pitch: 0.92 }
+  mascot: { rate: 1.06, pitch: 1.14 },
+  assistant: { rate: 1.05, pitch: 1.08 }
 };
 
 export function pickVoice(voices, lang, profile, taken) {
