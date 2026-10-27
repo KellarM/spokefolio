@@ -35,6 +35,51 @@ const EDGE = 16;
 // Room for the speech bubble above the ball without crowding the header.
 const TOP_FLOOR = 132;
 
+// A parked ball never sits on the page's words: probe each candidate spot
+// and take the first whose footprint lands on nothing textual.
+const TEXTISH = 'p,h1,h2,h3,h4,h5,h6,span,a,button,label,li,b,strong,em,img,input,textarea,svg,td,th';
+
+const spotIsClear = (left, top) => {
+  const inset = 6;
+  const points = [
+    [left + inset, top + inset],
+    [left + BALL_SIZE - inset, top + inset],
+    [left + BALL_SIZE / 2, top + BALL_SIZE / 2],
+    [left + inset, top + BALL_SIZE - inset],
+    [left + BALL_SIZE - inset, top + BALL_SIZE - inset]
+  ];
+  return points.every(([x, y]) => {
+    const hit = document.elementFromPoint(x, y);
+    if (!hit || !hit.closest) return true;
+    if (hit.closest('.tour-ball-wrap')) return true; // its own footprint
+    return !hit.closest(TEXTISH);
+  });
+};
+
+// Center-high first (the menu opens below it), then the right column top
+// to bottom, then the left, then lower center. The right column's top is
+// the final fallback: at worst the ball hugs the edge, never the copy.
+const parkPosition = () => {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const clamp = (left, top) => ({
+    left: Math.max(EDGE, Math.min(left, vw - BALL_SIZE - EDGE)),
+    top: Math.max(TOP_FLOOR, Math.min(top, vh - BALL_SIZE - EDGE))
+  });
+  const candidates = [
+    [(vw - BALL_SIZE) / 2, Math.round(vh * 0.2)],
+    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.2)],
+    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.35)],
+    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.5)],
+    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.65)],
+    [EDGE, Math.round(vh * 0.2)],
+    [EDGE, Math.round(vh * 0.35)],
+    [EDGE, Math.round(vh * 0.5)],
+    [(vw - BALL_SIZE) / 2, Math.round(vh * 0.55)]
+  ].map(([left, top]) => clamp(left, top));
+  return candidates.find((spot) => spotIsClear(spot.left, spot.top)) || candidates[1];
+};
+
 // The journey: identity -> story (capture -> edits -> prompts -> more?) ->
 // posting -> apply -> farewell. The story phase asks real questions with
 // real answers; its sub-steps advance on yes/no choices and real saves.
@@ -91,6 +136,10 @@ const anchorElement = (step, pathname, celebrated) => {
 // The idle ball directs, never decorates: outside a journey it anchors
 // to the page's primary action and speaks the next step from there.
 const idleAnchorElement = (pathname) => {
+  // The Overview anchors beside the hero's body copy - the clear space to
+  // its right, between the copy and the numbered step buttons, never on
+  // top of the greeting (Michael, Oct 26: parked-center covered it).
+  if (pathname === '/') return document.querySelector('[data-tour="overview-copy"]');
   if (pathname === '/history') return document.querySelector('[data-tour="dictation"]');
   if (pathname === '/documents') return document.querySelector('[data-tour="uploader"]');
   if (pathname === '/profile') return document.querySelector('[data-tour="voice"]');
@@ -100,6 +149,7 @@ const idleAnchorElement = (pathname) => {
 
 const idleCaptionKey = (pathname) =>
   ({
+    '/': 'tour.comeAlong',
     '/history': 'tour.idleHistory',
     '/documents': 'tour.idleDocuments',
     '/profile': 'tour.idleProfile',
@@ -186,15 +236,11 @@ export default function BouncingBallTour() {
     // so the ball moves away until that action ends - it never hovers over
     // work in progress.
     if (!el || retreat) {
-      // Parked: always middle-high on the screen - never the corner. The
-      // menu opens below the ball and must stay fully in frame and
-      // reachable on every page (Michael, Oct 23: the corner dropped the
-      // dropdown off the bottom of the screen).
-      setPos({
-        left: (window.innerWidth - BALL_SIZE) / 2,
-        top: Math.max(TOP_FLOOR, Math.round(window.innerHeight * 0.2)),
-        anchored: false
-      });
+      // Parked: center-high when that space is clear, otherwise the first
+      // clear spot the page offers - the ball never covers the copy. The
+      // menu opens below the ball and stays reachable (Michael, Oct 23:
+      // the corner dropped the dropdown off the bottom of the screen).
+      setPos({ ...parkPosition(), anchored: false });
       setBubbleBelow(false);
       setBubbleShift(false);
       return;
@@ -302,6 +348,23 @@ export default function BouncingBallTour() {
     setManual(null);
     setRetreat(false);
   }, [pathname]);
+
+  // An anchor can appear after the first pass (the page is still loading
+  // its data, the hero is not rendered yet): keep looking briefly instead
+  // of parking on the copy for the rest of the visit.
+  useEffect(() => {
+    if (!active && !idle) return undefined;
+    let tries = 0;
+    const poll = setInterval(() => {
+      tries += 1;
+      if (anchorElRef.current || tries > 14 || (active ? false : manual)) {
+        clearInterval(poll);
+        return;
+      }
+      compute();
+    }, 700);
+    return () => clearInterval(poll);
+  }, [active, idle, compute, pathname, manual]);
 
   // A fresh hop every time the ball arrives somewhere new.
   useEffect(() => {

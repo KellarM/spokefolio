@@ -103,7 +103,7 @@ export default function StudioHero({ draftCount = 0, profile }) {
             </span>
           </div>
           <h1 className="mec-h1">{t('home.heroTitle')}</h1>
-          <p className="mec-body">{t('home.heroBody')}</p>
+          <p className="mec-body" data-tour="overview-copy">{t('home.heroBody')}</p>
 
           {draftCount > 0 && (
           <Link
