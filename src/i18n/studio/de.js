@@ -95,6 +95,7 @@ export default {
   "tour.idleDocuments": "Optionaler Schritt: Fügen Sie hier eine Stelle oder eine Referenzdatei hinzu, um Ihre Lebensläufe zu schärfen.",
   "tour.idleProfile": "Nächster Schritt: Tippen Sie auf Sprechen und sagen Sie Ihre Angaben - sagen Sie dann speichern.",
   "tour.idlePostings": "Nächster Schritt: Fügen Sie hier eine Stelle ein und ich schneidere einen Lebenslauf aus Ihrer Historie.",
+  "mascot.voiceHint": "Tippen Sie auf die Sprechblase, um die Stimme des Begleiters ein- oder auszuschalten.",
   "tour.farewell": "Erste Bewerbung fertig — das ist der ganze Kreislauf. Viel Glück.",
   "tour.close": "Rundgang beenden",
   "menu.firstTime": "Erste Nutzung: Vervollständigen Sie Ihre erste Bewerbung",

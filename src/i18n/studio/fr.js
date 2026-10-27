@@ -95,6 +95,7 @@ export default {
   "tour.idleDocuments": "Étape facultative : ajoutez ici une offre ou un fichier de référence pour affiner vos CV.",
   "tour.idleProfile": "Prochaine étape : appuyez sur Parler et dictez vos coordonnées - puis dites enregistrer.",
   "tour.idlePostings": "Prochaine étape : collez une offre ici et je créerai un CV à partir de votre historique.",
+  "mascot.voiceHint": "Touchez la bulle pour couper ou rétablir la voix de l'assistant.",
   "tour.farewell": "Première candidature envoyée — c'est tout le cycle. Bonne chance.",
   "tour.close": "Terminer la visite",
   "menu.firstTime": "Première fois : complétez votre première candidature",

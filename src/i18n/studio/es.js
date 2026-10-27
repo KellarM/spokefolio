@@ -90,6 +90,7 @@ export default {
   "tour.idleDocuments": "Paso opcional: añade aquí una oferta o un archivo de referencia para afinar tus currículums.",
   "tour.idleProfile": "Siguiente paso: toca Hablar y di tus datos - luego di guardar para almacenarlos.",
   "tour.idlePostings": "Siguiente paso: pega aquí una oferta y adaptaré un currículum con tu historial.",
+  "mascot.voiceHint": "Toca el mensaje para silenciar o reactivar la voz del guía.",
   "tour.farewell": "Primera solicitud lista — ese es todo el ciclo. Mucha suerte.",
   "tour.close": "Terminar el recorrido",
   "menu.firstTime": "Primera vez: completa tu primera solicitud",

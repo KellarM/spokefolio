@@ -90,6 +90,7 @@ export default {
   "tour.idleDocuments": "Passo opcional: adicione aqui uma vaga ou um arquivo de referência para afinar seus currículos.",
   "tour.idleProfile": "Próximo passo: toque em Falar e diga seus dados - depois diga salvar.",
   "tour.idlePostings": "Próximo passo: cole uma vaga aqui e eu preparo um currículo com sua história.",
+  "mascot.voiceHint": "Toque na mensagem para silenciar ou reativar a voz do guia.",
   "tour.farewell": "Primeira candidatura pronta — esse é todo o ciclo. Boa sorte.",
   "tour.close": "Encerrar o passo a passo",
   "menu.firstTime": "Primeira vez: complete sua primeira candidatura",

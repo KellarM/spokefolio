@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
+import { speak, mascotMuted, setMascotMuted } from '@/lib/speech';
 import { useTour } from '@/lib/TourContext';
 import { computeNudge, dismissNudge, markNudgeShown, markNudgeTapped } from '@/lib/nudges';
 import { trackEvent } from '@/lib/analytics';
@@ -420,8 +421,6 @@ export default function BouncingBallTour() {
     if (active) setMenuOpen(false);
   }, [active]);
 
-  if (!ready || !pos || (!active && !idle)) return null;
-
   const onHome = pathname === '/';
   const onProfile = pathname === '/profile';
   const onHistory = pathname === '/history';
@@ -429,130 +428,8 @@ export default function BouncingBallTour() {
   const onDocuments = pathname === '/documents';
   const onTailor = pathname.startsWith('/tailor-application');
 
-  // ---- Launcher mode: the menu, the journey, the four destinations ----
-  if (idle) {
-    const openMenu = () => {
-      if (dragMovedRef.current) {
-        dragMovedRef.current = false;
-        return;
-      }
-      setMenuOpen((open) => {
-        const next = !open;
-        if (next) {
-          trackEvent('menu_open');
-          setHopKey((key) => key + 1);
-        }
-        return next;
-      });
-    };
-
-    const go = (to) => {
-      setMenuOpen(false);
-      navigate(to);
-    };
-
-    const startJourney = () => {
-      const first = firstJourneyStep(studioData);
-      tour.start({ step: first });
-      trackEvent('menu_first_time');
-      setMenuOpen(false);
-      navigate(STEP_PAGE[first]);
-    };
-
-    const takeNudge = () => {
-      if (!nudge) return;
-      markNudgeTapped(nudge);
-      dismissNudge(tour.userId, nudge.id);
-      setNudge(null);
-      setMenuOpen(false);
-      navigate(nudge.target);
-    };
-
-    const NudgeIcon = nudge ? NUDGE_ICON[nudge.kind] : null;
-    // What the idle ball says at its anchor: a data-driven nudge first,
-    // otherwise the page's own next step.
-    const idleKey = nudge?.captionKey || idleCaptionKey(pathname);
-    const centered = !pos.anchored && onHome;
-
-    return (
-      <div
-        ref={wrapRef}
-        className={`tour-ball-wrap helper ${nudge ? 'has-nudge' : ''} ${centered ? 'center' : ''}`}
-        style={{ top: pos.top, left: pos.left }}
-      >
-        <div key={hopKey} className="tour-move tour-hop">
-          <span className="tour-shadow" aria-hidden="true" />
-          <button
-            type="button"
-            className="tour-ball cursor-grab active:cursor-grabbing"
-            style={{ touchAction: 'none' }}
-            onClick={openMenu}
-            onPointerDown={onBallPointerDown}
-            onPointerMove={onBallPointerMove}
-            onPointerUp={onBallPointerUp}
-            aria-label={t('nudge.idle')}
-            aria-expanded={menuOpen}
-          >
-            <span className="tour-face" aria-hidden="true">
-              <svg viewBox="0 0 64 64" aria-hidden="true">
-                <g className="tour-eyes">
-                  <ellipse cx="23" cy="27" rx="9.5" ry="11" fill="#ffffff" />
-                  <ellipse cx="41" cy="27" rx="9.5" ry="11" fill="#ffffff" />
-                  <circle cx="24.5" cy="29" r="3.4" fill="#1a1408" />
-                  <circle cx="39.5" cy="29" r="3.4" fill="#1a1408" />
-                  <g stroke="#1a1408" strokeWidth="1.7" strokeLinecap="round">
-                    <line x1="23" y1="15.5" x2="23" y2="11" />
-                    <line x1="17.5" y1="18" x2="14.5" y2="15" />
-                    <line x1="28.5" y1="18" x2="31.5" y2="15" />
-                    <line x1="41" y1="15.5" x2="41" y2="11" />
-                    <line x1="46.5" y1="18" x2="49.5" y2="15" />
-                    <line x1="35.5" y1="18" x2="32.5" y2="15" />
-                  </g>
-                </g>
-                <path d="M 24 42 Q 32 49 40 42" fill="none" stroke="#1a1408" strokeWidth="2.6" strokeLinecap="round" />
-              </svg>
-            </span>
-          </button>
-        </div>
-        {pos.anchored && idleKey && !menuOpen && (
-          <div className={`tour-bubble ${bubbleBelow ? 'below ' : ''}${bubbleShift ? 'shift' : ''}`}>
-            {t(idleKey)}
-          </div>
-        )}
-        {menuOpen && (
-          <div className="tour-menu below" role="menu">
-            {nudge && (
-              <button type="button" className="tour-menu-item nudge" onClick={takeNudge} role="menuitem">
-                <NudgeIcon className="mi" aria-hidden="true" />
-                <span>{t(nudge.captionKey)}</span>
-              </button>
-            )}
-            <button type="button" className="tour-menu-item featured" onClick={startJourney} role="menuitem">
-              <Sparkles className="mi" aria-hidden="true" />
-              <span>{t('menu.firstTime')}</span>
-            </button>
-            {NAV.map(({ key, labelKey, to, Icon }) => (
-              <button
-                type="button"
-                className="tour-menu-item"
-                key={key}
-                onClick={() => {
-                  trackEvent(`menu_nav_${key}`);
-                  go(to);
-                }}
-                role="menuitem"
-              >
-                <Icon className="mi" aria-hidden="true" />
-                <span>{t(labelKey)}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // ---- Journey mode: the guided walk to a first application ----
+  // ---- The caption and the mascot's voice, computed before the idle
+  // return so every hook stays unconditional ----
   const onApplyPage = onPostings || onTailor;
 
   const captionKey =
@@ -601,6 +478,169 @@ export default function BouncingBallTour() {
                 ? 'tour.apply'
                 : 'tour.applyAway'
             : 'tour.farewell';
+
+  // The idle bubble's line - a data-driven nudge first, otherwise the
+  // page's own next step.
+  const idleKey = nudge ? nudge.captionKey : idleCaptionKey(pathname);
+
+  // ---- The mascot talks: its bubble is spoken aloud in its own voice,
+  // a different voice from the working engine's. Tap a bubble to mute. ----
+  const bubbleText = idle
+    ? pos && pos.anchored && idleKey && !menuOpen
+      ? t(idleKey)
+      : ''
+    : t(captionKey);
+
+  const toggleMute = () => {
+    const next = !mascotMuted();
+    setMascotMuted(next);
+    if (next) {
+      try { window.speechSynthesis.cancel(); } catch {}
+    } else if (bubbleText) {
+      speak(bubbleText, { profile: 'mascot' });
+    }
+  };
+
+  useEffect(() => {
+    if (!bubbleText || mascotMuted()) return;
+    // A beat after arrival, in its own voice - and never over the top of
+    // the working engine mid-sentence.
+    const timer = setTimeout(() => speak(bubbleText, { profile: 'mascot' }), 250);
+    return () => clearTimeout(timer);
+  }, [bubbleText]);
+
+  if (!ready || !pos || (!active && !idle)) return null;
+
+  // ---- Launcher mode: the menu, the journey, the four destinations ----
+  if (idle) {
+    const openMenu = () => {
+      if (dragMovedRef.current) {
+        dragMovedRef.current = false;
+        return;
+      }
+      setMenuOpen((open) => {
+        const next = !open;
+        if (next) {
+          trackEvent('menu_open');
+          setHopKey((key) => key + 1);
+        }
+        return next;
+      });
+    };
+
+    const go = (to) => {
+      setMenuOpen(false);
+      navigate(to);
+    };
+
+    const startJourney = () => {
+      const first = firstJourneyStep(studioData);
+      tour.start({ step: first });
+      trackEvent('menu_first_time');
+      setMenuOpen(false);
+      navigate(STEP_PAGE[first]);
+    };
+
+    const takeNudge = () => {
+      if (!nudge) return;
+      markNudgeTapped(nudge);
+      dismissNudge(tour.userId, nudge.id);
+      setNudge(null);
+      setMenuOpen(false);
+      navigate(nudge.target);
+    };
+
+    const NudgeIcon = nudge ? NUDGE_ICON[nudge.kind] : null;
+    // What the idle ball says at its anchor: a data-driven nudge first,
+    // otherwise the page's own next step.
+    const centered = !pos.anchored && onHome;
+
+    return (
+      <div
+        ref={wrapRef}
+        className={`tour-ball-wrap helper ${nudge ? 'has-nudge' : ''} ${centered ? 'center' : ''}`}
+        style={{ top: pos.top, left: pos.left }}
+      >
+        <div key={hopKey} className="tour-move tour-hop">
+          <span className="tour-shadow" aria-hidden="true" />
+          <button
+            type="button"
+            className="tour-ball cursor-grab active:cursor-grabbing"
+            style={{ touchAction: 'none' }}
+            onClick={openMenu}
+            onPointerDown={onBallPointerDown}
+            onPointerMove={onBallPointerMove}
+            onPointerUp={onBallPointerUp}
+            aria-label={t('nudge.idle')}
+            aria-expanded={menuOpen}
+          >
+            <span className="tour-face" aria-hidden="true">
+              <svg viewBox="0 0 64 64" aria-hidden="true">
+                <g className="tour-eyes">
+                  <ellipse cx="23" cy="27" rx="9.5" ry="11" fill="#ffffff" />
+                  <ellipse cx="41" cy="27" rx="9.5" ry="11" fill="#ffffff" />
+                  <circle cx="24.5" cy="29" r="3.4" fill="#1a1408" />
+                  <circle cx="39.5" cy="29" r="3.4" fill="#1a1408" />
+                  <g stroke="#1a1408" strokeWidth="1.7" strokeLinecap="round">
+                    <line x1="23" y1="15.5" x2="23" y2="11" />
+                    <line x1="17.5" y1="18" x2="14.5" y2="15" />
+                    <line x1="28.5" y1="18" x2="31.5" y2="15" />
+                    <line x1="41" y1="15.5" x2="41" y2="11" />
+                    <line x1="46.5" y1="18" x2="49.5" y2="15" />
+                    <line x1="35.5" y1="18" x2="32.5" y2="15" />
+                  </g>
+                </g>
+                <path d="M 24 42 Q 32 49 40 42" fill="none" stroke="#1a1408" strokeWidth="2.6" strokeLinecap="round" />
+              </svg>
+            </span>
+          </button>
+        </div>
+        {pos.anchored && idleKey && !menuOpen && (
+          <div
+            role="button"
+            tabIndex={-1}
+            title={t('mascot.voiceHint')}
+            onClick={toggleMute}
+            className={`tour-bubble cursor-pointer ${bubbleBelow ? 'below ' : ''}${bubbleShift ? 'shift' : ''}`}
+          >
+            {t(idleKey)}
+          </div>
+        )}
+        {menuOpen && (
+          <div className="tour-menu below" role="menu">
+            {nudge && (
+              <button type="button" className="tour-menu-item nudge" onClick={takeNudge} role="menuitem">
+                <NudgeIcon className="mi" aria-hidden="true" />
+                <span>{t(nudge.captionKey)}</span>
+              </button>
+            )}
+            <button type="button" className="tour-menu-item featured" onClick={startJourney} role="menuitem">
+              <Sparkles className="mi" aria-hidden="true" />
+              <span>{t('menu.firstTime')}</span>
+            </button>
+            {NAV.map(({ key, labelKey, to, Icon }) => (
+              <button
+                type="button"
+                className="tour-menu-item"
+                key={key}
+                onClick={() => {
+                  trackEvent(`menu_nav_${key}`);
+                  go(to);
+                }}
+                role="menuitem"
+              >
+                <Icon className="mi" aria-hidden="true" />
+                <span>{t(labelKey)}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ---- Journey mode: the guided walk to a first application ----
+
 
   // A yes or no in the bubble: the story phase's real questions. Every
   // answer is a step transition with its own analytics.
@@ -718,6 +758,11 @@ export default function BouncingBallTour() {
       <div
         className={`tour-bubble ${pos.anchored ? `${bubbleBelow ? 'below ' : ''}${bubbleShift ? 'shift' : ''}` : 'side'}`}
         role="status"
+        title={t('mascot.voiceHint')}
+        onClick={(event) => {
+          if (event.target.closest('button')) return; // choices are choices, not the mute
+          toggleMute();
+        }}
       >
         {t(captionKey)}
         {(step === 'files' && !celebrated && onDocuments) && (

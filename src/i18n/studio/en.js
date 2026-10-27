@@ -102,6 +102,7 @@ export default {
   "tour.idleDocuments": "Optional next step: add a job posting or a reference file here to sharpen your resumes.",
   "tour.idleProfile": "Next step: tap Talk here and say your details - then say save to store them.",
   "tour.idlePostings": "Next step: paste a job posting here and I will tailor a resume from your history.",
+  "mascot.voiceHint": "Tap the bubble to mute or unmute the mascot's voice.",
   "tour.farewell": "First application in — that's the whole loop. Good luck out there.",
   "tour.close": "End the walkthrough",
   "menu.firstTime": "First time: complete your first application",

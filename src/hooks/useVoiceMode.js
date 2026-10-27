@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { createDictationRecorder } from '@/lib/dictationRecorder';
 import { parseSpokenDetails } from '@/lib/spokenDetails';
+import { shapeUtterance } from '@/lib/speech';
 
 // Voice Mode: one tap opens a hands-free conversation. The person talks; the
 // microphone stops itself when they pause; what they said is transcribed and
@@ -79,6 +80,7 @@ export default function useVoiceMode({ t, onApply, onSave, language }) {
       synth.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = LANG_TO_BCP47[langRef.current] || 'en-CA';
+      shapeUtterance(utterance, { profile: 'assistant' });
       utterance.onend = done;
       utterance.onerror = done;
       setTimeout(done, 2500 + text.length * 70); // safety net: never hang the session

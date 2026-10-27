@@ -90,6 +90,7 @@ export default {
   "tour.idleDocuments": "Passo facoltativo: aggiungi qui un annuncio o un file di riferimento per affinare i tuoi curriculum.",
   "tour.idleProfile": "Prossimo passo: tocca Parla e detta i tuoi dati - poi di' salva.",
   "tour.idlePostings": "Prossimo passo: incolla qui un annuncio e io preparerò un curriculum dalla tua storia.",
+  "mascot.voiceHint": "Tocca il fumetto per attivare o disattivare la voce della guida.",
   "tour.farewell": "Prima candidatura inviata — è tutto il giro. In bocca al lupo.",
   "tour.close": "Termina il percorso",
   "menu.firstTime": "Prima volta: completa la tua prima candidatura",

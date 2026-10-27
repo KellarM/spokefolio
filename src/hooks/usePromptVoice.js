@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { createDictationRecorder } from '@/lib/dictationRecorder';
 import { parsePromptAnswer } from '@/lib/promptVoiceCommands';
 import { getStoredLanguage, normalizeLanguage } from '@/components/LanguageSelect';
+import { shapeUtterance } from '@/lib/speech';
 
 // Voice Mode for the follow-up prompts. The panel speaks each question
 // aloud, the client answers out loud - the detail, or no / next / save /
@@ -53,6 +54,7 @@ export default function usePromptVoice({ getPrompt, onAnswer, onFinish }) {
       synth.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = LANG_TO_BCP47[normalizeLanguage(getStoredLanguage())] || 'en-CA';
+      shapeUtterance(utterance, { profile: 'assistant' });
       utterance.onend = done;
       utterance.onerror = done;
       setTimeout(done, 2500 + text.length * 70); // never hang the loop
