@@ -1,7 +1,9 @@
 import { createDictationFile } from '@/lib/dictationAudio';
 
 // Capture mono PCM while the microphone is open, rather than decoding after Stop.
-export function createDictationRecorder() {
+// options.onLevel, when provided, receives the peak level of every audio frame:
+// Voice Mode uses it to detect when a person has finished speaking.
+export function createDictationRecorder(options = {}) {
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   if (!AudioContext || !navigator.mediaDevices?.getUserMedia) {
     throw new Error('This browser cannot record audio. Please use a current version of Chrome, Edge, or Safari.');
@@ -14,6 +16,7 @@ export function createDictationRecorder() {
   let disposed = false;
   let frameCount = 0;
   let chunks = [];
+  const onLevel = typeof options.onLevel === 'function' ? options.onLevel : null;
   const dispose = () => {
     disposed = true;
     if (processor) processor.onaudioprocess = null;
@@ -48,6 +51,14 @@ export function createDictationRecorder() {
           if (available) {
             chunks.push(new Float32Array(input.subarray(0, available)));
             frameCount += available;
+          }
+          if (onLevel && !disposed) {
+            let peak = 0;
+            for (let index = 0; index < input.length; index++) {
+              const level = Math.abs(input[index]);
+              if (level > peak) peak = level;
+            }
+            onLevel(peak);
           }
           event.outputBuffer.getChannelData(0).fill(0);
         };
