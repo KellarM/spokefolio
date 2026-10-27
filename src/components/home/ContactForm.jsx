@@ -100,7 +100,21 @@ export default function ContactForm({ profile, onSave }) {
   const submit = async () => {
     setSaving(true);
     try {
-      await onSave(form);
+      // The final guarantee before anything is stored: a home address that
+      // carries a city fills Location, whatever path it arrived by - voice,
+      // typing, a paste. The voice path already tried; this catches the rest.
+      let next = form;
+      if (!form.location && form.home_address) {
+        try {
+          const { searchInText } = await import('@/lib/locations');
+          const place = searchInText(form.home_address);
+          if (place?.label) {
+            next = { ...form, location: place.label };
+            setForm(next);
+          }
+        } catch {}
+      }
+      await onSave(next);
       toast({ title: t('profile.detailsSaved') });
     } catch (error) {
       toast({
