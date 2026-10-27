@@ -37,8 +37,8 @@ export default function About() {
           </p>
           <p>
             Spokefolio is made by XFH Game Studio, a small independent studio. We build it the way we
-            would want to use it ourselves: free through 2026, then $15 a year, flat, with no trial,
-            no auto-renewal and no fee at the download screen.
+            would want to use it ourselves: free, full stop, a social service with no trial, no
+            auto-renewal and no fee at the download screen.
           </p>
         </div>
 

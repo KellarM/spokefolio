@@ -1414,6 +1414,8 @@
   border: 1px solid rgba(212, 175, 55, 0.3);
   background: #161E2E;
   padding: 46px 40px;
+  grid-column: 1 / -1;
+  max-width: 560px;
 }
 
 .lnd-plan-when {

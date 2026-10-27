@@ -107,8 +107,7 @@ export default function Landing() {
           <p className="lnd-lede">{t.heroLede}</p>
           <div className="lnd-promise-row">
             <div className="lnd-price-chip">
-              <b>{t.heroPriceFree}</b> {t.heroPriceMid}{' '}
-              <b>{t.heroPriceRate}</b>
+              <b>{t.heroPriceFree}</b> {t.heroPriceMid}
             </div>
             <div className="lnd-seal" aria-label={t.heroSealLabel}>
               <div className="lnd-seal-inner">
@@ -260,13 +259,6 @@ export default function Landing() {
               <p className="lnd-plan-when">{t.prNow}</p>
               <p className="lnd-plan-amount">{t.prFree}</p>
               <p>{t.prNowP}</p>
-            </div>
-            <div className="lnd-plan">
-              <p className="lnd-plan-when">{t.pr2027}</p>
-              <p className="lnd-plan-amount">
-                {t.prAmount} <small>{t.prRateSmall}</small>
-              </p>
-              <p>{t.pr2027P}</p>
               <p className="lnd-fine">{t.prFine}</p>
             </div>
           </div>
