@@ -30,8 +30,17 @@ export default function Applications() {
 
   // The client's own order, kept on the profile so a card they promoted
   // stays promoted the next time they open this page (Michael, Oct 28).
+  // A local mirror keeps it working on this device even before the
+  // profile field syncs.
   useEffect(() => {
-    if (Array.isArray(profile?.application_order)) setManualOrder(profile.application_order);
+    if (Array.isArray(profile?.application_order) && profile.application_order.length) {
+      setManualOrder(profile.application_order);
+      return;
+    }
+    try {
+      const stored = JSON.parse(window.localStorage.getItem('spokefolio.applicationOrder') || '[]');
+      if (Array.isArray(stored) && stored.length) setManualOrder(stored);
+    } catch {}
   }, [profile?.application_order]);
 
   // The card-level quick action: applied outside the flow, mark it here.
@@ -147,6 +156,7 @@ export default function Applications() {
 
     setManualOrder(next);
     setSort('manual');
+    try { window.localStorage.setItem('spokefolio.applicationOrder', JSON.stringify(next)); } catch {}
     trackEvent('application_reorder', direction);
     try {
       if (profile?.id) await base44.entities.ResumeProfile.update(profile.id, { application_order: next });
