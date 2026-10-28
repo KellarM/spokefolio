@@ -134,30 +134,35 @@ export default function Applications() {
   const safePage = Math.min(page, totalPages - 1);
   const pageItems = visible.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
-  // Move one card one place, in the order the client is actually looking
-  // at. The list switches to their own order the first time they use it,
-  // so what they just did is what they see. One write per move: the whole
-  // order lives on the profile record.
+  // One press, one destination. The client asked for the cards above to
+  // move out of the way rather than nudging the card up a slot and having
+  // to chase the arrow down the page (Michael, Oct 28): up sends the card
+  // past every card above it, down past every card below it. Everyone
+  // else keeps their relative order.
   const moveApplication = async (application, direction) => {
     const displayed = visible.map((item) => item.id);
     const from = displayed.indexOf(application.id);
-    const neighbourIndex = direction === 'up' ? from - 1 : from + 1;
-    if (from < 0 || neighbourIndex < 0 || neighbourIndex >= displayed.length) return;
-    const neighbourId = displayed[neighbourIndex];
+    if (from < 0) return;
+    const others = displayed.filter((id) => id !== application.id);
+    if (!others.length) return;
 
-    // Everyone's order, then lift this card out and seat it beside the
-    // neighbour it traded places with - correct even inside a filter.
+    // The card it has to overtake: the top card for up, the bottom card
+    // for down - read from what the client can actually see, so this
+    // behaves correctly inside a status filter too.
+    const anchorId = direction === 'up' ? others[0] : others[others.length - 1];
+
     const full = [...applications].sort(SORTERS.manual).map((item) => item.id);
     const without = full.filter((id) => id !== application.id);
-    const seat = without.indexOf(neighbourId);
-    if (seat < 0) return;
+    const anchor = without.indexOf(anchorId);
+    if (anchor < 0) return;
+
     const next = [...without];
-    next.splice(direction === 'up' ? seat : seat + 1, 0, application.id);
+    next.splice(direction === 'up' ? anchor : anchor + 1, 0, application.id);
 
     setManualOrder(next);
     setSort('manual');
     try { window.localStorage.setItem('spokefolio.applicationOrder', JSON.stringify(next)); } catch {}
-    trackEvent('application_reorder', direction);
+    trackEvent('application_reorder', direction === 'up' ? 'to_top' : 'to_bottom');
     try {
       if (profile?.id) await base44.entities.ResumeProfile.update(profile.id, { application_order: next });
     } catch {
