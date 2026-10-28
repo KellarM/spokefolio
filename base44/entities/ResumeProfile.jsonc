@@ -63,6 +63,13 @@
       "type": "boolean",
       "default": false
     },
+    "application_order": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The client's own ordering of their applications, top first. Ids only; anything missing falls in behind, newest first."
+    },
     "master_summary": {
       "type": "string"
     },

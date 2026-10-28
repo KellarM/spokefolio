@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check, ChevronLeft, ChevronRight, Loader2, Plus } from 'lucide-react';
+import { ArrowRight, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Loader2, Plus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -25,7 +25,14 @@ export default function Applications() {
   const [sort, setSort] = useState('newest');
   const [locating, setLocating] = useState(false);
   const [scores, setScores] = useState({});
+  const [manualOrder, setManualOrder] = useState([]);
   const { profile } = useProfile();
+
+  // The client's own order, kept on the profile so a card they promoted
+  // stays promoted the next time they open this page (Michael, Oct 28).
+  useEffect(() => {
+    if (Array.isArray(profile?.application_order)) setManualOrder(profile.application_order);
+  }, [profile?.application_order]);
 
   // The card-level quick action: applied outside the flow, mark it here.
   // Same honesty rule as the detail page - the client says it, the
@@ -93,7 +100,17 @@ export default function Applications() {
 
   // The order the list is shown in. Locale-aware so titles with accents
   // sort where the alphabet puts them, not by character code.
+  const manualRank = new Map(manualOrder.map((id, position) => [id, position]));
   const SORTERS = {
+    // Their order. Anything they have not placed yet sits behind it,
+    // newest first, so a fresh application never lands above a card they
+    // deliberately moved up.
+    manual: (a, b) => {
+      const rankA = manualRank.has(a.id) ? manualRank.get(a.id) : Number.MAX_SAFE_INTEGER;
+      const rankB = manualRank.has(b.id) ? manualRank.get(b.id) : Number.MAX_SAFE_INTEGER;
+      if (rankA !== rankB) return rankA - rankB;
+      return new Date(b.created_date || 0) - new Date(a.created_date || 0);
+    },
     newest: (a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0),
     oldest: (a, b) => new Date(a.created_date || 0) - new Date(b.created_date || 0),
     az: (a, b) => (a.job_title || '').localeCompare(b.job_title || '', language, { sensitivity: 'base' }),
@@ -107,6 +124,36 @@ export default function Applications() {
   const totalPages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages - 1);
   const pageItems = visible.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
+
+  // Move one card one place, in the order the client is actually looking
+  // at. The list switches to their own order the first time they use it,
+  // so what they just did is what they see. One write per move: the whole
+  // order lives on the profile record.
+  const moveApplication = async (application, direction) => {
+    const displayed = visible.map((item) => item.id);
+    const from = displayed.indexOf(application.id);
+    const neighbourIndex = direction === 'up' ? from - 1 : from + 1;
+    if (from < 0 || neighbourIndex < 0 || neighbourIndex >= displayed.length) return;
+    const neighbourId = displayed[neighbourIndex];
+
+    // Everyone's order, then lift this card out and seat it beside the
+    // neighbour it traded places with - correct even inside a filter.
+    const full = [...applications].sort(SORTERS.manual).map((item) => item.id);
+    const without = full.filter((id) => id !== application.id);
+    const seat = without.indexOf(neighbourId);
+    if (seat < 0) return;
+    const next = [...without];
+    next.splice(direction === 'up' ? seat : seat + 1, 0, application.id);
+
+    setManualOrder(next);
+    setSort('manual');
+    trackEvent('application_reorder', direction);
+    try {
+      if (profile?.id) await base44.entities.ResumeProfile.update(profile.id, { application_order: next });
+    } catch {
+      // Not persisted: the order still holds for this visit.
+    }
+  };
 
   const handleDeleted = (id) => setApplications((current) => current.filter((application) => application.id !== id));
 
@@ -169,6 +216,7 @@ export default function Applications() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="manual">{t('applications.sortManual')}</SelectItem>
               <SelectItem value="newest">{t('applications.sortNewest')}</SelectItem>
               <SelectItem value="oldest">{t('applications.sortOldest')}</SelectItem>
               <SelectItem value="az">{t('applications.sortAZ')}</SelectItem>
@@ -207,9 +255,31 @@ export default function Applications() {
               key={application.id}
               className="group flex items-stretch gap-3 rounded-2xl border border-border/70 bg-card px-6 py-5 transition-all hover:border-accent/40 hover:shadow-[0_18px_40px_-32px_rgba(16,24,40,0.5)]"
             >
-              <span className="hidden w-7 shrink-0 select-none items-center justify-center text-[13px] font-semibold text-muted-foreground/70 sm:flex">
-                {safePage * PAGE_SIZE + index + 1}
-              </span>
+              <div className="flex w-7 shrink-0 flex-col items-center justify-center gap-0.5">
+                <button
+                  type="button"
+                  onClick={() => moveApplication(application, 'up')}
+                  disabled={safePage * PAGE_SIZE + index === 0}
+                  aria-label={t('applications.moveUp')}
+                  title={t('applications.moveUp')}
+                  className="rounded p-0.5 text-muted-foreground/60 transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-20"
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </button>
+                <span className="select-none text-[13px] font-semibold text-muted-foreground/70">
+                  {safePage * PAGE_SIZE + index + 1}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => moveApplication(application, 'down')}
+                  disabled={safePage * PAGE_SIZE + index === visible.length - 1}
+                  aria-label={t('applications.moveDown')}
+                  title={t('applications.moveDown')}
+                  className="rounded p-0.5 text-muted-foreground/60 transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-20"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+              </div>
               <Link
                 to={`/application/${application.id}`}
                 className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-4"
