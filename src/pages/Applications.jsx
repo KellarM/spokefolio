@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Loader2, Plus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -27,21 +27,6 @@ export default function Applications() {
   const [scores, setScores] = useState({});
   const [manualOrder, setManualOrder] = useState([]);
   const { profile } = useProfile();
-
-  // The client's own order, kept on the profile so a card they promoted
-  // stays promoted the next time they open this page (Michael, Oct 28).
-  // A local mirror keeps it working on this device even before the
-  // profile field syncs.
-  useEffect(() => {
-    if (Array.isArray(profile?.application_order) && profile.application_order.length) {
-      setManualOrder(profile.application_order);
-      return;
-    }
-    try {
-      const stored = JSON.parse(window.localStorage.getItem('spokefolio.applicationOrder') || '[]');
-      if (Array.isArray(stored) && stored.length) setManualOrder(stored);
-    } catch {}
-  }, [profile?.application_order]);
 
   // The card-level quick action: applied outside the flow, mark it here.
   // Same honesty rule as the detail page - the client says it, the
@@ -134,41 +119,88 @@ export default function Applications() {
   const safePage = Math.min(page, totalPages - 1);
   const pageItems = visible.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
-  // One press, one destination. The client asked for the cards above to
-  // move out of the way rather than nudging the card up a slot and having
-  // to chase the arrow down the page (Michael, Oct 28): up sends the card
-  // past every card above it, down past every card below it. Everyone
-  // else keeps their relative order.
-  const moveApplication = async (application, direction) => {
-    const displayed = visible.map((item) => item.id);
-    const from = displayed.indexOf(application.id);
-    if (from < 0) return;
-    const others = displayed.filter((id) => id !== application.id);
-    if (!others.length) return;
+  // One step per press. The live order is mirrored in a ref so holding
+  // the arrow can keep stepping without waiting on React state, and the
+  // save is debounced: a held arrow writes once, when the hand stops,
+  // not once per row.
+  const orderRef = useRef([]);
+  const saveTimer = useRef(null);
+  const holdTimer = useRef(null);
+  const holdInterval = useRef(null);
 
-    // The card it has to overtake: the top card for up, the bottom card
-    // for down - read from what the client can actually see, so this
-    // behaves correctly inside a status filter too.
-    const anchorId = direction === 'up' ? others[0] : others[others.length - 1];
-
-    const full = [...applications].sort(SORTERS.manual).map((item) => item.id);
-    const without = full.filter((id) => id !== application.id);
-    const anchor = without.indexOf(anchorId);
-    if (anchor < 0) return;
-
-    const next = [...without];
-    next.splice(direction === 'up' ? anchor : anchor + 1, 0, application.id);
-
-    setManualOrder(next);
-    setSort('manual');
-    try { window.localStorage.setItem('spokefolio.applicationOrder', JSON.stringify(next)); } catch {}
-    trackEvent('application_reorder', direction === 'up' ? 'to_top' : 'to_bottom');
-    try {
-      if (profile?.id) await base44.entities.ResumeProfile.update(profile.id, { application_order: next });
-    } catch {
-      // Not persisted: the order still holds for this visit.
-    }
+  const persistOrder = (ids) => {
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      try {
+        if (profile?.id) base44.entities.ResumeProfile.update(profile.id, { application_order: ids }).catch(() => {});
+      } catch {}
+    }, 500);
   };
+
+  const applyOrder = (ids) => {
+    orderRef.current = ids;
+    setManualOrder(ids);
+    setSort('manual');
+    try { window.localStorage.setItem('spokefolio.applicationOrder', JSON.stringify(ids)); } catch {}
+    persistOrder(ids);
+  };
+
+  // The ids in the order the client is looking at: their saved order,
+  // filtered to what the current view shows, with anything they have
+  // never placed behind it.
+  const visibleIds = () => {
+    const allowed = (filter === 'all' ? applications : applications.filter((item) => item.status === filter))
+      .map((item) => item.id);
+    const allowedSet = new Set(allowed);
+    const placed = orderRef.current.filter((id) => allowedSet.has(id));
+    const placedSet = new Set(placed);
+    return [...placed, ...allowed.filter((id) => !placedSet.has(id))];
+  };
+
+  // Swap the card with its immediate neighbour - up one place, or down
+  // one place. That is the whole move (Michael, Oct 28).
+  const stepApplication = (applicationId, direction) => {
+    const ids = visibleIds();
+    const from = ids.indexOf(applicationId);
+    const to = direction === 'up' ? from - 1 : from + 1;
+    if (from < 0 || to < 0 || to >= ids.length) return;
+    const next = [...ids];
+    [next[from], next[to]] = [next[to], next[from]];
+    applyOrder(next);
+  };
+
+  const stopHold = () => {
+    clearTimeout(holdTimer.current);
+    clearInterval(holdInterval.current);
+    holdTimer.current = null;
+    holdInterval.current = null;
+  };
+
+  // Press once: one step. Keep pressing: it climbs. Hold: it keeps
+  // stepping, so nobody has to chase the arrow down the page.
+  const startHold = (applicationId, direction) => {
+    stopHold();
+    stepApplication(applicationId, direction);
+    holdTimer.current = setTimeout(() => {
+      holdInterval.current = setInterval(() => stepApplication(applicationId, direction), 160);
+    }, 420);
+  };
+
+  useEffect(() => () => stopHold(), []);
+
+  // Anything already stored in the profile or on this device is the
+  // starting point.
+  useEffect(() => {
+    if (orderRef.current.length) return;
+    let seed = Array.isArray(profile?.application_order) ? profile.application_order : [];
+    if (!seed.length) {
+      try { seed = JSON.parse(window.localStorage.getItem('spokefolio.applicationOrder') || '[]'); } catch { seed = []; }
+    }
+    if (Array.isArray(seed) && seed.length) {
+      orderRef.current = seed;
+      setManualOrder(seed);
+    }
+  }, [profile?.application_order]);
 
   const handleDeleted = (id) => setApplications((current) => current.filter((application) => application.id !== id));
 
@@ -273,7 +305,20 @@ export default function Applications() {
               <div className="flex w-7 shrink-0 flex-col items-center justify-center gap-0.5">
                 <button
                   type="button"
-                  onClick={() => moveApplication(application, 'up')}
+                  onPointerDown={(event) => {
+                    try { event.currentTarget.setPointerCapture(event.pointerId); } catch {}
+                    startHold(application.id, 'up');
+                  }}
+                  onPointerUp={stopHold}
+                  onLostPointerCapture={stopHold}
+                  onPointerCancel={stopHold}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      stepApplication(application.id, 'up');
+                    }
+                  }}
+                  onClick={(event) => event.preventDefault()}
                   disabled={safePage * PAGE_SIZE + index === 0}
                   aria-label={t('applications.moveUp')}
                   title={t('applications.moveUp')}
@@ -286,7 +331,20 @@ export default function Applications() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => moveApplication(application, 'down')}
+                  onPointerDown={(event) => {
+                    try { event.currentTarget.setPointerCapture(event.pointerId); } catch {}
+                    startHold(application.id, 'down');
+                  }}
+                  onPointerUp={stopHold}
+                  onLostPointerCapture={stopHold}
+                  onPointerCancel={stopHold}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      stepApplication(application.id, 'down');
+                    }
+                  }}
+                  onClick={(event) => event.preventDefault()}
                   disabled={safePage * PAGE_SIZE + index === visible.length - 1}
                   aria-label={t('applications.moveDown')}
                   title={t('applications.moveDown')}
