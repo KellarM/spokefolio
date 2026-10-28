@@ -44,24 +44,25 @@ export default function Landing() {
 
   const t = landingStrings(language);
 
-  const DONT_LIST = [t.honD1, t.honD2, t.honD3, t.honD4, t.honD5, t.honD6];
+  // Four commitments, four competitor rows: each claim appears once on
+  // this page. Repeating a promise is what made the front door long
+  // (Michael, Oct 28).
+  const DONT_LIST = [t.honD1, t.honD2, t.honD3, t.honD5];
 
   const CONTRAST = [
     [t.conR1a, t.conR1b],
-    [t.conR2a, t.conR2b],
     [t.conR3a, t.conR3b],
-    [t.conR4a, t.conR4b],
     [t.conR5a, t.conR5b],
     [t.conR6a, t.conR6b]
   ];
 
+
   const FAQ = [
     { q: t.faqQ1, a: t.faqA1 },
     { q: t.faqQ2, a: t.faqA2 },
-    { q: t.faqQ3, a: t.faqA3 },
-    { q: t.faqQ4, a: t.faqA4 },
-    { q: t.faqQ5, a: t.faqA5 }
+    { q: t.faqQ4, a: t.faqA4 }
   ];
+
 
   const PERSONAS = [t.whoP1, t.whoP2, t.whoP3];
 
@@ -154,7 +155,6 @@ export default function Landing() {
               <p>{t.howS3P}</p>
             </div>
           </div>
-          <p className="lnd-note lnd-note-center">{t.howNote}</p>
         </div>
       </section>
 
@@ -268,7 +268,6 @@ export default function Landing() {
             <div className="lnd-r-line"><span>{t.rL1}</span><span>$0</span></div>
             <div className="lnd-r-line"><span>{t.rL2}</span><span>$0</span></div>
             <div className="lnd-r-line"><span>{t.rL3}</span><span>$0</span></div>
-            <div className="lnd-r-line"><span>{t.rL4}</span><span>$0</span></div>
             <div className="lnd-r-total"><span>{t.rTotal}</span><span>$0.00</span></div>
             <p className="lnd-r-note">{t.rNote}</p>
             <p className="lnd-r-thanks">{t.rThanks}</p>
@@ -297,7 +296,6 @@ export default function Landing() {
           <h2 className="lnd-h2">{t.accH2}</h2>
           <p className="lnd-lede lnd-lede-top">{t.accLede1}</p>
           <p className="lnd-lede">{t.accLede2}</p>
-          <p className="lnd-lede">{t.accLede3}</p>
           <p className="lnd-fine">
             <a href="mailto:KellarM@xfhgamestudioltd.com">KellarM@xfhgamestudioltd.com</a>
           </p>

@@ -14,7 +14,7 @@ export default {
   heroH1Post: 'to the JOB Application.',
   heroTagline: 'Your career, told once. Tailored everywhere.',
   heroLede:
-    'Spokefolio is a career knowledge base. Tell it your history once, and it writes a résumé tailored to each job you apply for. No wizard. No gate. No subscription trap.',
+    'Tell it your career once. It writes the résumé tailored to each job you apply for. No wizard. No gate. No subscription trap.',
   heroPriceFree: 'Free.',
   heroPriceMid: 'A social service for real job searches. No fee. No subscription. No card on file.',
   heroSealLabel: 'The Spokefolio pledge',
@@ -35,51 +35,47 @@ export default {
   howH2: 'Three moves. Then every job after is seconds.',
   howS1H: 'Tell it once.',
   howS1P:
-    'Speak or type your career. Spokefolio builds your knowledge base with your jobs, skills, wins and dates, then locks it in.',
+    'Speak or type your career once. It becomes your knowledge base: every job, skill, win and date.',
   howS2H: 'Paste the job posting.',
-  howS2P: 'Any posting, any site. Spokefolio reads what the employer actually wants.',
+  howS2P:
+    'Any posting, any site. It reads what the employer actually wants.',
   howS3H: 'Get the tailored résumé.',
   howS3P:
-    'Written from your real history, matched to that job, ready to send. Not a template you fight. A résumé that is already right.',
-  howNote: 'Every other site makes you re-type your history into their boxes. We ask once, and then we stop asking.',
+    'Written from your real history, matched to that job, ready to send.',
 
   inEyebrow: 'What’s inside',
   inH2: 'Four tools. One memory.',
   inLede:
-    'Your account is not a template gallery. It is one knowledge base with four things built on top of it, and every one of them runs on the career you told us once.',
+    'One knowledge base, four tools built on it. Everything runs on the career you told us once.',
   inF1Tag: 'The foundation',
   inF1H: 'Your career knowledge base',
   inF1P:
-    'Everything you tell it, kept and organized: jobs, skills, wins, dates. The story of what you did, in your words, ready for every job after.',
+    'Every job, skill, win and date, kept and organized in your own words.',
   inF2Tag: 'Résumés',
   inF2H: 'Custom tailoring for every application',
   inF2P:
-    'Paste the posting and choose what to emphasize. Your résumé reshapes itself around that job. Different job, different résumé, same one career.',
+    'Paste a posting, choose what to emphasize, and the résumé reshapes around that job.',
   inF3Tag: 'Cover letters',
   inF3H: 'Letters that sound like you',
   inF3P:
-    'Not a template with your name swapped in. A cover letter built from what you actually did, matched to the job you actually want.',
+    'Built from what you actually did, matched to the job you actually want.',
   inF4Tag: 'Practice',
   inF4H: 'The interview mock-up',
   inF4P:
-    'A rehearsal drill grounded in your own history, not generic prompts. You practise the answers you will actually have to give.',
+    'A rehearsal drill grounded in your own history, not generic prompts.',
 
   conEyebrow: 'Sound familiar?',
   conH2a: 'You’ve filled in these boxes before.',
   conH2b: 'Then came the invoice.',
   conLede:
-    'This is not the same as every résumé site you’ve ever tried: a template gallery, a box-by-box wizard, forty-five minutes of re-typing your own life, and then, at the only moment that matters, a screen asking for payment to download the thing you just built. Different brands. Same machine. It is not an accident. The gate is the product.',
+    'Different brands. Same machine. The gate is the product.',
   conTried: 'Tried these?',
   conThThem: 'The category',
   conThUs: 'Spokefolio',
   conR1a: 'You build one document, once',
   conR1b: 'You build one knowledge base, forever',
-  conR2a: 'Re-type your history every session',
-  conR2b: 'Your history is already there',
   conR3a: 'Price appears at the download gate',
   conR3b: 'Price on the front door',
-  conR4a: 'Trial that renews every 4 weeks',
-  conR4b: 'Free. No trial, no auto-renewal',
   conR5a: '650 templates to agonize over',
   conR5b: 'One résumé that’s already right',
   conR6a: 'Generic AI phrases anyone could have',
@@ -90,15 +86,13 @@ export default {
   honD1: 'No fee at the download screen',
   honD2: 'No trial that turns into a subscription',
   honD3: 'No auto-renewal of any kind, ever',
-  honD4: 'No template maze: one résumé, tailored, done',
   honD5: 'No re-typing your history every time you visit',
-  honD6: 'No AI-invented experience: if it says you did it, you told us you did it',
   honZ1: 'hidden fees',
   honZ2: 'auto-renewals',
   honZ3: 're-typing sessions',
   honZ4: 'career remembered',
   honConfession:
-    'Everything on this list is a standard feature of our industry. We consider that a confession, not a marketing strategy.',
+    'Every item on this list is standard industry practice. We consider that a confession, not a marketing strategy.',
 
   prEyebrow: 'Pricing',
   prH2: 'The price. On the front door. Where it should be.',
@@ -112,7 +106,6 @@ export default {
   rL1: 'Résumé export',
   rL2: 'Job tailoring',
   rL3: 'Career knowledge base',
-  rL4: 'Cover letter',
   rTotal: 'TOTAL',
   rNote: 'No trial. No lock-in. No card on file.',
   rThanks: 'Thank you. No, really.',
@@ -122,11 +115,9 @@ export default {
   accH2:
     'Built for the people who find this hardest.',
   accLede1:
-    'A job search is a paper trail, a memory test, and a typing test, all at the worst possible moment. Spokefolio was designed voice-first for exactly that reason: if a form is the wall between you and a paycheck, you should be able to speak your career instead of filling one out.',
+    'A job search is a paper trail, a memory test, and a typing test, all at the worst moment. Spokefolio is voice-first for exactly that reason: if a form is the wall between you and a paycheck, you should be able to speak your career instead of filling one out.',
   accLede2:
-    'If you live with a disability or a chronic condition — limited mobility, low vision, a hand injury, chronic pain or fatigue, a learning difference, a mental health condition — the voice path is not an add-on bolted to the side of this product. It is the main path, and it costs you nothing extra to use it.',
-  accLede3:
-    'We know accessibility is a promise you keep making, not one you announce. If something in Spokefolio still stands in your way, write to us and say which part. We will fix what we can, tell you plainly what we cannot, and note what changed when it does.',
+    'If you live with a disability or a chronic condition, the voice path is not an add-on bolted to the side of this product. It is the main path, and it costs you nothing extra. If something still stands in your way, tell us which part and we will fix what we can.',
 
   whoEyebrow: 'Who it’s for',
   whoH2: 'Built for people who actually do the work.',
@@ -140,21 +131,19 @@ export default {
   faqH2: 'The questions you’ve learned to ask.',
   faqQ1: 'Is this free, or “free”?',
   faqA1:
-    'Free. Full stop. No trial that becomes a bill, no “free” with an asterisk. It is a free social service.',
+    'Free. Full stop. No trial that becomes a bill, no subscription, nothing that auto-renews.',
   faqQ2: 'Do I pay to download my résumé?',
-  faqA2: 'No. Exports are free. That question exists because you have been burned before. We know.',
-  faqQ3: 'Will it auto-renew?',
-  faqA3: 'There is no subscription and nothing to auto-renew. There is no fee.',
+  faqA2:
+    'No. Exports are free. That question exists because you have been burned before.',
   faqQ4: 'Is it actually tailored, or just generic AI text?',
-  faqA4: 'Every line traces back to your own captured history. If you didn’t say it, we don’t write it.',
-  faqQ5: 'What if my career isn’t fancy?',
-  faqA5:
-    'Then you are the audience. Most of our users run warehouses, drive trucks, fix things, and run crews. Résumés for real jobs, written from real work.',
+  faqA4:
+    'Every line traces back to your own history. If you didn’t say it, we don’t write it.',
 
   finH2: 'Tell your career once.',
   finNote: 'Every job after this is seconds.',
   finCta: 'Create your free account',
-  finFine: 'Free. No fee, no subscription, no auto-renewal. You already know, because we told you first.',
+  finFine:
+    'Free. No fee, no subscription, no card on file.',
 
   footKb: 'The career knowledge base',
   footMade: 'Made by XFH Game Studio'
