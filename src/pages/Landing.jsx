@@ -290,6 +290,20 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ACCESSIBILITY */}
+      <section className="lnd-section">
+        <div className="lnd-wrap">
+          <p className="mec-eyebrow">{t.accEyebrow}</p>
+          <h2 className="lnd-h2">{t.accH2}</h2>
+          <p className="lnd-lede lnd-lede-top">{t.accLede1}</p>
+          <p className="lnd-lede">{t.accLede2}</p>
+          <p className="lnd-lede">{t.accLede3}</p>
+          <p className="lnd-fine">
+            <a href="mailto:KellarM@xfhgamestudioltd.com">KellarM@xfhgamestudioltd.com</a>
+          </p>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="lnd-section">
         <div className="lnd-wrap">

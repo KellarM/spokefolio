@@ -116,6 +116,17 @@ export default {
   rNote: 'Keine Testphase. Keine Bindung. Keine hinterlegte Karte.',
   rThanks: 'Danke. Nein, wirklich.',
 
+  accEyebrow:
+    'Barrierefreiheit',
+  accH2:
+    'Gebaut für die, die es am schwersten haben.',
+  accLede1:
+    'Eine Jobsuche ist ein Papierberg, ein Gedächtnistest und ein Tipptest - zum ungünstigsten Moment. Spokefolio wurde genau deshalb sprachfirst entworfen: Wenn ein Formular die Mauer zwischen dir und einem Gehalt ist, solltest du deine Laufbahn sprechen können, statt sie auszufüllen.',
+  accLede2:
+    'Wenn du mit einer Behinderung oder einer chronischen Erkrankung lebst - eingeschränkte Mobilität, Sehbehinderung, Handverletzung, chronische Schmerzen, Lernunterschiede, psychische Erkrankung - ist der Sprachweg kein Zusatz am Rand dieses Produkts. Er ist der Hauptweg, und er kostet dich nichts extra.',
+  accLede3:
+    'Barrierefreiheit ist ein Versprechen, das man hält, nicht eines, das man ankündigt. Wenn dir in Spokefolio noch etwas im Weg steht, schreib uns, welcher Teil. Wir beheben, was wir können, sagen dir klar, was nicht, und melden, wenn es geändert ist.',
+
   whoEyebrow: 'Für wen',
   whoH2: 'Gebaut für Menschen, die die Arbeit wirklich machen.',
   whoLede:

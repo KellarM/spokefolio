@@ -116,6 +116,17 @@ export default {
   rNote: 'Sin prueba. Sin permanencia. Sin tarjeta registrada.',
   rThanks: 'Gracias. No, en serio.',
 
+  accEyebrow:
+    'Accesibilidad',
+  accH2:
+    'Hecho para quienes más difícil lo tienen.',
+  accLede1:
+    'Buscar trabajo es papeleo, una prueba de memoria y una prueba de mecanografía, todo en el peor momento. Spokefolio se diseñó primero para la voz por esa razón: si un formulario es el muro entre tú y un sueldo, deberías poder contar tu carrera en voz alta en vez de rellenarlo.',
+  accLede2:
+    'Si vives con una discapacidad o una condición crónica —movilidad limitada, baja visión, una lesión en la mano, dolor o fatiga crónica, una diferencia de aprendizaje, una condición de salud mental— la voz no es un añadido pegado al costado del producto. Es el camino principal, y no te cuesta nada extra usarlo.',
+  accLede3:
+    'Sabemos que la accesibilidad es una promesa que se mantiene, no un anuncio. Si algo en Spokefolio todavía se interpone, escríbenos y dinos qué parte. Arreglaremos lo que podamos, diremos con claridad lo que no, y avisaremos cuando cambie.',
+
   whoEyebrow: 'Para quién es',
   whoH2: 'Hecho para la gente que de verdad hace el trabajo.',
   whoLede:

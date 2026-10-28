@@ -117,6 +117,17 @@ export default {
   rNote: 'No trial. No lock-in. No card on file.',
   rThanks: 'Thank you. No, really.',
 
+  accEyebrow:
+    'Accessibility',
+  accH2:
+    'Built for the people who find this hardest.',
+  accLede1:
+    'A job search is a paper trail, a memory test, and a typing test, all at the worst possible moment. Spokefolio was designed voice-first for exactly that reason: if a form is the wall between you and a paycheck, you should be able to speak your career instead of filling one out.',
+  accLede2:
+    'If you live with a disability or a chronic condition — limited mobility, low vision, a hand injury, chronic pain or fatigue, a learning difference, a mental health condition — the voice path is not an add-on bolted to the side of this product. It is the main path, and it costs you nothing extra to use it.',
+  accLede3:
+    'We know accessibility is a promise you keep making, not one you announce. If something in Spokefolio still stands in your way, write to us and say which part. We will fix what we can, tell you plainly what we cannot, and note what changed when it does.',
+
   whoEyebrow: 'Who it’s for',
   whoH2: 'Built for people who actually do the work.',
   whoLede:
