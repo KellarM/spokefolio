@@ -19,13 +19,17 @@ export default function Contact() {
         </p>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
-          <div className="border border-[#D4AF37]/30 bg-[#161E2E] p-7">
+          <div className="border border-[#D4AF37]/30 bg-[#161E2E] p-7" style={{ containerType: 'inline-size' }}>
             <p className="text-[13px] font-semibold uppercase tracking-[0.18em] text-[#D4AF37]">
               Email
             </p>
+            {/* One line, always: the address sizes itself to the card
+                rather than wrapping a character onto a second line
+                (Michael, Oct 28). */}
             <a
               href="mailto:KellarM@xfhgamestudioltd.com"
-              className="mt-3 block break-words font-heading text-[22px] text-[#F9FAFB] hover:text-[#D4AF37]"
+              className="mt-3 block whitespace-nowrap font-heading text-[16px] text-[#F9FAFB] hover:text-[#D4AF37]"
+              style={{ fontSize: 'min(22px, 5.8cqw)' }}
             >
               KellarM@xfhgamestudioltd.com
             </a>
@@ -40,7 +44,7 @@ export default function Contact() {
             </p>
             <a
               href="tel:+17805044899"
-              className="mt-3 block font-heading text-[22px] text-[#F9FAFB] hover:text-[#D4AF37]"
+              className="mt-3 block whitespace-nowrap font-heading text-[22px] text-[#F9FAFB] hover:text-[#D4AF37]"
             >
               780-504-4899
             </a>
