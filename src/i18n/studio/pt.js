@@ -473,5 +473,12 @@ export default {
   'sources.statusDirect': 'Pesquisado diretamente',
   'sources.statusWeb': 'Encontrado pela pesquisa na web',
   'sources.statusManual': 'Abrir e importar',
-  'sources.statusLede': 'Os sites marcados como \'Pesquisado diretamente\' ou \'Encontrado pela pesquisa na web\' são verificados automaticamente quando você pesquisa. Os demais: abra daqui, encontre uma oferta e cole o link no importador.'
+  'sources.statusLede': 'Os sites marcados como \'Pesquisado diretamente\' ou \'Encontrado pela pesquisa na web\' são verificados automaticamente quando você pesquisa. Os demais: abra daqui, encontre uma oferta e cole o link no importador.',
+  "menu.hideMascot": "Ocultar o mascote",
+  "profile.mascotEyebrow": "O mascote",
+  "profile.mascotLede": "A bolha dourada que acompanha você pelo estúdio e orienta o próximo passo. Desligue se preferir trabalhar sem ela. Nada se perde e você pode trazê-la de volta aqui quando quiser.",
+  "profile.mascotShow": "Mostrar o mascote",
+  "profile.mascotShowHint": "Desligado esconde a bolha por completo, com o balão e a voz.",
+  "profile.mascotVoice": "Deixar o mascote falar",
+  "profile.mascotVoiceHint": "Desligado mantém a bolha e o texto, mas fica em silêncio.",
 };

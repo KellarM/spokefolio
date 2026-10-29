@@ -495,5 +495,12 @@ export default {
   'sources.statusDirect': 'Recherché directement',
   'sources.statusWeb': 'Trouvé par la recherche web',
   'sources.statusManual': 'Ouvrir et importer',
-  'sources.statusLede': 'Les sites marqués \'Recherché directement\' ou \'Trouvé par la recherche web\' sont analysés automatiquement quand vous cherchez. Les autres : ouvrez-les d\'ici, trouvez une offre et collez son lien dans l\'importateur.'
+  'sources.statusLede': 'Les sites marqués \'Recherché directement\' ou \'Trouvé par la recherche web\' sont analysés automatiquement quand vous cherchez. Les autres : ouvrez-les d\'ici, trouvez une offre et collez son lien dans l\'importateur.',
+  "menu.hideMascot": "Masquer la mascotte",
+  "profile.mascotEyebrow": "La mascotte",
+  "profile.mascotLede": "La boule dorée qui vous suit dans le studio et vous guide vers la prochaine étape. Désactivez-la si vous préférez travailler sans elle. Rien ne se perd et vous pouvez la retrouver ici à tout moment.",
+  "profile.mascotShow": "Afficher la mascotte",
+  "profile.mascotShowHint": "Désactivé masque complètement la boule, avec sa bulle et sa voix.",
+  "profile.mascotVoice": "Laisser la mascotte parler",
+  "profile.mascotVoiceHint": "Désactivé garde la boule et sa bulle écrite, mais elle reste muette.",
 };

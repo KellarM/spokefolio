@@ -473,5 +473,12 @@ export default {
   'sources.statusDirect': 'Búsqueda directa',
   'sources.statusWeb': 'Aparece en la búsqueda web',
   'sources.statusManual': 'Abrir e importar',
-  'sources.statusLede': 'Las bolsas marcadas como \'Búsqueda directa\' o \'Aparece en la búsqueda web\' se examinan automáticamente al buscar. Las demás: ábrelas desde aquí, encuentra una oferta y pega su enlace en el importador.'
+  'sources.statusLede': 'Las bolsas marcadas como \'Búsqueda directa\' o \'Aparece en la búsqueda web\' se examinan automáticamente al buscar. Las demás: ábrelas desde aquí, encuentra una oferta y pega su enlace en el importador.',
+  "menu.hideMascot": "Ocultar la mascota",
+  "profile.mascotEyebrow": "La mascota",
+  "profile.mascotLede": "La bola dorada que te acompaña por el estudio y te guía hacia el siguiente paso. Desactívala si prefieres trabajar sin ella. No se pierde nada y puedes recuperarla aquí cuando quieras.",
+  "profile.mascotShow": "Mostrar la mascota",
+  "profile.mascotShowHint": "Apagado oculta la bola por completo, con su burbuja y su voz.",
+  "profile.mascotVoice": "Dejar que la mascota hable",
+  "profile.mascotVoiceHint": "Apagado mantiene la bola y el texto, pero se queda en silencio.",
 };

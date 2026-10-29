@@ -473,5 +473,12 @@ export default {
   'sources.statusDirect': 'Ricercata direttamente',
   'sources.statusWeb': 'Trovata dalla ricerca web',
   'sources.statusManual': 'Apri e importa',
-  'sources.statusLede': 'Le bacheche contrassegnate come \'Ricercata direttamente\' o \'Trovata dalla ricerca web\' vengono esaminate automaticamente durante la ricerca. Le altre: aprile da qui, trova un\'offerta e incolla il suo link nell\'importatore.'
+  'sources.statusLede': 'Le bacheche contrassegnate come \'Ricercata direttamente\' o \'Trovata dalla ricerca web\' vengono esaminate automaticamente durante la ricerca. Le altre: aprile da qui, trova un\'offerta e incolla il suo link nell\'importatore.',
+  "menu.hideMascot": "Nascondi la mascotte",
+  "profile.mascotEyebrow": "La mascotte",
+  "profile.mascotLede": "La sfera dorata che ti segue nello studio e ti guida al passo successivo. Disattivala se preferisci lavorare senza. Non si perde nulla e puoi riattivarla qui quando vuoi.",
+  "profile.mascotShow": "Mostra la mascotte",
+  "profile.mascotShowHint": "Disattivato nasconde del tutto la sfera, con il fumetto e la voce.",
+  "profile.mascotVoice": "Lascia parlare la mascotte",
+  "profile.mascotVoiceHint": "Disattivato mantiene la sfera e il fumetto scritto, ma resta in silenzio.",
 };

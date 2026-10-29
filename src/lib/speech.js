@@ -9,6 +9,13 @@ let voicesCache = [];
 let loaded = false;
 
 export const MASCOT_MUTE_KEY = 'spokefolio.mascotMuted';
+export const MASCOT_HIDDEN_KEY = 'spokefolio.mascotHidden';
+
+// Anything that changes how the mascot behaves tells the running app, so a
+// switch flipped on the profile page takes effect without a reload.
+const announce = () => {
+  try { window.dispatchEvent(new CustomEvent('spokefolio:mascotPrefs')); } catch {}
+};
 
 export const mascotMuted = () => {
   try { return window.localStorage.getItem(MASCOT_MUTE_KEY) === '1'; } catch { return false; }
@@ -18,6 +25,19 @@ export const setMascotMuted = (muted) => {
   try {
     window.localStorage.setItem(MASCOT_MUTE_KEY, muted ? '1' : '0');
   } catch {}
+  announce();
+};
+
+// Off means gone: no ball, no bubble, no voice, nothing to park or drag.
+export const mascotHidden = () => {
+  try { return window.localStorage.getItem(MASCOT_HIDDEN_KEY) === '1'; } catch { return false; }
+};
+
+export const setMascotHidden = (hidden) => {
+  try {
+    window.localStorage.setItem(MASCOT_HIDDEN_KEY, hidden ? '1' : '0');
+  } catch {}
+  announce();
 };
 
 const refreshVoices = () => {

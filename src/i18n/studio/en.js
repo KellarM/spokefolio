@@ -510,5 +510,12 @@ export default {
   'sources.statusDirect': 'Searched directly',
   'sources.statusWeb': 'Found by web search',
   'sources.statusManual': 'Open & import',
-  'sources.statusLede': 'Boards marked \'Searched directly\' or \'Found by web search\' are scanned automatically when you search. The rest: open the board from here, find a posting, and paste its link into the importer above the kept list.'
+  'sources.statusLede': 'Boards marked \'Searched directly\' or \'Found by web search\' are scanned automatically when you search. The rest: open the board from here, find a posting, and paste its link into the importer above the kept list.',
+  "menu.hideMascot": "Hide the mascot",
+  "profile.mascotEyebrow": "The mascot",
+  "profile.mascotLede": "The gold ball that follows you around the studio and talks you through the next step. Turn it off if you would rather work without it. Nothing is lost, and you can bring it back here any time.",
+  "profile.mascotShow": "Show the mascot",
+  "profile.mascotShowHint": "Off hides the ball completely, along with its bubble and its voice.",
+  "profile.mascotVoice": "Let the mascot speak",
+  "profile.mascotVoiceHint": "Off keeps the ball and its written bubble, but it stays silent.",
 };

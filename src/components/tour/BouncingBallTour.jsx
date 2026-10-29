@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Briefcase,
   Calendar,
+  EyeOff,
   FileText,
   FolderOpen,
   History as HistoryIcon,
@@ -13,7 +14,7 @@ import {
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
-import { speak, mascotMuted, setMascotMuted } from '@/lib/speech';
+import { speak, mascotMuted, setMascotMuted, mascotHidden, setMascotHidden } from '@/lib/speech';
 import { useTour } from '@/lib/TourContext';
 import VoicePicker from '@/components/tour/VoicePicker';
 import { computeNudge, dismissNudge, markNudgeShown, markNudgeTapped } from '@/lib/nudges';
@@ -248,6 +249,15 @@ export default function BouncingBallTour() {
   const { active, step, celebrated, ready } = tour;
   // Launcher mode: the ball's idle life, whenever no journey is running.
   const idle = ready && !active;
+
+  // Turned off in preferences means turned off everywhere: the launcher
+  // and the guided walk both stand down (Michael, Oct 29).
+  const [hidden, setHidden] = useState(() => mascotHidden());
+  useEffect(() => {
+    const sync = () => setHidden(mascotHidden());
+    window.addEventListener('spokefolio:mascotPrefs', sync);
+    return () => window.removeEventListener('spokefolio:mascotPrefs', sync);
+  }, []);
 
   const [pos, setPos] = useState(null);
   const [hopKey, setHopKey] = useState(0);
@@ -693,7 +703,7 @@ export default function BouncingBallTour() {
     return () => clearTimeout(timer);
   }, [bubbleText]);
 
-  if (!ready || !pos || (!active && !idle)) return null;
+  if (hidden || !ready || !pos || (!active && !idle)) return null;
 
   // ---- Launcher mode: the menu, the journey, the four destinations ----
   if (idle) {
@@ -805,6 +815,20 @@ export default function BouncingBallTour() {
                 <span>{t(nudge.captionKey)}</span>
               </button>
             )}
+            <button
+              type="button"
+              className="tour-menu-item"
+              onClick={() => {
+                trackEvent('menu_hide_mascot');
+                setMascotHidden(true);
+                setHidden(true);
+                setMenuOpen(false);
+              }}
+              role="menuitem"
+            >
+              <EyeOff className="mi" aria-hidden="true" />
+              <span>{t('menu.hideMascot')}</span>
+            </button>
             <button type="button" className="tour-menu-item featured" onClick={startJourney} role="menuitem">
               <Sparkles className="mi" aria-hidden="true" />
               <span>{t('menu.firstTime')}</span>
@@ -922,6 +946,8 @@ export default function BouncingBallTour() {
   };
 
   const moveClass = step === 'farewell' ? 'tour-farewell' : celebrated ? 'tour-celebrate' : 'tour-hop';
+
+  if (hidden) return null;
 
   return (
     <div className="tour-ball-wrap" style={{ top: pos.top, left: pos.left }}>

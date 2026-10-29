@@ -13,12 +13,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { base44 } from '@/api/base44Client';
+import { Switch } from '@/components/ui/switch';
+import { mascotHidden, setMascotHidden, mascotMuted, setMascotMuted } from '@/lib/speech';
 
 // The profile: the details that head every résumé, the portrait, and the house style. A new
 // client arrives here first, and the rest of the studio stays closed until the five details
 // that head every résumé, including the language, are saved.
 export default function Profile() {
   const { t } = useStudioLanguage();
+  // How the mascot behaves on this device. Both survive a reload and take
+  // effect immediately, even while the mascot is on screen.
+  const [showMascot, setShowMascot] = useState(() => !mascotHidden());
+  const [mascotSpeaks, setMascotSpeaks] = useState(() => !mascotMuted());
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -156,6 +162,53 @@ export default function Profile() {
               </p>
             </div>
           )}
+
+          {/* The mascot, on the client's terms. Turning it off here is the
+              way back for anyone who hid it from its own menu. */}
+          <section className="mec-panel mt-9">
+            <p className="mec-eyebrow">{t('profile.mascotEyebrow')}</p>
+            <p className="mt-2 max-w-2xl font-body text-[15px] leading-relaxed text-muted-foreground">
+              {t('profile.mascotLede')}
+            </p>
+            <div className="mt-5 space-y-4">
+              <div className="flex items-start justify-between gap-6">
+                <div className="min-w-0">
+                  <p className="font-body text-[15.5px] font-medium text-foreground">
+                    {t('profile.mascotShow')}
+                  </p>
+                  <p className="mt-1 text-[14px] leading-relaxed text-muted-foreground">
+                    {t('profile.mascotShowHint')}
+                  </p>
+                </div>
+                <Switch
+                  checked={showMascot}
+                  onCheckedChange={(next) => {
+                    setShowMascot(next);
+                    setMascotHidden(!next);
+                  }}
+                  aria-label={t('profile.mascotShow')}
+                />
+              </div>
+              <div className="flex items-start justify-between gap-6">
+                <div className="min-w-0">
+                  <p className="font-body text-[15.5px] font-medium text-foreground">
+                    {t('profile.mascotVoice')}
+                  </p>
+                  <p className="mt-1 text-[14px] leading-relaxed text-muted-foreground">
+                    {t('profile.mascotVoiceHint')}
+                  </p>
+                </div>
+                <Switch
+                  checked={mascotSpeaks}
+                  onCheckedChange={(next) => {
+                    setMascotSpeaks(next);
+                    setMascotMuted(!next);
+                  }}
+                  aria-label={t('profile.mascotVoice')}
+                />
+              </div>
+            </div>
+          </section>
 
           {/* The one irreversible action in the studio, kept at the very bottom. */}
           <section className="mt-12 rounded-2xl border border-destructive/30 px-5 py-5">

@@ -495,5 +495,12 @@ export default {
   'sources.statusDirect': 'Direkt durchsucht',
   'sources.statusWeb': 'Über die Websuche gefunden',
   'sources.statusManual': 'Öffnen und importieren',
-  'sources.statusLede': 'Als \'Direkt durchsucht\' oder \'Über die Websuche gefunden\' markierte Börsen werden bei der Suche automatisch geprüft. Die übrigen: von hier öffnen, eine Stelle finden und ihren Link im Import einfügen.'
+  'sources.statusLede': 'Als \'Direkt durchsucht\' oder \'Über die Websuche gefunden\' markierte Börsen werden bei der Suche automatisch geprüft. Die übrigen: von hier öffnen, eine Stelle finden und ihren Link im Import einfügen.',
+  "menu.hideMascot": "Maskottchen ausblenden",
+  "profile.mascotEyebrow": "Das Maskottchen",
+  "profile.mascotLede": "Der goldene Ball, der dir im Studio folgt und dich durch den nächsten Schritt führt. Schalte es aus, wenn du lieber ohne arbeiten möchtest. Es geht nichts verloren, und du kannst es hier jederzeit zurückholen.",
+  "profile.mascotShow": "Maskottchen anzeigen",
+  "profile.mascotShowHint": "Aus blendet den Ball vollständig aus, samt Sprechblase und Stimme.",
+  "profile.mascotVoice": "Maskottchen sprechen lassen",
+  "profile.mascotVoiceHint": "Aus lässt Ball und Textblase stehen, aber es schweigt.",
 };
