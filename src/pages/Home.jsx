@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/AuthContext';
 import StudioHero from '@/components/home/StudioHero';
 import RecentApplications from '@/components/home/RecentApplications';
 import { Sparkles } from 'lucide-react';
+import InstructionPopover from '@/components/guide/InstructionPopover';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import { useTour } from '@/lib/TourContext';
 
@@ -92,6 +93,13 @@ export default function Home() {
             <span>{t('home.firstTimeQ')}</span>
             <span className="font-medium text-[#D4AF37]">{t('home.runWalkthrough')}</span>
           </button>
+          <InstructionPopover
+            align="start"
+            title={t('guide.walkthroughTitle')}
+            intro={t('guide.walkthroughIntro')}
+            steps={[t('guide.w1'), t('guide.w2'), t('guide.w3')]}
+            className="ml-2"
+          />
         </section>
       )}
 
@@ -99,7 +107,15 @@ export default function Home() {
         <RecentApplications applications={applications.slice(0, 2)} />
 
         <section className="mec-panel">
-          <div className="mec-eyebrow">{t('home.masterHistory')}</div>
+          <div className="flex items-center gap-2">
+            <div className="mec-eyebrow">{t('home.masterHistory')}</div>
+            <InstructionPopover
+              align="start"
+              title={t('guide.historyTitle')}
+              intro={t('guide.historyIntro')}
+              steps={[t('guide.h1'), t('guide.h2'), t('guide.h3')]}
+            />
+          </div>
           {busy ? (
             <div className="mec-load" style={{ marginTop: 12 }}>
               {t('home.loadingStudio')}

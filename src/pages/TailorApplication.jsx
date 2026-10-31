@@ -12,6 +12,7 @@ import useProfile from '@/hooks/useProfile';
 import TemplatePicker from '@/components/resume/TemplatePicker';
 import { DEFAULT_TEMPLATE_ID, resolveTemplateId } from '@/lib/resumeTemplates';
 import PostingImportForm from '@/components/postings/PostingImportForm';
+import InstructionPopover from '@/components/guide/InstructionPopover';
 import DictateButton from '@/components/common/DictateButton';
 import { appendLine } from '@/hooks/useDictation';
 
@@ -189,7 +190,19 @@ export default function TailorApplication() {
     <div className="animate-rise">
       <header className="max-w-2xl">
         <p className="eyebrow">Step two</p>
-        <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">Tailor a résumé to a job</h1>
+        <div className="mt-3 flex items-start gap-2">
+          <h1 className="font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">Tailor a résumé to a job</h1>
+          <InstructionPopover
+            className="mt-2"
+            title="How tailoring works"
+            intro="One posting in, one resume out."
+            steps={[
+              'Paste the link or the text. Any job board.',
+              'Choose the history entries that answer this posting.',
+              'Generate. Nothing sends on its own. You review, then apply.'
+            ]}
+          />
+        </div>
         <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
           Paste the posting. I rewrite your summary, skills and accomplishment wording around what this employer is asking
           for, and draft a matching cover letter to send with it — using only what actually happened in your career.
