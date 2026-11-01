@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import useProfile from '@/hooks/useProfile';
 import TemplatePicker from '@/components/resume/TemplatePicker';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 import { DEFAULT_TEMPLATE_ID, resolveTemplateId } from '@/lib/resumeTemplates';
 import PostingImportForm from '@/components/postings/PostingImportForm';
 import InstructionPopover from '@/components/guide/InstructionPopover';
@@ -23,6 +24,7 @@ const STEPS = [
 ];
 
 export default function TailorApplication() {
+  const { t } = useStudioLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { profile, loadingProfile, save } = useProfile();
@@ -339,6 +341,20 @@ export default function TailorApplication() {
                 <li>{documents.length} reference {documents.length === 1 ? 'file' : 'files'} you uploaded</li>
                 <li>Your details, a headline written for this posting, and a cover letter to send with it</li>
               </ul>
+              {/* The one place thin evidence actually costs something. Says
+                  what the client loses, offers the way to fix it, and never
+                  blocks the tailoring they already have enough for. */}
+              {documents.length === 0 && (
+                <p className="mt-4 border-l-2 border-[#D4AF37]/45 pl-3 text-[12.5px] leading-relaxed text-muted-foreground">
+                  {t('evidence.tailorNudge')}{' '}
+                  <Link
+                    to="/documents"
+                    className="font-medium text-[#D4AF37] underline underline-offset-2 hover:opacity-80"
+                  >
+                    {t('evidence.addFiles')}
+                  </Link>
+                </p>
+              )}
               <p className="mt-4 text-[12.5px] leading-relaxed text-muted-foreground">
                 Everything stays faithful to your history. Where the posting asks for something you have not done, that shows
                 up as a gap you can prepare for instead of a claim you cannot defend.

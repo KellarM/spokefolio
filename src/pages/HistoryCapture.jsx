@@ -10,6 +10,7 @@ import { useTour } from '@/lib/TourContext';
 import KeywordDetailBuilder from '@/components/history/KeywordDetailBuilder';
 import DraftEntryEditor from '@/components/history/DraftEntryEditor';
 import EntryList from '@/components/history/EntryList';
+import EvidenceNote from '@/components/EvidenceNote';
 import CombineDialog from '@/components/history/CombineDialog';
 import HistoryReviewDialog from '@/components/history/review/HistoryReviewDialog';
 import CurrentResumeDialog from '@/components/resume/CurrentResumeDialog';
@@ -562,6 +563,7 @@ export default function HistoryCapture() {
           <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
             {t('history.lede')}
           </p>
+          <EvidenceNote entries={entries} />
 
           {/* The capture state sits with the heading now, because it describes
               this page's content rather than an action on the page. */}

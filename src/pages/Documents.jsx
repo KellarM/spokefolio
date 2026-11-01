@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import DocumentUploader from '@/components/documents/DocumentUploader';
 import { useTour } from '@/lib/TourContext';
 import DocumentRow from '@/components/documents/DocumentRow';
+import EvidenceNote from '@/components/EvidenceNote';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import InstructionPopover from '@/components/guide/InstructionPopover';
 import { guideLabel } from '@/content/guideLabels';
@@ -65,6 +66,7 @@ export default function Documents() {
         <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
           {t('documents.lede')}
         </p>
+        <EvidenceNote documents={documents} />
       </header>
 
       <div className="mt-8 space-y-10">
