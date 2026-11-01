@@ -61,10 +61,20 @@ export default function DocumentRow({ doc, onDelete }) {
   };
 
   const view = async () => {
+    // The tab has to be claimed during the click, not after the await: a
+    // window.open that lands later is treated as a popup and silently blocked,
+    // which looks exactly like a file that no longer exists.
+    const tab = window.open('', '_blank');
     setOpening(true);
     try {
       const { signed_url } = await base44.integrations.Core.CreateFileSignedUrl({ file_uri: doc.file_uri });
-      window.open(signed_url, '_blank');
+      if (tab) {
+        tab.location.href = signed_url;
+      } else {
+        window.location.assign(signed_url);
+      }
+    } catch {
+      if (tab) tab.close();
     } finally {
       setOpening(false);
     }
@@ -72,26 +82,44 @@ export default function DocumentRow({ doc, onDelete }) {
 
   return (
     <li className="overflow-hidden rounded-2xl border border-border/70 bg-card">
-      <button
-        type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        aria-expanded={open}
-        className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-secondary/30"
-      >
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-secondary px-2 py-0.5 text-[10.5px] uppercase tracking-[0.1em] text-muted-foreground">
-              {t(TYPES[doc.doc_type] || 'documents.typeOther')}
-            </span>
-            <StatusChip status={doc.status} t={t} />
+      <div className="flex items-stretch">
+        <button
+          type="button"
+          onClick={() => setOpen((prev) => !prev)}
+          aria-expanded={open}
+          className="flex min-w-0 flex-1 items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-secondary/30"
+        >
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10.5px] uppercase tracking-[0.1em] text-muted-foreground">
+                {t(TYPES[doc.doc_type] || 'documents.typeOther')}
+              </span>
+              <StatusChip status={doc.status} t={t} />
+            </div>
+            <p className="mt-1.5 truncate font-heading text-[15.5px]">{doc.name}</p>
           </div>
-          <p className="mt-1.5 truncate font-heading text-[15.5px]">{doc.name}</p>
-        </div>
-        <ChevronDown
-          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
-          aria-hidden="true"
-        />
-      </button>
+          <ChevronDown
+            className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
+            aria-hidden="true"
+          />
+        </button>
+
+        {/* Always reachable: a file you cannot open is a file that is gone. */}
+        <button
+          type="button"
+          onClick={view}
+          disabled={opening}
+          title={t('documents.open')}
+          aria-label={`${t('documents.open')}: ${doc.name}`}
+          className="my-2 mr-3 grid w-10 shrink-0 place-items-center rounded-full border border-border/70 text-muted-foreground transition-colors hover:border-[#D4AF37]/60 hover:text-[#D4AF37] disabled:opacity-60"
+        >
+          {opening ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ExternalLink className="h-4 w-4" />
+          )}
+        </button>
+      </div>
 
       {open && (
         <div className="border-t border-border/60 px-5 py-4">
@@ -108,6 +136,9 @@ export default function DocumentRow({ doc, onDelete }) {
               )}
               {t('documents.open')}
             </Button>
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+              {doc.status === 'unreadable' ? t('documents.keptAsReference') : t('documents.read')}
+            </span>
             <Button
               variant="ghost"
               size="sm"
