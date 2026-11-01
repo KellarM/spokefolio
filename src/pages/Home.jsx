@@ -6,7 +6,6 @@ import { trackAppOpen } from '@/lib/analytics';
 import { useAuth } from '@/lib/AuthContext';
 import StudioHero from '@/components/home/StudioHero';
 import RecentApplications from '@/components/home/RecentApplications';
-import { Sparkles } from 'lucide-react';
 import InstructionPopover from '@/components/guide/InstructionPopover';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import { useTour } from '@/lib/TourContext';
@@ -84,27 +83,6 @@ export default function Home() {
           <span>{t('home.tickerResumes')}</span>
         </div>
       </div>
-
-      {!busy && !tour.active && (
-        <section className="flex justify-center">
-          <button
-            type="button"
-            onClick={() => tour.start({ preview: true })}
-            className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-5 py-2.5 text-[14px] text-foreground transition-colors hover:border-[#D4AF37]/50"
-          >
-            <Sparkles className="h-4 w-4 text-[#D4AF37]" />
-            <span>{t('home.firstTimeQ')}</span>
-            <span className="font-medium text-[#D4AF37]">{t('home.runWalkthrough')}</span>
-          </button>
-          <InstructionPopover
-            align="start"
-            title={t('guide.walkthroughTitle')}
-            intro={t('guide.walkthroughIntro')}
-            steps={[t('guide.w1'), t('guide.w2'), t('guide.w3')]}
-            className="ml-2"
-          />
-        </section>
-      )}
 
       <div className="mec-work">
         <RecentApplications applications={applications.slice(0, 2)} />
