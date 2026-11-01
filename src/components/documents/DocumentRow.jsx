@@ -17,14 +17,14 @@ const TYPES = {
 function StatusChip({ status, t }) {
   if (status === 'processing') {
     return (
-      <span className="animate-soft-pulse flex items-center gap-1.5 rounded-full bg-black/10 px-2.5 py-1 text-[11px] font-semibold text-[#33280A] ring-1 ring-black/15">
-        <Loader2 className="h-3 w-3 animate-spin" /> {t('documents.reading')}
+      <span className="animate-soft-pulse flex items-center gap-1.5 rounded-full border-2 border-black px-2.5 py-1 text-[11px] font-bold text-black">
+        <Loader2 className="h-3 w-3 animate-spin" strokeWidth={3} /> {t('documents.reading')}
       </span>
     );
   }
   if (status === 'unreadable') {
     return (
-      <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-950 ring-1 ring-black/20">
+      <span className="rounded-full border-2 border-black px-2.5 py-1 text-[11px] font-bold text-black">
         {t('documents.keptAsReference')}
       </span>
     );
@@ -81,9 +81,9 @@ export default function DocumentRow({ doc, onDelete }) {
   };
 
   return (
-    <li className="overflow-hidden rounded-2xl border-[6px] border-white bg-card shadow-lg shadow-black/30">
+    <li className="overflow-hidden rounded-2xl border-[6px] border-black bg-card ring-1 ring-white/25 shadow-lg shadow-black/40">
       <div
-        className={`flex items-stretch bg-[#FFD700] ${open ? 'border-b border-black/25' : ''}`}
+        className={`flex items-stretch bg-[#FFD700] ${open ? 'border-b-[3px] border-black' : ''}`}
       >
         <button
           type="button"
@@ -93,7 +93,7 @@ export default function DocumentRow({ doc, onDelete }) {
         >
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#33280A] ring-1 ring-black/15">
+              <span className="rounded-full border-2 border-black px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-black">
                 {t(TYPES[doc.doc_type] || 'documents.typeOther')}
               </span>
               <StatusChip status={doc.status} t={t} />
@@ -101,7 +101,8 @@ export default function DocumentRow({ doc, onDelete }) {
             <p className="mt-1.5 truncate font-heading text-[15.5px] font-bold text-[#0A0A0A]">{doc.name}</p>
           </div>
           <ChevronDown
-            className={`h-4 w-4 shrink-0 text-[#0A0A0A]/70 transition-transform ${open ? 'rotate-180' : ''}`}
+            strokeWidth={3}
+            className={`h-5 w-5 shrink-0 text-black transition-transform ${open ? 'rotate-180' : ''}`}
             aria-hidden="true"
           />
         </button>
@@ -113,12 +114,12 @@ export default function DocumentRow({ doc, onDelete }) {
           disabled={opening}
           title={t('documents.open')}
           aria-label={`${t('documents.open')}: ${doc.name}`}
-          className="my-2 mr-3 grid w-10 shrink-0 place-items-center rounded-full border border-black/30 text-[#0A0A0A]/80 transition-colors hover:bg-black/10 hover:text-[#0A0A0A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A0A0A] disabled:opacity-50"
+          className="my-2 mr-3 grid h-10 w-10 shrink-0 place-items-center rounded-full border-[3px] border-black text-black transition-colors hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFD700] disabled:opacity-50"
         >
           {opening ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" strokeWidth={3} />
           ) : (
-            <ExternalLink className="h-4 w-4" />
+            <ExternalLink className="h-4 w-4" strokeWidth={3} />
           )}
         </button>
       </div>
