@@ -44,21 +44,12 @@ export default function Documents() {
   return (
     <div className="animate-rise">
       <header className="max-w-2xl">
-                <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('documents.title')}</h1>
-                <p className="mt-2 font-mono text-[16px] font-semibold uppercase tracking-[0.1em] text-white">{t('steps.one')}</p>
+        <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('documents.title')}</h1>
+        <p className="mt-2 font-mono text-[16px] font-semibold uppercase tracking-[0.1em] text-white">{t('steps.one')}</p>
         <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
           {t('documents.lede')}
         </p>
       </header>
-
-      <section className="mt-8 rounded-2xl border bg-card px-6 py-5">
-        <div>
-          <h2 className="font-heading text-[20px]">{t('masterResume.cardTitle')}</h2>
-          <p className="mt-1.5 max-w-xl text-[14px] leading-relaxed text-muted-foreground">
-            {t('masterResume.cardText')}
-          </p>
-        </div>
-      </section>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1.15fr]">
         <div data-tour="uploader">
