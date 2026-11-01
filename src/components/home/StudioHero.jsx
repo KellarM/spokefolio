@@ -81,12 +81,14 @@ export default function StudioHero({ draftCount = 0, profile }) {
     };
   }, [greeting]);
 
-  // The Step Order, numbered so the order is unmistakable: capture the
-  // history, bring the reference files in, find the postings, then tailor.
+  // The Step Order, numbered so the order is unmistakable: bring the
+  // reference files in, capture the history, find the postings, then tailor.
+  // Uploading comes first because the file is the fastest thing a client can
+  // hand over, and the resume parser can then seed the history for them.
   // The last step is the payoff, so it stays solid gold.
   const STEPS = [
-    { n: 1, to: '/history', label: t('home.captureHistory') },
-    { n: 2, to: '/documents', label: t('home.navUpload') },
+    { n: 1, to: '/documents', label: t('home.navUpload') },
+    { n: 2, to: '/history', label: t('home.captureHistory') },
     { n: 3, to: '/postings', label: t('nav.postings') },
     { n: 4, to: '/tailor-application', label: t('common.tailorResume'), gold: true }
   ];
