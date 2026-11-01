@@ -32,7 +32,31 @@ export default function InstructionPopover({
   };
   const wrapRef = useRef(null);
   const buttonRef = useRef(null);
+  const panelRef = useRef(null);
+  const panelHadFocus = useRef(false);
   const panelId = useId();
+  const titleId = `${panelId}-title`;
+
+  // Opening is a change of context, so the panel takes focus and the heading
+  // names it: a screen reader hears "How this works, dialog" instead of
+  // silence. Focus goes back to the control afterwards, but only if it was
+  // still inside the panel - if the client clicked a field behind it, yanking
+  // focus back would be worse than leaving it where they put it.
+  useEffect(() => {
+    if (open) {
+      panelRef.current?.focus();
+      panelHadFocus.current = true;
+      return undefined;
+    }
+
+    // The panel is already out of the DOM by the time this runs, so its ref is
+    // gone: focus was dropped on <body> when it unmounted. Only restore in that
+    // case. If the client clicked a field behind the sheet, focus belongs there.
+    const lost = document.activeElement === document.body || document.activeElement === null;
+    if (panelHadFocus.current && lost) buttonRef.current?.focus();
+    panelHadFocus.current = false;
+    return undefined;
+  }, [open]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -67,7 +91,7 @@ export default function InstructionPopover({
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label={title || 'How this works'}
+        aria-label={label ? undefined : title || 'How this works'}
         onClick={() => setOpen((value) => !value)}
         className={`inline-flex h-[28px] items-center justify-center gap-1.5 rounded-full border ${label ? 'px-3' : 'w-[28px]'} font-mono text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
           open
@@ -85,14 +109,16 @@ export default function InstructionPopover({
           off a 22px icon without crossing the viewport edge. */}
       {open && isDocument && (
         <div
+          ref={panelRef}
           id={panelId}
           role="dialog"
-          aria-label={title || 'How this works'}
-          className="fixed left-1/2 top-[96px] z-[60] max-h-[80vh] w-[min(1200px,calc(100vw-2rem))] -translate-x-1/2 overflow-y-auto rounded-lg border border-[#B0854A]/45 bg-[#FDFCFA] px-8 py-7 text-left shadow-[0_40px_90px_rgba(0,0,0,0.7)] sm:px-12 sm:py-10"
+          aria-labelledby={titleId}
+          tabIndex={-1}
+          className="fixed left-1/2 top-[96px] outline-none focus-visible:ring-2 focus-visible:ring-[#B0854A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F17] z-[60] max-h-[80vh] w-[min(1200px,calc(100vw-2rem))] -translate-x-1/2 overflow-y-auto rounded-lg border border-[#B0854A]/45 bg-[#FDFCFA] px-8 py-7 text-left shadow-[0_40px_90px_rgba(0,0,0,0.7)] sm:px-12 sm:py-10"
         >
           {/* The résumé header: serif name, brass bar, brass italic line. */}
           <div className="border-l-[5px] border-l-[#B0854A] pl-4">
-            <p className="font-heading text-[30px] leading-tight tracking-tight text-[#1B4159] sm:text-[36px]">{title}</p>
+            <p id={titleId} className="font-heading text-[30px] leading-tight tracking-tight text-[#1B4159] sm:text-[36px]">{title}</p>
             {intro && (
               <p className="mt-1.5 text-[12.5px] italic leading-relaxed text-[#8A6531]">{intro}</p>
             )}
@@ -121,13 +147,16 @@ export default function InstructionPopover({
 
       {open && !isDocument && (
         <div
+          ref={panelRef}
           id={panelId}
           role="dialog"
-          aria-label={title || 'How this works'}
-          className={`absolute top-[30px] z-50 w-[320px] max-w-[86vw] rounded-xl border border-[#D4AF37]/70 bg-[#0B0F17] p-4 text-left shadow-[0_0_28px_-10px_rgba(212,175,55,0.55),0_24px_60px_rgba(0,0,0,0.65)] ${anchor}`}
+          aria-labelledby={title ? titleId : undefined}
+          aria-label={title ? undefined : 'How this works'}
+          tabIndex={-1}
+          className={`absolute top-[30px] outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]/70 z-50 w-[320px] max-w-[86vw] rounded-xl border border-[#D4AF37]/70 bg-[#0B0F17] p-4 text-left shadow-[0_0_28px_-10px_rgba(212,175,55,0.55),0_24px_60px_rgba(0,0,0,0.65)] ${anchor}`}
         >
           {title && (
-            <p className="font-heading text-[14px] leading-snug text-[#F9FAFB]">{title}</p>
+            <p id={titleId} className="font-heading text-[14px] leading-snug text-[#F9FAFB]">{title}</p>
           )}
           {intro && (
             <p className="mt-1 font-body text-[12.5px] leading-relaxed text-[#A0AAB8]">{intro}</p>
