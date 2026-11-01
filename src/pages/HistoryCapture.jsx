@@ -548,9 +548,9 @@ export default function HistoryCapture() {
           <button
             type="button"
             onClick={() => setResumeOpen(true)}
-            className="mt-3 inline-flex items-center gap-1.5 text-[13px] text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+            className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-4 py-2 text-[13.5px] font-medium text-white shadow-[0_8px_20px_-8px_rgba(37,99,235,0.9)] transition-colors hover:bg-[#1D4ED8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F17]"
           >
-            <FileText className="h-3.5 w-3.5" />
+            <FileText className="h-4 w-4" />
             {t('history.seeCurrent')}
           </button>
         </div>
