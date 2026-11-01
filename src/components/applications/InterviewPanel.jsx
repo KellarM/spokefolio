@@ -13,8 +13,8 @@ import DeleteSessionButton from '@/components/applications/DeleteSessionButton';
 // The Interview section: the app plays the hiring company's HR interviewer for this
 // specific role. Answers can be typed or spoken with the dictate button. Every drill
 // is kept on the application record, so past sessions and their readiness reports
-// stay with the job. A side panel shows the prep material: proof points, known gaps,
-// company notes, and questions worth asking them.
+// stay with the job. The prep material - proof points, company notes, and questions
+// worth asking - sits beneath the drill in the same column.
 export default function InterviewPanel({ application, onApplicationUpdate, onDrillFinished }) {
   const { toast } = useToast();
   const [answer, setAnswer] = useState('');
@@ -126,8 +126,8 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
   const askCount = active?.turns?.length || 0;
 
   return (
-    <section className="mt-6 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-      {/* Drill column */}
+    <section className="mt-6 space-y-4">
+      {/* The drill, full width of the page. */}
       <div className="rounded-2xl border border-border/70 bg-card p-5">
         <div className="flex items-center gap-2">
           <MessageSquare className="h-4 w-4 text-muted-foreground" />
@@ -359,7 +359,7 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
         )}
       </div>
 
-      {/* Prep column */}
+      {/* Prep material, now beneath the drill rather than beside it. */}
       <div className="space-y-4">
         {prep?.proof_points?.length > 0 && (
           <div className="rounded-2xl border border-border/70 bg-card p-5">
@@ -370,17 +370,6 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
                   <span className="font-medium">{point.requirement}</span>
                   <span className="mt-0.5 block text-muted-foreground">Say: {point.evidence}</span>
                 </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {application.gaps?.length > 0 && (
-          <div className="rounded-2xl border border-border/70 bg-card p-5">
-            <p className="eyebrow">Known gaps</p>
-            <ul className="mt-3 list-disc space-y-1.5 pl-4 text-[13px]">
-              {application.gaps.map((gap, i) => (
-                <li key={i}>{gap}</li>
               ))}
             </ul>
           </div>
@@ -408,13 +397,6 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
           </div>
         )}
 
-        {!prep && (
-          <div className="rounded-2xl border border-dashed border-border/70 bg-card p-5 text-[13px] text-muted-foreground">
-            <Mic className="mb-2 h-4 w-4" />
-            Proof points, gaps, and likely questions appear here once a tailored résumé exists and the package has been
-            generated, or after your first drill. Tailor the résumé first to get the most out of practice.
-          </div>
-        )}
       </div>
     </section>
   );
