@@ -81,7 +81,7 @@ export default function DocumentRow({ doc, onDelete }) {
   };
 
   return (
-    <li className="overflow-hidden rounded-2xl border-2 border-white bg-card shadow-sm">
+    <li className="overflow-hidden rounded-2xl border-[6px] border-white bg-card shadow-lg shadow-black/30">
       <div
         className={`flex items-stretch bg-[#FFD700] ${open ? 'border-b border-black/25' : ''}`}
       >
