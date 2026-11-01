@@ -5,6 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import useProfile from '@/hooks/useProfile';
 import { captureSignature } from '@/lib/historyCapture';
+import { splitSegments, captureSegments } from '@/lib/historySegments';
 import DictationBox from '@/components/history/DictationBox';
 import { useTour } from '@/lib/TourContext';
 import KeywordDetailBuilder from '@/components/history/KeywordDetailBuilder';
@@ -26,6 +27,9 @@ import { guideLabel } from '@/content/guideLabels';
 import { careerHistoryGuide } from '@/content/careerHistoryGuide';
 
 const COMPLETE_PHRASE = /resume history is complete/i;
+// Each segment is one server call. Twelve keeps a single tap inside a sane wait
+// and the rest stays in the box for the next one.
+const MAX_SEGMENTS_PER_CAPTURE = 12;
 const DICTATION_KEY = 'resumecraft.dictation';
 const DRAFT_KEY = 'resumecraft.openDraft';
 
@@ -188,14 +192,37 @@ export default function HistoryCapture() {
       await lockHistory();
       return;
     }
+
     setBusy(true);
     try {
-      const response = await base44.functions.invoke('parseCareerEntry', { raw_text: text });
-      const created = await base44.entities.CareerEntry.create(emptyFromParsed(response.data || {}, text));
-      if (response.data?.warning) toast({ title: response.data.warning });
-      setDictation('');
-      setDraft(created);
+      // One dictation can hold several jobs. Each becomes its own entry, with
+      // the dates spoken in its boundary sentence.
+      const result = await captureSegments({
+        segments: splitSegments(text),
+        limit: MAX_SEGMENTS_PER_CAPTURE,
+        invoke: (segmentText) => base44.functions
+          .invoke('parseCareerEntry', { raw_text: segmentText })
+          .then((response) => response.data),
+        create: (merged, rawText) => base44.entities.CareerEntry.create(emptyFromParsed(merged, rawText)),
+        onWarning: (warning) => toast({ title: warning })
+      });
+
+      // Nothing spoken is ever thrown away: a failed job and anything over the
+      // batch limit go back in the box for the next tap.
+      const leftovers = [...result.failed, ...result.overflow].map((segment) => segment.text);
+      setDictation(leftovers.join('\n\n'));
+      if (result.created.length) setDraft(result.created[result.created.length - 1]);
       await loadEntries();
+
+      if (result.attempted > 1 && result.created.length) {
+        toast({ title: t('history.segmentsCaptured', { count: result.created.length }) });
+      }
+      if (result.failed.length) {
+        reportError(t('history.toastCaptureFailed'), new Error(t('history.segmentsFailed', { count: result.failed.length })));
+      }
+      if (result.overflow.length) {
+        toast({ title: t('history.segmentsOverflow', { count: result.overflow.length }) });
+      }
     } catch (error) {
       reportError(t('history.toastCaptureFailed'), error);
     }
