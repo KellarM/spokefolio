@@ -266,6 +266,49 @@
   color: inherit;
 }
 
+/* The logo is the mascot's switch, so the label belongs to it: stacked under
+   the wordmark, small and gold, reading as a caption rather than a button. */
+.mec-brand-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.mec-activate {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #D4AF37;
+  transition: color 0.18s ease;
+}
+
+.mec-activate:hover {
+  color: #F0D27A;
+}
+
+.mec-activate:focus-visible {
+  outline: 2px solid #D4AF37;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Once the mascot is on there is nothing left to activate, so the label
+   reports the state and stops behaving like a control. */
+.mec-activate.on {
+  cursor: default;
+  color: rgba(212, 175, 55, 0.72);
+}
+
 /* The new brand lockup: symbol + wordmark + tagline in one mark,
    white knocked out so it sits clean on the dark header. */
 .mec-brand img {

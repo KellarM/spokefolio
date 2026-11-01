@@ -28,9 +28,12 @@ export const setMascotMuted = (muted) => {
   announce();
 };
 
-// Off means gone: no ball, no bubble, no voice, nothing to park or drag.
+// Off means gone: no mascot, no bubble, no voice, nothing to park or drag.
+// The mascot is now opt-in. Only an explicit activation (stored as '0') brings
+// it back, so a client who has never asked for it never sees it, on any device,
+// including after a cache clear.
 export const mascotHidden = () => {
-  try { return window.localStorage.getItem(MASCOT_HIDDEN_KEY) === '1'; } catch { return false; }
+  try { return window.localStorage.getItem(MASCOT_HIDDEN_KEY) !== '0'; } catch { return true; }
 };
 
 export const setMascotHidden = (hidden) => {

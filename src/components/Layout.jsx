@@ -6,6 +6,7 @@ import { StudioLanguageProvider, useStudioLanguage } from '@/lib/StudioLanguage'
 import { ProfileProvider } from '@/hooks/useProfile';
 import { TourProvider } from '@/lib/TourContext';
 import BouncingBallTour from '@/components/tour/BouncingBallTour';
+import { mascotHidden, setMascotHidden } from '@/lib/speech';
 
 import LOGO from '@/assets/spokefolio-logo.png';
 
@@ -16,6 +17,20 @@ function Nav() {
   const { pathname } = useLocation();
   const isActive = (to) => (to === '/' ? pathname === '/' : pathname.startsWith(to));
   const isHome = pathname === '/';
+
+  // The mascot is off until someone asks for it. The logo is the ask, and the
+  // label under it says so. Once it is on, the label reports that instead of
+  // offering an action that has already happened.
+  const [mascotOn, setMascotOn] = useState(() => !mascotHidden());
+  useEffect(() => {
+    const sync = () => setMascotOn(!mascotHidden());
+    window.addEventListener('spokefolio:mascotPrefs', sync);
+    return () => window.removeEventListener('spokefolio:mascotPrefs', sync);
+  }, []);
+  const activateMascot = () => {
+    if (mascotOn) return;
+    setMascotHidden(false);
+  };
 
   const NAV = [
     { label: t('nav.overview'), to: '/', step: null },
@@ -71,9 +86,18 @@ function Nav() {
           sliding up behind it. */}
       <div style={{ height: navHeight }} aria-hidden="true" />
       <header ref={headerRef} className={`mec-nav ${navHidden ? 'nav-away' : ''}`}>
-        <Link to="/" className="mec-brand">
-          <img src={LOGO} alt="Spokefolio Personal Resume Studio" />
-        </Link>
+        <div className="mec-brand-wrap">
+          <Link to="/" className="mec-brand" onClick={activateMascot}>
+            <img src={LOGO} alt="Spokefolio Personal Resume Studio" />
+          </Link>
+          {mascotOn ? (
+            <span className="mec-activate on">{t('header.mascotOn')}</span>
+          ) : (
+            <button type="button" className="mec-activate" onClick={activateMascot}>
+              {t('header.activateMascot')}
+            </button>
+          )}
+        </div>
 
         <nav className="mec-links">
           {NAV.map((item) => (
