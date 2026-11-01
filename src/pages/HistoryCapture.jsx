@@ -133,7 +133,6 @@ export default function HistoryCapture() {
 
   const confirmed = entries.filter((entry) => entry.status === 'confirmed' && !entry.hidden);
   const openDrafts = entries.filter((entry) => entry.status !== 'confirmed');
-  const historyComplete = !!profile.history_complete;
   const captureNow = captureSignature(entries, selectedIds);
   const captureSaved = profile.history_signature || '';
   // Nothing captured yet is not "saved" - it is the most outstanding state
@@ -589,7 +588,12 @@ export default function HistoryCapture() {
         </div>
       )}
 
-      {!historyComplete && !loadingProfile && (
+      {/* The talk-and-type box is the whole point of this page, so it is
+          always here. It used to disappear once the history had been locked,
+          and the unlock button was the only way back in; removing that button
+          made the hiding permanent. Now a saved history simply leaves the box
+          open, and the next thing captured flips the button to needs saving. */}
+      {!loadingProfile && (
         <div className="mt-6">
           <DictationBox
             value={dictation}
