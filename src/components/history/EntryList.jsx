@@ -51,25 +51,28 @@ export default function EntryList({ entries = [], activeId, selectedIds = [], on
             />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#33280A] ring-1 ring-black/15">
+                {/* Solid fills, one per meaning: white is the label, black is
+                    confirmed, outline is hidden, deep amber is unfinished. A tinted
+                    wash could not separate from the gold behind it. */}
+                <span className="rounded-full bg-white px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-black ring-2 ring-black/20">
                   {t(TYPES[entry.entry_type] || 'history.typeOther')}
                 </span>
                 {entry.grouped && (
-                  <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#33280A] ring-1 ring-black/15">
+                  <span className="rounded-full bg-white px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-black ring-2 ring-black/20">
                     {(entry.roles || []).length} {t('history.rolesInside')}
                   </span>
                 )}
                 {hidden && (
-                  <span className="rounded-full bg-[#1A1A1A] px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-gold">
+                  <span className="rounded-full border-2 border-black px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-black">
                     {t('history.hiddenTag')}
                   </span>
                 )}
                 {entry.status === 'draft' ? (
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-amber-950 ring-1 ring-black/20">
+                  <span className="rounded-full bg-amber-900 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-amber-50">
                     {t('history.inProgress')}
                   </span>
                 ) : (
-                  <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#33280A] ring-1 ring-black/15">
+                  <span className="rounded-full bg-black px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-gold">
                     {t('history.confirmed')}
                   </span>
                 )}

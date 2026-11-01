@@ -12,19 +12,21 @@ const TYPES = {
   other: 'documents.typeOther'
 };
 
-// These sit on gold now, so each one carries its own dark ink and a hairline
-// ring: the theme's muted grey measures 2.8:1 on gold and would disappear.
+// These sit on gold now, so each carries a solid fill rather than a tint: a
+// translucent wash on gold measures under 2:1 of separation and reads as a
+// rendering fault. White is the label, black is activity in flight, amber is a
+// file the studio could not read. Read is the ordinary state and gets no chip.
 function StatusChip({ status, t }) {
   if (status === 'processing') {
     return (
-      <span className="animate-soft-pulse flex items-center gap-1.5 rounded-full bg-black/10 px-2.5 py-1 text-[11px] font-semibold text-[#33280A] ring-1 ring-black/15">
-        <Loader2 className="h-3 w-3 animate-spin" /> {t('documents.reading')}
+      <span className="animate-soft-pulse flex items-center gap-1.5 rounded-full bg-black px-2.5 py-1 text-[11px] font-bold text-gold">
+        <Loader2 className="h-3 w-3 animate-spin" strokeWidth={3} /> {t('documents.reading')}
       </span>
     );
   }
   if (status === 'unreadable') {
     return (
-      <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-950 ring-1 ring-black/20">
+      <span className="rounded-full bg-amber-900 px-2.5 py-1 text-[11px] font-bold text-amber-50">
         {t('documents.keptAsReference')}
       </span>
     );
@@ -93,7 +95,7 @@ export default function DocumentRow({ doc, onDelete }) {
         >
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#33280A] ring-1 ring-black/15">
+              <span className="rounded-full bg-white px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-black ring-2 ring-black/20">
                 {t(TYPES[doc.doc_type] || 'documents.typeOther')}
               </span>
               <StatusChip status={doc.status} t={t} />
