@@ -15,7 +15,7 @@ import {
 import { base44 } from '@/api/base44Client';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import { captureIsSaved } from '@/lib/historyCapture';
-import { speak, mascotMuted, setMascotMuted, mascotHidden, setMascotHidden } from '@/lib/speech';
+import { speak, mascotMuted, setMascotMuted, mascotHidden, setMascotHidden, mascotAudible } from '@/lib/speech';
 import MASCOT from '@/assets/spokefolio-mascot.png';
 import { useTour } from '@/lib/TourContext';
 import VoicePicker from '@/components/tour/VoicePicker';
@@ -706,7 +706,10 @@ export default function BouncingBallTour() {
   // probe re-settles - no flip ever re-voices a line already said. The
   // bubble still SHOWS the guidance; the voice just stops repeating it.
   useEffect(() => {
-    if (!bubbleText || mascotMuted()) return;
+    // Hidden is not muted: with the mascot off there is no bubble to read and
+    // no one to read it. The line is left unsaid rather than marked said, so
+    // activating the mascot later still lets it speak.
+    if (!bubbleText || !mascotAudible()) return;
     if (spokenLines.has(bubbleText)) return; // said it - the bubble carries it now
     // A beat after arrival, in its own voice - and never over the top of
     // the working engine mid-sentence.

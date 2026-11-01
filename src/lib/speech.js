@@ -36,12 +36,26 @@ export const mascotHidden = () => {
   try { return window.localStorage.getItem(MASCOT_HIDDEN_KEY) !== '0'; } catch { return true; }
 };
 
+// Cutting a line short when the mascot leaves. The speech engine has no
+// per-utterance stop, so this is the blunt cancel - which is why it runs from
+// the hide action rather than on every page load.
+const muteNow = () => {
+  try { window.speechSynthesis.cancel(); } catch {}
+};
+
 export const setMascotHidden = (hidden) => {
   try {
     window.localStorage.setItem(MASCOT_HIDDEN_KEY, hidden ? '1' : '0');
   } catch {}
+  if (hidden) muteNow();
   announce();
 };
+
+
+// Hidden and muted are different questions, and either one is enough to keep
+// the mascot quiet. Nothing is on screen when it is hidden, so a voice with no
+// source is confusing at best - it is the mascot's voice, and the mascot is gone.
+export const mascotAudible = () => !mascotHidden() && !mascotMuted();
 
 const refreshVoices = () => {
   try {
@@ -242,6 +256,10 @@ export const whenVoicesReady = (timeoutMs = 2500) => new Promise((resolve) => {
 export function speak(text, { lang, profile = 'assistant' } = {}) {
   return new Promise((resolve) => {
     if (typeof window === 'undefined' || !window.speechSynthesis || !text) return resolve();
+    // The mascot only speaks when it is both present and unmuted. Checked here,
+    // at the one door every spoken line goes through, because a caller that
+    // forgets to ask is exactly how a hidden mascot kept talking.
+    if (profile === 'mascot' && !mascotAudible()) return resolve();
     try {
       if (window.speechSynthesis.speaking && profile === 'mascot') return resolve();
       if (profile === 'mascot' && !voiceFor(lang, profile)) {
