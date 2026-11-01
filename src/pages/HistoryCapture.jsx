@@ -540,48 +540,61 @@ export default function HistoryCapture() {
     <div className="animate-rise">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
-                    <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('history.title')}</h1>
-                    <p className="mt-2 font-mono text-[16px] font-semibold uppercase tracking-[0.1em] text-white">{t('steps.two')}</p>
+          <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('history.title')}</h1>
+          <p className="mt-2 font-mono text-[16px] font-semibold uppercase tracking-[0.1em] text-white">{t('steps.two')}</p>
           <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
             {t('history.lede')}
           </p>
+
+          {/* The capture state sits with the heading now, because it describes
+              this page's content rather than an action on the page. */}
+          {busy ? (
+            <button
+              type="button"
+              disabled
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#334155] px-4 py-2 text-[13.5px] font-semibold text-white opacity-80"
+            >
+              <Loader2 className="h-4 w-4 animate-spin" />
+              {t('history.captureSaving')}
+            </button>
+          ) : needsSaving ? (
+            <button
+              type="button"
+              onClick={lockHistory}
+              disabled={!confirmed.length}
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#EF4444] px-4 py-2 text-[13.5px] font-semibold text-[#2A0505] shadow-[0_8px_20px_-8px_rgba(239,68,68,0.9)] transition-colors hover:bg-[#DC2626] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EF4444]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F17] disabled:opacity-60"
+            >
+              <Save className="h-4 w-4" />
+              {t('history.captureNeedsSaving')}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={lockHistory}
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#22C55E] px-4 py-2 text-[13.5px] font-semibold text-[#05230F] shadow-[0_8px_20px_-8px_rgba(34,197,94,0.9)] transition-colors hover:bg-[#16A34A] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F17]"
+            >
+              <Check className="h-4 w-4" strokeWidth={2.5} />
+              {t('history.captureSaved')}
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={() => setResumeOpen(true)}
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-4 py-2 text-[13.5px] font-medium text-white shadow-[0_8px_20px_-8px_rgba(37,99,235,0.9)] transition-colors hover:bg-[#1D4ED8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F17]"
+            className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-4 py-2 text-[13.5px] font-medium text-white shadow-[0_8px_20px_-8px_rgba(37,99,235,0.9)] transition-colors hover:bg-[#1D4ED8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F17]"
           >
             <FileText className="h-4 w-4" />
             {t('history.seeCurrent')}
           </button>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          {busy ? (
-            <Button variant="secondary" className="rounded-full" disabled>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('history.captureSaving')}
-            </Button>
-          ) : needsSaving ? (
-            <Button
-              className="rounded-full"
-              onClick={lockHistory}
-              disabled={!confirmed.length}
-            >
-              <Save className="mr-2 h-4 w-4" />
-              {t('history.captureNeedsSaving')}
-            </Button>
-          ) : (
-            <Button variant="secondary" className="rounded-full" onClick={lockHistory}>
-              <Check className="mr-2 h-4 w-4 text-accent" strokeWidth={2} />
-              {t('history.captureSaved')}
-            </Button>
-          )}
           <ClearHistoryButton entries={entries.length} disabled={busy || loading} onCleared={clearLocalHistory} />
         </div>
       </header>
 
       {!needsSaving && confirmed.length > 0 && (
-        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-accent/25 bg-accent/5 px-5 py-4">
-          <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" strokeWidth={2} />
+        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-[#22C55E]/30 bg-[#22C55E]/5 px-5 py-4">
+          <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#22C55E]" strokeWidth={2.5} />
           <p className="text-[13.5px] leading-relaxed text-foreground/90">
             {t('history.savedBanner', { count: confirmed.length })}
           </p>
