@@ -1,4 +1,4 @@
-import { languageCode } from './languageCode';
+import { languageCode } from './languageCode.js';
 
 // What every control on Job postings does, taken from the page itself: the two
 // tabs, the import form, the result actions, and what a kept posting can do.
@@ -28,7 +28,7 @@ const en = {
     { heading: 'A kept posting', items: [
       'Tailor résumé builds a résumé and cover letter aimed at this posting.',
       'Open posting goes to the original advert in a new tab.',
-      'View résumé opens the application once a résumé has been tailored for it.',
+      'View the résumé opens the application once one has been tailored for it.',
       'Remove deletes the posting. Clear all empties the list.'
     ] },
     { heading: 'What travels with it', items: [

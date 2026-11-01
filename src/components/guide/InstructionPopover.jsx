@@ -18,9 +18,18 @@ export default function InstructionPopover({
   intro,
   label,
   align = 'start',
+  open: openProp,
+  onOpenChange,
   className = ''
 }) {
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const controlled = openProp !== undefined;
+  const open = controlled ? openProp : openState;
+  const setOpen = (next) => {
+    const value = typeof next === 'function' ? next(open) : next;
+    if (!controlled) setOpenState(value);
+    if (onOpenChange) onOpenChange(value);
+  };
   const wrapRef = useRef(null);
   const buttonRef = useRef(null);
   const panelId = useId();

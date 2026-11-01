@@ -20,6 +20,7 @@ import { sortEntriesByDate } from '@/lib/entryOrder';
 import retryOnTimeout from '@/lib/retryOnTimeout';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import InstructionPopover from '@/components/guide/InstructionPopover';
+import GuidePrompt from '@/components/guide/GuidePrompt';
 import { guideLabel } from '@/content/guideLabels';
 import { careerHistoryGuide } from '@/content/careerHistoryGuide';
 
@@ -79,6 +80,7 @@ const unansweredPrompts = (prompts, answers) => {
 export default function HistoryCapture() {
   const { t, language } = useStudioLanguage();
   const guide = careerHistoryGuide(language);
+  const [guideOpen, setGuideOpen] = useState(false);
   const { toast } = useToast();
   const { profile, loadingProfile, save } = useProfile();
   const [entries, setEntries] = useState([]);
@@ -547,6 +549,8 @@ export default function HistoryCapture() {
           <div className="mt-3 flex items-start gap-3">
             <h1 className="font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('history.title')}</h1>
             <InstructionPopover
+              open={guideOpen}
+              onOpenChange={setGuideOpen}
               label={guideLabel(language)}
               className="mt-2"
               title={guide.title}
@@ -628,6 +632,13 @@ export default function HistoryCapture() {
             busy={busy}
             firstHint={entries.length === 0 && !tour.active}
           />
+          {entries.length === 0 && !tour.active && (
+            <GuidePrompt
+              className="mt-3"
+              label={guideLabel(language)}
+              onClick={() => setGuideOpen(true)}
+            />
+          )}
         </div>
       )}
 

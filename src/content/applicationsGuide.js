@@ -1,4 +1,4 @@
-import { languageCode } from './languageCode';
+import { languageCode } from './languageCode.js';
 
 // What every control on Applications does, taken from the page and its detail
 // view: the filter row, the statuses, and the fact that each status move is

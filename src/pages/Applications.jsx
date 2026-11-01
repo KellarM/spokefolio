@@ -22,6 +22,7 @@ const FILTERS = ['all', 'ready', 'not_applied', 'applied', 'contacted', 'intervi
 export default function Applications() {
   const { t, language } = useStudioLanguage();
   const guide = applicationsGuide(language);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -227,6 +228,8 @@ export default function Applications() {
             </span>
           </h1>
           <InstructionPopover
+              open={guideOpen}
+              onOpenChange={setGuideOpen}
               label={guideLabel(language)}
               className="mt-2"
             title={guide.title}
@@ -302,6 +305,11 @@ export default function Applications() {
           <p className="mx-auto mt-2 max-w-md text-[14px] leading-relaxed text-muted-foreground">
             {t('applications.nothingDesc')}
           </p>
+          <GuidePrompt
+            className="mt-4"
+            label={guideLabel(language)}
+            onClick={() => setGuideOpen(true)}
+          />
           <Button asChild className="mt-5 rounded-full">
             <Link to="/tailor-application">
               {t('applications.tailorFirst')} <ArrowRight className="ml-2 h-4 w-4" />

@@ -1,4 +1,4 @@
-import { languageCode } from './languageCode';
+import { languageCode } from './languageCode.js';
 
 // The control says what it does. An unlabelled circled "i" beside a heading
 // reads as decoration; a gold pill that says "How this works" does not.

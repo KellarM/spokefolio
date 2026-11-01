@@ -12,6 +12,7 @@ import { referenceFilesGuide } from '@/content/referenceFilesGuide';
 export default function Documents() {
   const { t, language } = useStudioLanguage();
   const guide = referenceFilesGuide(language);
+  const [guideOpen, setGuideOpen] = useState(false);
   const tour = useTour();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +52,8 @@ export default function Documents() {
         <div className="mt-3 flex items-start gap-3">
           <h1 className="font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('documents.title')}</h1>
           <InstructionPopover
+              open={guideOpen}
+              onOpenChange={setGuideOpen}
               label={guideLabel(language)}
               className="mt-2"
             title={guide.title}
@@ -82,6 +85,11 @@ export default function Documents() {
           {documents.length === 0 && !loading ? (
             <div className="mt-4 rounded-2xl border border-dashed border-border px-6 py-10 text-center">
               <p className="text-[14px] text-muted-foreground">{t('documents.nothingYet')}</p>
+              <GuidePrompt
+                className="mt-4"
+                label={guideLabel(language)}
+                onClick={() => setGuideOpen(true)}
+              />
             </div>
           ) : (
             <ul className="mt-4 space-y-2.5">

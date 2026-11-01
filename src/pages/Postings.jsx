@@ -60,6 +60,7 @@ const storeSearch = (email, search) => {
 export default function Postings() {
   const { t, language } = useStudioLanguage();
   const guide = jobPostingsGuide(language);
+  const [guideOpen, setGuideOpen] = useState(false);
   const { profile } = useProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -261,6 +262,8 @@ export default function Postings() {
         <div className="mt-3 flex items-start gap-3">
           <h1 className="font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('postings.title')}</h1>
           <InstructionPopover
+              open={guideOpen}
+              onOpenChange={setGuideOpen}
               label={guideLabel(language)}
               className="mt-2"
             title={guide.title}
@@ -334,6 +337,11 @@ export default function Postings() {
           <p className="mx-auto mt-2 max-w-md text-[14px] leading-relaxed text-muted-foreground">
             {t('postings.nothingKeptDesc')}
           </p>
+          <GuidePrompt
+            className="mt-4"
+            label={guideLabel(language)}
+            onClick={() => setGuideOpen(true)}
+          />
         </div>
       ) : (
         <>

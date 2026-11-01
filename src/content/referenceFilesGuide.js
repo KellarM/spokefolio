@@ -1,4 +1,4 @@
-import { languageCode } from './languageCode';
+import { languageCode } from './languageCode.js';
 
 // What every control on the Reference files page does, in the words the page
 // itself uses. One file, six languages, so the guide and the screen are edited

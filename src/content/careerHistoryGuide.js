@@ -1,4 +1,4 @@
-import { languageCode } from './languageCode';
+import { languageCode } from './languageCode.js';
 
 // What every control on the Career history page does. Written from the page
 // itself: the dictation box, the follow-up prompts, the draft editor, the entry
