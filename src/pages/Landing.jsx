@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import LanguageSelect, { getStoredLanguage, storeLanguage, normalizeLanguage } from '@/components/LanguageSelect';
 import { landingStrings } from '@/i18n/landing';
+import mascot from '@/assets/spokefolio-mascot.png';
 
 // Public front door. Logged-out visitors land here from "/" (see ProtectedRoute in
 // App.jsx: unauthenticated visitors see this page at the root URL.)
@@ -100,6 +101,10 @@ export default function Landing() {
       {/* HERO - the price is the headline */}
       <section className="lnd-hero">
         <div className="lnd-wrap">
+          {/* The mascot is the title-page crest: it sits above the headline,
+              centred like the rest of the hero. alt carries the brand name
+              rather than a description, because it is the logo here. */}
+          <img className="lnd-mascot" src={mascot} alt="Spokefolio" width="184" height="147" />
           <p className="mec-eyebrow">{t.heroEyebrow}</p>
           <h1 className="lnd-h1">
             {t.heroH1Pre} <em>{t.heroH1Em}</em> {t.heroH1Post}

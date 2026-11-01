@@ -1205,6 +1205,34 @@
   padding: 120px 0 104px;
 }
 
+/* Title-page crest. The mascot enters with a fade and then drifts, so the
+   entrance and the float are two animations: fade only touches opacity,
+   float only touches transform, and neither fights the other. */
+.lnd-mascot {
+  display: block;
+  width: clamp(130px, 15vw, 184px);
+  height: auto;
+  margin: 0 auto 22px;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 18px rgba(212, 175, 55, 0.22));
+  animation: lndMascotIn 0.9s ease-out both, lndMascotFloat 7s 0.9s ease-in-out infinite;
+}
+
+@keyframes lndMascotIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes lndMascotFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lnd-mascot {
+    animation: none;
+  }
+}
+
 .lnd-h1 {
   font-family: Georgia, 'Times New Roman', serif;
   font-weight: 400;
