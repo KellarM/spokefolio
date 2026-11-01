@@ -93,7 +93,7 @@ export default function InstructionPopover({
         aria-controls={panelId}
         aria-label={label ? undefined : title || 'How this works'}
         onClick={() => setOpen((value) => !value)}
-        className={`inline-flex h-[28px] items-center justify-center gap-1.5 rounded-full border ${label ? 'px-3' : 'w-[28px]'} font-mono text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
+        className={`inline-flex h-[28px] shrink-0 items-center justify-center gap-1.5 rounded-full border ${label ? 'px-2.5 sm:px-3' : 'w-[28px]'} font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] transition-all sm:text-[11px] sm:tracking-[0.12em] ${
           open
             ? 'border-[#F0C75E] bg-[#F0C75E] text-[#0B0F17] shadow-[0_0_16px_-2px_rgba(212,175,55,0.75)]'
             : 'border-[#D4AF37]/70 bg-[#D4AF37]/12 text-[#E5C264] hover:border-[#F0C75E] hover:bg-[#D4AF37]/20 hover:text-[#F5D889] hover:shadow-[0_0_14px_-3px_rgba(212,175,55,0.6)]'

@@ -259,7 +259,7 @@ export default function Postings() {
   return (
     <div className="animate-rise">
       <header className="max-w-2xl">
-        <div className="mt-3 flex items-start gap-3">
+        <div className="mt-3 flex flex-wrap items-start gap-x-3 gap-y-2">
           <h1 className="font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('postings.title')}</h1>
           <InstructionPopover
               open={guideOpen}
