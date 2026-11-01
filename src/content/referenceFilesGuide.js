@@ -1,3 +1,5 @@
+import { languageCode } from './languageCode';
+
 // What every control on the Reference files page does, in the words the page
 // itself uses. One file, six languages, so the guide and the screen are edited
 // together rather than drifting apart.
@@ -245,22 +247,6 @@ const pt = {
 
 export const REFERENCE_FILES_GUIDE = { en, de, fr, es, it, pt };
 
-// The studio stores the language by name ("German"), not by code.
-const BY_NAME = {
-  english: 'en',
-  german: 'de',
-  deutsch: 'de',
-  french: 'fr',
-  français: 'fr',
-  spanish: 'es',
-  español: 'es',
-  italian: 'it',
-  italiano: 'it',
-  portuguese: 'pt',
-  português: 'pt'
-};
-
 export function referenceFilesGuide(language) {
-  const code = BY_NAME[String(language || '').toLowerCase()] || 'en';
-  return REFERENCE_FILES_GUIDE[code];
+  return REFERENCE_FILES_GUIDE[languageCode(language)];
 }

@@ -19,6 +19,8 @@ import { buildCombinedEntry } from '@/lib/mergeEntries';
 import { sortEntriesByDate } from '@/lib/entryOrder';
 import retryOnTimeout from '@/lib/retryOnTimeout';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
+import InstructionPopover from '@/components/guide/InstructionPopover';
+import { careerHistoryGuide } from '@/content/careerHistoryGuide';
 
 const COMPLETE_PHRASE = /resume history is complete/i;
 const DICTATION_KEY = 'resumecraft.dictation';
@@ -74,7 +76,8 @@ const unansweredPrompts = (prompts, answers) => {
 };
 
 export default function HistoryCapture() {
-  const { t } = useStudioLanguage();
+  const { t, language } = useStudioLanguage();
+  const guide = careerHistoryGuide(language);
   const { toast } = useToast();
   const { profile, loadingProfile, save } = useProfile();
   const [entries, setEntries] = useState([]);
@@ -540,7 +543,15 @@ export default function HistoryCapture() {
     <div className="animate-rise">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
-          <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('history.title')}</h1>
+          <div className="mt-3 flex items-start gap-3">
+            <h1 className="font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('history.title')}</h1>
+            <InstructionPopover
+              className="mt-2"
+              title={guide.title}
+              intro={guide.intro}
+              sections={guide.sections}
+            />
+          </div>
           <p className="mt-2 font-mono text-[16px] font-semibold uppercase tracking-[0.1em] text-white">{t('steps.two')}</p>
           <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
             {t('history.lede')}
