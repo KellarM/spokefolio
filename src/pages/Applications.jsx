@@ -8,6 +8,8 @@ import StatusBadge from '@/components/applications/StatusBadge';
 import SalaryPill from '@/components/applications/SalaryPill';
 import JobLocation from '@/components/applications/JobLocation';
 import DeleteApplicationButton from '@/components/applications/DeleteApplicationButton';
+import InstructionPopover from '@/components/guide/InstructionPopover';
+import { applicationsGuide } from '@/content/applicationsGuide';
 import ActivityCalendar from '@/components/applications/ActivityCalendar';
 import RunScoreBadge from '@/components/applications/RunScoreBadge';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
@@ -18,6 +20,7 @@ const FILTERS = ['all', 'ready', 'not_applied', 'applied', 'contacted', 'intervi
 
 export default function Applications() {
   const { t, language } = useStudioLanguage();
+  const guide = applicationsGuide(language);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -214,13 +217,21 @@ export default function Applications() {
     <div className="animate-rise">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
-                    <h1 className="mt-3 flex flex-wrap items-center gap-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">
+                    <div className="mt-3 flex items-start gap-3">
+          <h1 className="flex flex-wrap items-center gap-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">
             {t('applications.title')}
             {/* The live count: always the number the current filter is showing. */}
             <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-3 py-1 align-middle text-[15px] font-semibold tabular-nums text-primary">
               {visible.length}
             </span>
           </h1>
+          <InstructionPopover
+            className="mt-2"
+            title={guide.title}
+            intro={guide.intro}
+            sections={guide.sections}
+          />
+        </div>
                     <p className="mt-2 font-mono text-[16px] font-semibold uppercase tracking-[0.1em] text-white">{t('steps.four')}</p>
           <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
             {t('applications.lede')}

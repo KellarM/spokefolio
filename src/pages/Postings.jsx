@@ -10,6 +10,8 @@ import JobSearchPanel from '@/components/postings/JobSearchPanel';
 import JobSearchResults from '@/components/postings/JobSearchResults';
 import JobBoardDirectory from '@/components/postings/JobBoardDirectory';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
+import InstructionPopover from '@/components/guide/InstructionPopover';
+import { jobPostingsGuide } from '@/content/jobPostingsGuide';
 import useProfile from '@/hooks/useProfile';
 import { pillClass } from '@/components/postings/JobSearchFilters';
 import { Search, FolderSearch } from 'lucide-react';
@@ -55,7 +57,8 @@ const storeSearch = (email, search) => {
 };
 
 export default function Postings() {
-  const { t } = useStudioLanguage();
+  const { t, language } = useStudioLanguage();
+  const guide = jobPostingsGuide(language);
   const { profile } = useProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -254,8 +257,16 @@ export default function Postings() {
   return (
     <div className="animate-rise">
       <header className="max-w-2xl">
-                <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('postings.title')}</h1>
-                <p className="mt-2 font-mono text-[16px] font-semibold uppercase tracking-[0.1em] text-white">{t('steps.three')}</p>
+        <div className="mt-3 flex items-start gap-3">
+          <h1 className="font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('postings.title')}</h1>
+          <InstructionPopover
+            className="mt-2"
+            title={guide.title}
+            intro={guide.intro}
+            sections={guide.sections}
+          />
+        </div>
+        <p className="mt-2 font-mono text-[16px] font-semibold uppercase tracking-[0.1em] text-white">{t('steps.three')}</p>
         <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
           {t('postings.lede')}
         </p>
