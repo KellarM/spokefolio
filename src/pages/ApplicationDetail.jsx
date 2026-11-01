@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Calendar as CalendarIcon, Clock, Download, ExternalLink, Eye, Loader2, Mail, Pencil, RefreshCw, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar as CalendarIcon, Clock, Download, ExternalLink, Eye, Loader2, Mail, MessageSquare, Pencil, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { base44 } from '@/api/base44Client';
 import { trackEvent } from '@/lib/analytics';
@@ -18,7 +18,6 @@ import JobPostingPanel from '@/components/applications/JobPostingPanel';
 import CompanyBrief from '@/components/applications/CompanyBrief';
 import SendPackageDialog from '@/components/applications/SendPackageDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import InterviewPanel from '@/components/applications/InterviewPanel';
 import ResumeRunPanel from '@/components/applications/ResumeRunPanel';
 import ResumeDocument from '@/components/resume/ResumeDocument';
 import PreviewDocument from '@/components/resume/PreviewDocument';
@@ -735,7 +734,21 @@ export default function ApplicationDetail() {
         generating={writingLetter}
       />
 
-      <InterviewPanel application={application} onApplicationUpdate={(patch) => setApplication((prev) => ({ ...prev, ...patch }))} />
+      {/* The drill lives on Step 5 now. This is the door, carrying the id so the
+          company is already chosen on the other side. */}
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-5 py-4">
+        <div className="min-w-0">
+          <p className="eyebrow">{t('interview.title')}</p>
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            {[application.company, application.job_title].filter(Boolean).join(' · ')}
+          </p>
+        </div>
+        <Button asChild className="rounded-full">
+          <Link to={`/interview?application=${application.id}`}>
+            <MessageSquare className="mr-2 h-4 w-4" /> {t('interview.practiceLink')}
+          </Link>
+        </Button>
+      </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <div className="rounded-2xl border border-border/70 bg-card p-5">

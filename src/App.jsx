@@ -14,6 +14,7 @@ import HistoryCapture from '@/pages/HistoryCapture';
 import Postings from '@/pages/Postings';
 import Documents from '@/pages/Documents';
 import Applications from '@/pages/Applications';
+import Interview from '@/pages/Interview';
 import TailorApplication from '@/pages/TailorApplication';
 import ApplicationDetail from '@/pages/ApplicationDetail';
 import Admin from '@/pages/Admin';
@@ -132,6 +133,7 @@ const AuthenticatedApp = () => {
             <Route path="/postings" element={<Postings />} />
             <Route path="/documents" element={<Documents />} />
             <Route path="/applications" element={<Applications />} />
+            <Route path="/interview" element={<Interview />} />
             <Route path="/tailor-application" element={<TailorApplication />} />
             <Route path="/application/:id" element={<ApplicationDetail />} />
           </Route>

@@ -37,7 +37,8 @@ function Nav() {
     { label: t('nav.documents'), to: '/documents', step: 'steps.one' },
     { label: t('nav.history'), to: '/history', step: 'steps.two' },
     { label: t('nav.postings'), to: '/postings', step: 'steps.three' },
-    { label: t('nav.applications'), to: '/applications', step: 'steps.four' }
+    { label: t('nav.applications'), to: '/applications', step: 'steps.four' },
+    { label: t('nav.interview'), to: '/interview', step: 'steps.five' }
   ];
 
   // The header hides while scrolling down into the page and returns the

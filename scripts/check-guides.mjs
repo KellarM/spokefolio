@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Keeps the four page guides honest.
+// Keeps the five page guides honest.
 //
 // A guide is prose about controls. The day a control is renamed or removed the
 // prose quietly becomes a lie, and a guide that lies is worse than none. This
@@ -50,6 +50,15 @@ const GUIDES = [
       { mention: 'Open posting', key: 'common.openPosting' },
       { mention: 'View the résumé', key: 'common.viewResume' },
       { mention: 'Clear all', key: 'postings.clearAll' }
+    ]
+  },
+  {
+    file: 'src/content/interviewGuide.js',
+    exportName: 'INTERVIEW_GUIDE',
+    controls: [
+      { mention: 'Choose the company', key: 'interview.pickLabel' },
+      { mention: 'Practice interview with this company', key: 'interview.practiceLink' },
+      { mention: 'Try again', key: 'interview.scanRetry' }
     ]
   },
   {

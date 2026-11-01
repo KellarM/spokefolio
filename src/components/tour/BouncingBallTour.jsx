@@ -7,6 +7,7 @@ import {
   FileText,
   FolderOpen,
   History as HistoryIcon,
+  MessageSquare,
   PenLine,
   Sparkles,
   Volume2,
@@ -128,12 +129,13 @@ const STEP_PAGE = {
   farewell: '/'
 };
 
-// The four header destinations beyond the Overview the ball lives on.
+// The five header destinations beyond the Overview the ball lives on.
 const NAV = [
   { key: 'history', labelKey: 'nav.history', to: '/history', Icon: HistoryIcon },
   { key: 'documents', labelKey: 'nav.documents', to: '/documents', Icon: FolderOpen },
   { key: 'postings', labelKey: 'nav.postings', to: '/postings', Icon: Briefcase },
-  { key: 'applications', labelKey: 'nav.applications', to: '/applications', Icon: FileText }
+  { key: 'applications', labelKey: 'nav.applications', to: '/applications', Icon: FileText },
+  { key: 'interview', labelKey: 'nav.interview', to: '/interview', Icon: MessageSquare }
 ];
 
 const NUDGE_ICON = { interview: Calendar, draft: PenLine, posting: Briefcase };
@@ -175,6 +177,7 @@ const idleAnchorElement = (pathname) => {
   if (pathname === '/documents') return document.querySelector('[data-tour="uploader"]');
   if (pathname === '/profile') return document.querySelector('[data-tour="voice"]');
   if (pathname === '/postings') return document.querySelector('[data-tour="job-search"]');
+  if (pathname === '/interview') return document.querySelector('[data-tour="interview-picker"]');
   return null;
 };
 
@@ -183,7 +186,8 @@ const idleCaptionKey = (pathname) =>
     '/history': 'tour.history',
     '/documents': 'tour.idleDocuments',
     '/profile': 'tour.idleProfile',
-    '/postings': 'tour.idlePostings'
+    '/postings': 'tour.idlePostings',
+    '/interview': 'tour.idleInterview'
   })[pathname];
 
 
