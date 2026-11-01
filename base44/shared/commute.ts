@@ -12,6 +12,22 @@ export function resolveHomeAddress(profileLocation) {
   return raw;
 }
 
+// The city a home address sits in, so a work site can be checked against it.
+// Street lines and province, postal and country tokens are skipped.
+export function homeCityOf(home) {
+  const parts = String(home || '')
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const city = parts.find(
+    (part) =>
+      !/[0-9]/.test(part) &&
+      !/^(ab|bc|mb|nb|nl|ns|nt|nu|on|pe|qc|sk|yt)$/i.test(part) &&
+      !/^(alberta|british columbia|manitoba|saskatchewan|ontario|quebec|canada|usa|united states)$/i.test(part)
+  );
+  return (city || '').toLowerCase();
+}
+
 // Lines of a posting that could say where the work happens.
 export function locationHints(description, workAddress = '') {
   const lines = (description || '')
@@ -54,6 +70,7 @@ export async function estimateCommutes(base44, items, homeLocation = '') {
         '- Give a street address or neighbourhood when the posting or public information supports one.',
         '- Never invent a street number. If only a city or area is known, name that area (for example "Edmonton, AB (South Edmonton)" or "Edmonton, AB (city centre)") and measure driving distance from the candidate\'s home to that area.',
         '- Every non-remote posting with a known city or area MUST receive a positive numeric distance_km and drive_minutes measured from the candidate\'s home.',
+        '- mode must be "remote" only when the posting is entirely work-from-home with no site to attend. A hybrid or partially remote role is "onsite": the candidate still drives there. Use "unknown" when you cannot place the work site.',
         '- If the role is strictly 100% work-from-home / remote with no physical site, return 0 for distance_km and drive_minutes.',
         '- Place the candidate\'s home address EXACTLY as given - it is a real street address, geocode it before measuring. Never relocate or reinterpret it.',
         '- If you cannot confidently place EITHER the home or the work site, return -1 for both distance_km and drive_minutes. An unknown answer is correct; a guessed one is a lie.',
@@ -73,6 +90,8 @@ export async function estimateCommutes(base44, items, homeLocation = '') {
               properties: {
                 id: { type: 'string' },
                 address: { type: 'string' },
+                city: { type: 'string' },
+                mode: { type: 'string', enum: ['onsite', 'remote', 'unknown'] },
                 distance_km: { type: 'number' },
                 drive_minutes: { type: 'number' }
               },
@@ -94,21 +113,40 @@ export async function estimateCommutes(base44, items, homeLocation = '') {
       const words = (address.match(/[A-Za-z]+/g) || []).map((w) => w.toLowerCase());
       return words.some((w) => homeCities.has(w) && w.length > 3);
     };
+    const homeCity = homeCityOf(home);
+
     for (const row of result?.results || []) {
       if (!row || row.id == null) continue;
       const address = typeof row.address === 'string' ? row.address.trim() : '';
-      let dist = Number(row.distance_km);
-      let mins = Number(row.drive_minutes);
-      if (sameCityCap(address) && dist > 100) {
-        // Both ends in the same city but a continent-scale number: the
-        // estimate failed. Null it; the UI shows no distance instead.
-        dist = -1;
-        mins = -1;
+      const mode = String(row.mode || '').toLowerCase();
+      const rowCity = String(row.city || '').toLowerCase().trim();
+      const dist = Number(row.distance_km);
+      const mins = Number(row.drive_minutes);
+
+      // Three outcomes, and they are not the same thing:
+      //   remote  - no site to attend, a real answer, saved as zero
+      //   onsite  - a positive distance that survives the sanity checks
+      //   unknown - nothing trustworthy, so nothing is stored and it gets
+      //             retried later instead of being marked done forever
+      if (mode === 'remote') {
+        map.set(String(row.id), { work_address: address, drive_distance_km: 0, drive_minutes: 0, resolved: true });
+        continue;
       }
+
+      let resolved = mode !== 'unknown' && Number.isFinite(dist) && dist > 0;
+      if (resolved && homeCity && rowCity) {
+        // Same city cannot be a continent away, and a different city cannot be
+        // a two minute drive. Both are geocoding failures, not commutes.
+        if (rowCity === homeCity && dist > 100) resolved = false;
+        if (rowCity !== homeCity && dist < 50) resolved = false;
+      }
+      if (resolved && sameCityCap(address) && dist > 100) resolved = false;
+
       map.set(String(row.id), {
         work_address: address,
-        drive_distance_km: Number.isFinite(dist) && dist > 0 ? Math.round(dist * 10) / 10 : null,
-        drive_minutes: Number.isFinite(mins) && mins > 0 ? Math.round(mins) : null
+        drive_distance_km: resolved ? Math.round(dist * 10) / 10 : null,
+        drive_minutes: resolved && Number.isFinite(mins) && mins > 0 ? Math.round(mins) : null,
+        resolved
       });
     }
     return map;

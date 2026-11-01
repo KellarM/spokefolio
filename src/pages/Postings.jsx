@@ -94,9 +94,11 @@ export default function Postings() {
           if (!records.some((item) => !item.location_checked)) break;
           setLocating(true);
           const response = await base44.functions.invoke('locateApplications', { target: 'postings', home_address: profile?.home_address || '' });
-          const { remaining } = response.data || {};
+          const { remaining, located } = response.data || {};
           records = await load();
-          if (!remaining) break;
+          // Unanswered postings stay open for a later visit, so stop paying for
+          // a pass that resolved nothing.
+          if (!remaining || !located) break;
         }
       } catch (error) {
         // The list works without it, and the lookup can run again on the next visit.

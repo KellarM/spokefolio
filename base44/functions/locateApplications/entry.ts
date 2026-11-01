@@ -15,6 +15,7 @@ export default async function (req) {
 
     let locatedCount = 0;
     let remainingCount = 0;
+    let unresolvedCount = 0;
 
     if (target === 'applications' || target === 'both') {
       const applications = await base44.entities.JobApplication.list('-created_date', 200);
@@ -25,17 +26,24 @@ export default async function (req) {
         const byId = await estimateCommutes(base44, pendingApps, home);
         const updates = pendingApps.map((item) => {
           const row = byId.get(String(item.id)) || {};
+          // Only a real answer closes the row. An unresolved one stays open so
+          // the next visit retries it - marking it done with no distance is how
+          // a transient failure used to become permanent.
+          const resolved = row.resolved === true;
           const patch = {
             id: item.id,
             work_address: row.work_address || item.work_address || '',
-            location_checked: true
+            location_checked: resolved
           };
-          if (row.drive_distance_km != null) patch.drive_distance_km = row.drive_distance_km;
-          if (row.drive_minutes != null) patch.drive_minutes = row.drive_minutes;
+          if (resolved) {
+            patch.drive_distance_km = row.drive_distance_km;
+            patch.drive_minutes = row.drive_minutes;
+          }
           return patch;
         });
         await base44.entities.JobApplication.bulkUpdate(updates);
-        locatedCount += updates.length;
+        locatedCount += updates.filter((patch) => patch.location_checked).length;
+        unresolvedCount += updates.filter((patch) => !patch.location_checked).length;
         remainingCount += Math.max(0, uncheckedApps.length - updates.length);
       }
     }
@@ -49,22 +57,26 @@ export default async function (req) {
         const byId = await estimateCommutes(base44, pendingPostings, home);
         const updates = pendingPostings.map((item) => {
           const row = byId.get(String(item.id)) || {};
+          const resolved = row.resolved === true;
           const patch = {
             id: item.id,
             work_address: row.work_address || item.work_address || '',
-            location_checked: true
+            location_checked: resolved
           };
-          if (row.drive_distance_km != null) patch.drive_distance_km = row.drive_distance_km;
-          if (row.drive_minutes != null) patch.drive_minutes = row.drive_minutes;
+          if (resolved) {
+            patch.drive_distance_km = row.drive_distance_km;
+            patch.drive_minutes = row.drive_minutes;
+          }
           return patch;
         });
         await base44.entities.JobPosting.bulkUpdate(updates);
-        locatedCount += updates.length;
+        locatedCount += updates.filter((patch) => patch.location_checked).length;
+        unresolvedCount += updates.filter((patch) => !patch.location_checked).length;
         remainingCount += Math.max(0, uncheckedPostings.length - updates.length);
       }
     }
 
-    return Response.json({ located: locatedCount, remaining: remainingCount });
+    return Response.json({ located: locatedCount, unresolved: unresolvedCount, remaining: remainingCount });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

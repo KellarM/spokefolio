@@ -49,6 +49,8 @@ export default {
   'history.segmentsCaptured': '{count} Einträge gespeichert.',
   'history.segmentsFailed': '{count} konnten nicht gespeichert werden. Sie bleiben im Feld.',
   'history.segmentsOverflow': '{count} bleiben im Feld. Tippen Sie erneut auf speichern.',
+  'applications.remote': 'Homeoffice',
+  'applications.distanceUnavailable': 'Entfernung nicht verfügbar',
   'nav.overview': 'Überblick',
   'nav.history': 'Berufshistorie',
   'nav.postings': 'Stellenangebote',

@@ -48,6 +48,8 @@ export default {
   'history.segmentsCaptured': '{count} registros salvos.',
   'history.segmentsFailed': '{count} não puderam ser salvos. Continuam na caixa.',
   'history.segmentsOverflow': '{count} continuam na caixa. Toque em salvar novamente para adicioná-los.',
+  'applications.remote': 'Remoto',
+  'applications.distanceUnavailable': 'Distância indisponível',
   'nav.overview': 'Visão geral',
   'nav.history': 'Histórico profissional',
   'nav.postings': 'Vagas de emprego',

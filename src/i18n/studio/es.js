@@ -48,6 +48,8 @@ export default {
   'history.segmentsCaptured': '{count} entradas guardadas.',
   'history.segmentsFailed': '{count} no se pudieron guardar. Siguen en el cuadro.',
   'history.segmentsOverflow': '{count} más siguen en el cuadro. Pulsa guardar otra vez para añadirlas.',
+  'applications.remote': 'Remoto',
+  'applications.distanceUnavailable': 'Distancia no disponible',
   'nav.overview': 'Resumen',
   'nav.history': 'Historial laboral',
   'nav.postings': 'Ofertas de empleo',

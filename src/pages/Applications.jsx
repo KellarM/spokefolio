@@ -83,9 +83,12 @@ export default function Applications() {
           if (!records.some((item) => !item.location_checked)) break;
           setLocating(true);
           const response = await base44.functions.invoke('locateApplications', { home_address: profile?.home_address || '' });
-          const { remaining } = response.data || {};
+          const { remaining, located } = response.data || {};
           records = await load();
-          if (!remaining) break;
+          // A row with no trustworthy answer stays open for a later visit, so
+          // the loop has to stop on a pass that resolved nothing or it would
+          // keep paying for the same unanswered lookup.
+          if (!remaining || !located) break;
         }
       } catch (error) {
         // The list works without it, and the lookup can run again on the next visit.

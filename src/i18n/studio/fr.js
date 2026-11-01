@@ -49,6 +49,8 @@ export default {
   'history.segmentsCaptured': '{count} entrées enregistrées.',
   'history.segmentsFailed': '{count} n\'ont pas pu être enregistrées. Elles restent dans le champ.',
   'history.segmentsOverflow': '{count} restent dans le champ. Appuyez encore sur enregistrer pour les ajouter.',
+  'applications.remote': 'Télétravail',
+  'applications.distanceUnavailable': 'Distance indisponible',
   'nav.overview': "Aperçu",
   'nav.history': "Parcours professionnel",
   'nav.postings': "Offres d'emploi",

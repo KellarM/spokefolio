@@ -52,6 +52,8 @@ export default {
   'history.segmentsCaptured': '{count} entries captured.',
   'history.segmentsFailed': '{count} could not be captured. They stay in the box.',
   'history.segmentsOverflow': '{count} more stay in the box. Tap capture again to add them.',
+  'applications.remote': 'Remote',
+  'applications.distanceUnavailable': 'Distance unavailable',
   'nav.overview': 'Overview',
   'nav.history': 'Career history',
   'nav.postings': 'Job postings',

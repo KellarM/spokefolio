@@ -48,6 +48,8 @@ export default {
   'history.segmentsCaptured': '{count} voci salvate.',
   'history.segmentsFailed': '{count} non sono state salvate. Restano nel campo.',
   'history.segmentsOverflow': '{count} restano nel campo. Tocca di nuovo salva per aggiungerle.',
+  'applications.remote': 'Da remoto',
+  'applications.distanceUnavailable': 'Distanza non disponibile',
   'nav.overview': 'Panoramica',
   'nav.history': 'Storia lavorativa',
   'nav.postings': 'Offerte di lavoro',
