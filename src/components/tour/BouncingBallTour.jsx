@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
+import { captureIsSaved } from '@/lib/historyCapture';
 import { speak, mascotMuted, setMascotMuted, mascotHidden, setMascotHidden } from '@/lib/speech';
 import { useTour } from '@/lib/TourContext';
 import VoicePicker from '@/components/tour/VoicePicker';
@@ -105,10 +106,12 @@ const parkPosition = () => {
 // posting -> apply -> farewell. The story phase asks real questions with
 // real answers; its sub-steps advance on yes/no choices and real saves.
 const NEXT_STEP = {
-  identity: 'story',
+  identity: 'files',
+  files: 'files_add',
+  files_add: 'story',
+  story: 'story_edits',
   story_edits: 'story_prompts',
-  files: 'posting',
-  files_add: 'posting',
+  story_prompts: 'posting',
   posting: 'apply',
   apply: 'farewell'
 };
@@ -211,7 +214,10 @@ const focusElement = (step, celebrated) => {
 // sees to that), so the order is entries -> postings -> applications.
 const firstJourneyStep = (studioData) => {
   if (!studioData || studioData.entries.length === 0) return 'identity';
+  // Reference files come first now, then the career history that has to be
+  // saved, then the job hunt. Michael's order, Oct 31.
   if (studioData.documents.length === 0) return 'files';
+  if (!studioData.historyComplete) return 'story';
   if (studioData.postings.length === 0) return 'posting';
   return 'apply';
 };
@@ -523,18 +529,25 @@ export default function BouncingBallTour() {
       if (now - fetchedAt.current < 30000) return;
       fetchedAt.current = now;
       try {
-        const [applications, postings, entries, documents] = await Promise.all([
+        const [applications, postings, entries, documents, profiles] = await Promise.all([
           base44.entities.JobApplication.list('-created_date', 100),
           base44.entities.JobPosting.list('-created_date', 100),
           base44.entities.CareerEntry.list('-created_date', 200),
-          base44.entities.SupportingDocument.list('-created_date', 100)
+          base44.entities.SupportingDocument.list('-created_date', 100),
+          base44.entities.ResumeProfile.list('-created_date', 1)
         ]);
+        const profileRecord = Array.isArray(profiles) && profiles.length ? profiles[0] : null;
         if (!cancelled) {
+          // Step 2 is "saved", not "locked": entries can change after a save,
+          // so the mascot asks the same helper the history page asks and never
+          // walks past a capture that needs saving.
+          const historySaved = captureIsSaved(entries, profileRecord);
           setStudioData({
             applications: applications || [],
             postings: postings || [],
             entries: entries || [],
-            documents: documents || []
+            documents: documents || [],
+            historyComplete: historySaved
           });
         }
       } catch {
@@ -878,21 +891,21 @@ export default function BouncingBallTour() {
       tour.tapAdvance(choice === 'yes' ? 'story_edits' : 'story_prompts');
       return;
     }
-    if (step === 'story_prompts') {
-      if (choice === 'yes') {
-        tour.tapAdvance('story');
-        return;
-      }
-      tour.tapAdvance('files');
-      navigate('/documents');
-    }
     if (step === 'files') {
       if (choice === 'yes') {
         tour.tapAdvance('files_add');
         return;
       }
-      // No files to add: straight to the job hunt - reference files are an
-      // enhancement, never a gate.
+      // No files to add: on to the career history, which is the step that
+      // has to be saved before anything downstream can be trusted.
+      tour.tapAdvance('story');
+      navigate('/history');
+    }
+    if (step === 'story_prompts') {
+      if (choice === 'yes') {
+        tour.tapAdvance('story');
+        return;
+      }
       tour.tapAdvance('posting');
       navigate('/postings');
     }

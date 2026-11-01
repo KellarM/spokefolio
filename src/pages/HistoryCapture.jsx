@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Check, FileText, Layers, Loader2, Lock, LockOpen } from 'lucide-react';
+import { Check, FileText, Layers, Loader2, Save } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import useProfile from '@/hooks/useProfile';
+import { captureSignature } from '@/lib/historyCapture';
 import DictationBox from '@/components/history/DictationBox';
 import { useTour } from '@/lib/TourContext';
 import KeywordDetailBuilder from '@/components/history/KeywordDetailBuilder';
@@ -133,6 +134,11 @@ export default function HistoryCapture() {
   const confirmed = entries.filter((entry) => entry.status === 'confirmed' && !entry.hidden);
   const openDrafts = entries.filter((entry) => entry.status !== 'confirmed');
   const historyComplete = !!profile.history_complete;
+  const captureNow = captureSignature(entries, selectedIds);
+  const captureSaved = profile.history_signature || '';
+  // Nothing captured yet is not "saved" - it is the most outstanding state
+  // there is. Only a real capture that matches the last save reads as saved.
+  const needsSaving = captureNow === '' ? true : captureNow !== captureSaved;
   const selectedEntries = entries.filter((entry) => selectedIds.includes(entry.id));
 
   // The story step completes the moment a capture truly lands - a draft
@@ -407,6 +413,8 @@ export default function HistoryCapture() {
       const data = response.data || {};
       await save({
         history_complete: true,
+        history_signature: captureNow,
+        history_saved_at: new Date().toISOString(),
         master_summary: data.master_summary || profile.master_summary || '',
         core_skills: data.core_skills || [],
         target_titles: data.target_titles || [],
@@ -418,11 +426,6 @@ export default function HistoryCapture() {
       reportError(t('history.toastLockFailed'), error);
     }
     setBusy(false);
-  };
-
-  const unlockHistory = async () => {
-    await save({ history_complete: false });
-    toast({ title: t('history.toastUnlockTitle'), description: t('history.toastUnlockDesc') });
   };
 
   // Testing account only: once the entries are gone, this page goes back to a blank slate.
@@ -538,8 +541,8 @@ export default function HistoryCapture() {
     <div className="animate-rise">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
-          <p className="eyebrow">{t('history.stepOne')}</p>
-          <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('history.title')}</h1>
+                    <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('history.title')}</h1>
+                    <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]">{t('steps.two')}</p>
           <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
             {t('history.lede')}
           </p>
@@ -553,25 +556,35 @@ export default function HistoryCapture() {
           </button>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {historyComplete ? (
-            <Button variant="secondary" className="rounded-full" onClick={unlockHistory}>
-              <LockOpen className="mr-2 h-4 w-4" /> {t('history.unlock')}
+          {busy ? (
+            <Button variant="secondary" className="rounded-full" disabled>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {t('history.captureSaving')}
+            </Button>
+          ) : needsSaving ? (
+            <Button
+              className="rounded-full"
+              onClick={lockHistory}
+              disabled={!confirmed.length}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {t('history.captureNeedsSaving')}
             </Button>
           ) : (
-            <Button variant="secondary" className="rounded-full" onClick={lockHistory} disabled={busy || !confirmed.length}>
-              {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lock className="mr-2 h-4 w-4" />}
-              {t('history.historyComplete')}
+            <Button variant="secondary" className="rounded-full" onClick={lockHistory}>
+              <Check className="mr-2 h-4 w-4 text-accent" strokeWidth={2} />
+              {t('history.captureSaved')}
             </Button>
           )}
           <ClearHistoryButton entries={entries.length} disabled={busy || loading} onCleared={clearLocalHistory} />
         </div>
       </header>
 
-      {historyComplete && (
+      {!needsSaving && confirmed.length > 0 && (
         <div className="mt-6 flex items-start gap-3 rounded-2xl border border-accent/25 bg-accent/5 px-5 py-4">
           <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" strokeWidth={2} />
           <p className="text-[13.5px] leading-relaxed text-foreground/90">
-            {t('history.lockedBanner', { count: confirmed.length })}
+            {t('history.savedBanner', { count: confirmed.length })}
           </p>
         </div>
       )}

@@ -215,7 +215,7 @@ export default {
   'profile.deleteFailedTitle': 'Das Profil konnte nicht gelöscht werden',
   'profile.deleteFailedBody': 'Möglicherweise wurde noch nichts gelöscht. Schließe dies und versuche es erneut, oder prüfe, was noch da ist.',
 
-  'history.stepOne': 'Schritt eins',
+  'history.stepOne': 'Schritt 1',
   'history.title': 'Erfasse deine Berufshistorie',
   'history.lede': 'Ein Eintrag nach dem anderen. Ich stelle Rückfragen, die du mit einem Detail beantworten, überspringen oder auslassen kannst.',
   'history.unlock': 'Historie entsperren',
@@ -518,4 +518,13 @@ export default {
   "guide.t1": "Link oder Text einfügen. Jede Jobbörse.",
   "guide.t2": "Wählen Sie die passenden Einträge.",
   "guide.t3": "Erzeugen. Nichts wird von selbst gesendet.",
+  'history.captureNeedsSaving': 'Verlauf muss gespeichert werden',
+  'history.captureSaving': 'Verlauf wird gespeichert',
+  'history.captureSaved': 'Verlauf gespeichert',
+  'history.savedBanner': 'Gespeichert. {count} Einträge erfasst. Dein nächster Lebenslauf baut darauf auf.',
+  'history.stepTwo': 'Schritt 2',
+  'steps.one': 'Schritt 1',
+  'steps.two': 'Schritt 2',
+  'steps.three': 'Schritt 3',
+  'steps.four': 'Schritt 4',
 };

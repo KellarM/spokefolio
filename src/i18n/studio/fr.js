@@ -503,4 +503,13 @@ export default {
   "profile.mascotShowHint": "Désactivé masque complètement la boule, avec sa bulle et sa voix.",
   "profile.mascotVoice": "Laisser la mascotte parler",
   "profile.mascotVoiceHint": "Désactivé garde la boule et sa bulle écrite, mais elle reste muette.",
+  'history.captureNeedsSaving': 'Le parcours doit être enregistré',
+  'history.captureSaving': 'Enregistrement du parcours',
+  'history.captureSaved': 'Parcours enregistré',
+  'history.savedBanner': 'Enregistré. {count} entrées capturées. Votre prochain CV part de là.',
+  'history.stepTwo': 'Étape 2',
+  'steps.one': 'Étape 1',
+  'steps.two': 'Étape 2',
+  'steps.three': 'Étape 3',
+  'steps.four': 'Étape 4',
 };

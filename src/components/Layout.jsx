@@ -18,11 +18,11 @@ function Nav() {
   const isHome = pathname === '/';
 
   const NAV = [
-    { label: t('nav.overview'), to: '/' },
-    { label: t('nav.history'), to: '/history' },
-    { label: t('nav.documents'), to: '/documents' },
-    { label: t('nav.postings'), to: '/postings' },
-    { label: t('nav.applications'), to: '/applications' }
+    { label: t('nav.overview'), to: '/', step: null },
+    { label: t('nav.documents'), to: '/documents', step: 'steps.one' },
+    { label: t('nav.history'), to: '/history', step: 'steps.two' },
+    { label: t('nav.postings'), to: '/postings', step: 'steps.three' },
+    { label: t('nav.applications'), to: '/applications', step: 'steps.four' }
   ];
 
   // The header hides while scrolling down into the page and returns the
@@ -82,7 +82,12 @@ function Nav() {
               to={item.to}
               className={isActive(item.to) ? 'on' : undefined}
             >
-              {item.label}
+              <span>{item.label}</span>
+              {item.step && (
+                <span className="block font-mono text-[9px] uppercase tracking-[0.18em] opacity-55">
+                  {t(item.step)}
+                </span>
+              )}
             </Link>
           ))}
         </nav>

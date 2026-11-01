@@ -224,7 +224,7 @@ export default {
   'profile.deleteFailedBody': 'Nothing may have been erased yet. Close this and try again, or check what remains.',
 
   // Career history.
-  'history.stepOne': 'Step one',
+  'history.stepOne': 'Step 1',
   'history.title': 'Capture your career history',
   'history.lede': 'One entry at a time. I will ask follow-up questions you can accept with a detail, pass on, or skip.',
   'history.unlock': 'Unlock history',
@@ -533,4 +533,13 @@ export default {
   "guide.t1": "Paste the link or the text. Any job board.",
   "guide.t2": "Choose the history entries that answer this posting.",
   "guide.t3": "Generate. Nothing sends on its own. You review, then apply.",
+  'history.captureNeedsSaving': 'History capture needs saving',
+  'history.captureSaving': 'Saving history capture',
+  'history.captureSaved': 'History capture saved',
+  'history.savedBanner': 'Saved. {count} entries captured. Your next resume builds from this.',
+  'history.stepTwo': 'Step 2',
+  'steps.one': 'Step 1',
+  'steps.two': 'Step 2',
+  'steps.three': 'Step 3',
+  'steps.four': 'Step 4',
 };

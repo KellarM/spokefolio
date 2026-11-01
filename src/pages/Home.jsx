@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import useProfile from '@/hooks/useProfile';
+import { captureIsSaved } from '@/lib/historyCapture';
 import { trackAppOpen } from '@/lib/analytics';
 import { useAuth } from '@/lib/AuthContext';
 import StudioHero from '@/components/home/StudioHero';
@@ -44,7 +45,9 @@ export default function Home() {
     trackAppOpen(user?.id);
   }, []);
 
-  const historyComplete = !!profile.history_complete;
+  // Saved, not merely once-saved: if entries changed after the last capture,
+  // the overview says so instead of showing a summary that has moved on.
+  const historyComplete = loading ? !!profile.history_complete : captureIsSaved(entries, profile);
   const confirmed = entries.filter((entry) => entry.status === 'confirmed');
   const draftCount = entries.filter((entry) => entry.status === 'draft').length;
   const busy = loading || loadingProfile;
