@@ -36,7 +36,11 @@ import { trackEvent } from '@/lib/analytics';
 // destinations. On the Overview it sits in the middle of the screen; on any
 // other page it waits in the corner.
 
-const BALL_SIZE = 64;
+// Two sizes, because it lives two lives: the walkthrough companion is 80px,
+// the cornered helper is 56px. Every placement below takes the one it is
+// actually moving, so parking and clamping stay honest at both sizes.
+const BALL_SIZE = 80;
+const HELPER_SIZE = 56;
 const EDGE = 16;
 // Room for the speech bubble above the ball without crowding the header.
 const TOP_FLOOR = 132;
@@ -45,14 +49,14 @@ const TOP_FLOOR = 132;
 // and take the first whose footprint lands on nothing textual.
 const TEXTISH = 'p,h1,h2,h3,h4,h5,h6,span,a,button,label,li,b,strong,em,img,input,textarea,svg,td,th';
 
-const spotIsClear = (left, top) => {
+const spotIsClear = (left, top, size = BALL_SIZE) => {
   const inset = 6;
   const points = [
     [left + inset, top + inset],
-    [left + BALL_SIZE - inset, top + inset],
-    [left + BALL_SIZE / 2, top + BALL_SIZE / 2],
-    [left + inset, top + BALL_SIZE - inset],
-    [left + BALL_SIZE - inset, top + BALL_SIZE - inset]
+    [left + size - inset, top + inset],
+    [left + size / 2, top + size / 2],
+    [left + inset, top + size - inset],
+    [left + size - inset, top + size - inset]
   ];
   return points.every(([x, y]) => pointIsClear(x, y));
 };
@@ -83,25 +87,25 @@ const pointIsClear = (x, y) => {
 // Center first, then the left edge, right edge last - the far right is
 // Michael's least favorite spot (Oct 26). Probed with the caret check, so
 // a spot only counts when nothing textual sits under the ball.
-const parkPosition = () => {
+const parkPosition = (size = BALL_SIZE) => {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const clamp = (left, top) => ({
-    left: Math.max(EDGE, Math.min(left, vw - BALL_SIZE - EDGE)),
-    top: Math.max(TOP_FLOOR, Math.min(top, vh - BALL_SIZE - EDGE))
+    left: Math.max(EDGE, Math.min(left, vw - size - EDGE)),
+    top: Math.max(TOP_FLOOR, Math.min(top, vh - size - EDGE))
   });
   const candidates = [
-    [(vw - BALL_SIZE) / 2, Math.round(vh * 0.2)],
-    [(vw - BALL_SIZE) / 2, Math.round(vh * 0.55)],
+    [(vw - size) / 2, Math.round(vh * 0.2)],
+    [(vw - size) / 2, Math.round(vh * 0.55)],
     [EDGE, Math.round(vh * 0.2)],
     [EDGE, Math.round(vh * 0.35)],
     [EDGE, Math.round(vh * 0.5)],
     [EDGE, Math.round(vh * 0.65)],
-    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.2)],
-    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.35)],
-    [vw - BALL_SIZE - EDGE, Math.round(vh * 0.5)]
+    [vw - size - EDGE, Math.round(vh * 0.2)],
+    [vw - size - EDGE, Math.round(vh * 0.35)],
+    [vw - size - EDGE, Math.round(vh * 0.5)]
   ].map(([left, top]) => clamp(left, top));
-  return candidates.find((spot) => spotIsClear(spot.left, spot.top)) || candidates[0];
+  return candidates.find((spot) => spotIsClear(spot.left, spot.top, size)) || candidates[0];
 };
 
 // The journey: identity -> story (capture -> edits -> prompts -> more?) ->
@@ -302,6 +306,9 @@ export default function BouncingBallTour() {
   // and story steps, centered on the Overview, cornered on every other page.
   const compute = useCallback(() => {
     if (!active && !idle) return;
+    // Which body is on screen: the small helper parks in the corner, the full
+    // companion is centered on the Overview and walks the journey.
+    const helperSize = idle && pathname !== '/' ? HELPER_SIZE : BALL_SIZE;
     // The client's own placement wins: once dragged, the ball stays
     // exactly where they put it until the route changes.
     if (manual) {
@@ -362,7 +369,7 @@ export default function BouncingBallTour() {
       // clear spot the page offers - the ball never covers the copy. The
       // menu opens below the ball and stays reachable (Michael, Oct 23:
       // the corner dropped the dropdown off the bottom of the screen).
-      setPos({ ...parkPosition(), anchored: false });
+      setPos({ ...parkPosition(helperSize), anchored: false });
       setBubbleBelow(false);
       setBubbleShift(false);
       setBubbleSide(false);
@@ -370,14 +377,14 @@ export default function BouncingBallTour() {
     }
     const rect = el.getBoundingClientRect();
     let left = rect.right + 14;
-    let top = rect.top + rect.height / 2 - BALL_SIZE / 2;
-    if (left + BALL_SIZE > window.innerWidth - EDGE) left = rect.left - BALL_SIZE - 14;
-    left = Math.max(EDGE, Math.min(left, window.innerWidth - BALL_SIZE - EDGE));
-    top = Math.max(TOP_FLOOR, Math.min(top, window.innerHeight - BALL_SIZE - EDGE));
-    if (!spotIsClear(left, top)) {
+    let top = rect.top + rect.height / 2 - helperSize / 2;
+    if (left + helperSize > window.innerWidth - EDGE) left = rect.left - helperSize - 14;
+    left = Math.max(EDGE, Math.min(left, window.innerWidth - helperSize - EDGE));
+    top = Math.max(TOP_FLOOR, Math.min(top, window.innerHeight - helperSize - EDGE));
+    if (!spotIsClear(left, top, helperSize)) {
       // Never on top of the words: a collision at the anchored spot
       // steps aside to a clear position instead.
-      setPos({ ...parkPosition(), anchored: false });
+      setPos({ ...parkPosition(helperSize), anchored: false });
       setBubbleBelow(false);
       setBubbleShift(false);
       setBubbleSide(false);
@@ -717,6 +724,16 @@ export default function BouncingBallTour() {
     }
   };
 
+  // The body keeps time while a line is being said. Two and a half seconds
+  // covers the short lines; a long one just settles first.
+  const [talking, setTalking] = useState(false);
+  useEffect(() => {
+    if (!bubbleText) return undefined;
+    setTalking(true);
+    const timer = setTimeout(() => setTalking(false), 2600);
+    return () => clearTimeout(timer);
+  }, [bubbleText]);
+
   // A line is spoken exactly once per session. The bubble text flips to
   // '' and back whenever the menu opens, the retreat ends, or the anchor
   // probe re-settles - no flip ever re-voices a line already said. The
@@ -789,7 +806,7 @@ export default function BouncingBallTour() {
     return (
       <div
         ref={wrapRef}
-        className={`tour-ball-wrap helper ${nudge ? 'has-nudge' : ''} ${centered ? 'center' : ''}`}
+        className={`tour-ball-wrap helper ${nudge ? 'has-nudge' : ''} ${centered ? 'center' : ''} ${talking ? 'talking' : ''}`}
         style={{ top: pos.top, left: pos.left }}
       >
         <div key={hopKey} className="tour-move tour-hop">
@@ -967,7 +984,7 @@ export default function BouncingBallTour() {
   if (hidden) return null;
 
   return (
-    <div className="tour-ball-wrap" style={{ top: pos.top, left: pos.left }}>
+    <div className={`tour-ball-wrap ${talking ? 'talking' : ''}`} style={{ top: pos.top, left: pos.left }}>
       <div key={hopKey} className={`tour-move ${moveClass}`}>
         <span className="tour-shadow" aria-hidden="true" />
         <button

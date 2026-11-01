@@ -2049,8 +2049,8 @@ select option {
 
 .tour-move {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
 }
 
 .tour-hop {
@@ -2096,19 +2096,21 @@ select option {
   position: absolute;
   inset: 0;
   display: block;
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   border-radius: 0;
   border: 0;
   padding: 0;
   cursor: pointer;
   background: none;
-  animation: tourIdle 3.2s ease-in-out infinite;
+  /* Idle is a heartbeat, not a hover: a quick eager bob with a lean, so the
+     companion looks like it is waiting to go somewhere. */
+  animation: tourIdle 1.9s cubic-bezier(0.33, 0, 0.35, 1) infinite;
 }
 
 /* The face: two eyes that blink, a small smile. This is what makes it a
    companion rather than a glow. All sizes in percent so one set of rules
-   serves the 52px walkthrough ball and the 40px helper alike. */
+   serves the 80px walkthrough ball and the 56px helper alike. */
 .tour-face {
   position: absolute;
   inset: 0;
@@ -2140,8 +2142,42 @@ select option {
 }
 
 @keyframes tourIdle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1, 1); }
+  35% { transform: translateY(-7px) rotate(-1.6deg) scale(0.985, 1.015); }
+  55% { transform: translateY(-8px) rotate(1.2deg) scale(0.99, 1.01); }
+  80% { transform: translateY(0) rotate(-0.4deg) scale(1.015, 0.985); }
+}
+
+/* Spontaneous life. Most of the cycle is still, then it waggles to itself -
+   the difference between a sprite that animates and one that is waiting. */
+.tour-face {
+  animation: mascotWaggle 13s ease-in-out infinite;
+}
+
+@keyframes mascotWaggle {
+  0%, 58%, 100% { transform: rotate(0deg) scale(1); }
+  63% { transform: rotate(-7deg) scale(1.02); }
+  67% { transform: rotate(6deg) scale(0.99); }
+  71% { transform: rotate(-4deg) scale(1.01); }
+  75% { transform: rotate(0deg) scale(1); }
+  80% { transform: translateY(-5px) rotate(0deg) scale(0.98, 1.02); }
+  84% { transform: translateY(0) rotate(0deg) scale(1.02, 0.98); }
+  88%, 100% { transform: none; }
+}
+
+/* While it is saying something the body keeps time with the words. */
+.tour-ball-wrap.talking .tour-face {
+  animation: mascotTalk 0.44s ease-in-out infinite;
+}
+
+@keyframes mascotTalk {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  50% { transform: translateY(-3px) scale(1.03, 0.97); }
+}
+
+/* Eager under the cursor: it bobs faster, like it wants the tap. */
+.tour-ball:hover {
+  animation-duration: 1s;
 }
 
 .tour-ball:focus-visible {
@@ -2152,8 +2188,8 @@ select option {
 .tour-shadow {
   position: absolute;
   left: 50%;
-  bottom: -14px;
-  width: 46px;
+  bottom: -15px;
+  width: 58px;
   height: 11px;
   transform: translateX(-50%);
   border-radius: 50%;
@@ -2273,24 +2309,25 @@ select option {
   .tour-face img { animation: none; }
   .tour-shadow { animation: none; opacity: 0.4; }
   .tour-hop, .tour-celebrate, .tour-farewell { animation: none; }
+  .tour-ball, .tour-face, .tour-ball-wrap.talking .tour-face { animation: none; }
 }
 
 /* ---- The helper: the ball's quieter second life ----
    Smaller, calmer, cornered. It glows a touch brighter only when it
    actually has something to say. */
 .tour-ball-wrap.helper .tour-move {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
 }
 
 .tour-ball-wrap.helper .tour-ball {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
 }
 
 .tour-ball-wrap.helper .tour-shadow {
-  width: 32px;
-  bottom: -11px;
+  width: 40px;
+  bottom: -12px;
 }
 
 .tour-ball-wrap.helper.has-nudge .tour-ball {
@@ -2302,18 +2339,18 @@ select option {
    the thing the page is asking you to notice. In the corner of every
    other page it stays small. */
 .tour-ball-wrap.center .tour-move {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
 }
 
 .tour-ball-wrap.center .tour-ball {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
 }
 
 .tour-ball-wrap.center .tour-shadow {
-  width: 42px;
-  bottom: -14px;
+  width: 54px;
+  bottom: -15px;
 }
 
 /* The menu the ball opens: the nudge it holds (if any), the "First time"
