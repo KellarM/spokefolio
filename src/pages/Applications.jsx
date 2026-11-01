@@ -9,6 +9,7 @@ import SalaryPill from '@/components/applications/SalaryPill';
 import JobLocation from '@/components/applications/JobLocation';
 import DeleteApplicationButton from '@/components/applications/DeleteApplicationButton';
 import InstructionPopover from '@/components/guide/InstructionPopover';
+import GuidePrompt from '@/components/guide/GuidePrompt';
 import { guideLabel } from '@/content/guideLabels';
 import { applicationsGuide } from '@/content/applicationsGuide';
 import ActivityCalendar from '@/components/applications/ActivityCalendar';

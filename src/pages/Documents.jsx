@@ -7,6 +7,7 @@ import DocumentRow from '@/components/documents/DocumentRow';
 import EvidenceNote from '@/components/EvidenceNote';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import InstructionPopover from '@/components/guide/InstructionPopover';
+import GuidePrompt from '@/components/guide/GuidePrompt';
 import { guideLabel } from '@/content/guideLabels';
 import { referenceFilesGuide } from '@/content/referenceFilesGuide';
 

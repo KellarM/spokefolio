@@ -11,6 +11,7 @@ import JobSearchResults from '@/components/postings/JobSearchResults';
 import JobBoardDirectory from '@/components/postings/JobBoardDirectory';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import InstructionPopover from '@/components/guide/InstructionPopover';
+import GuidePrompt from '@/components/guide/GuidePrompt';
 import { guideLabel } from '@/content/guideLabels';
 import { jobPostingsGuide } from '@/content/jobPostingsGuide';
 import useProfile from '@/hooks/useProfile';
