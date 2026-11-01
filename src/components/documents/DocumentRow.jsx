@@ -12,23 +12,25 @@ const TYPES = {
   other: 'documents.typeOther'
 };
 
+// These sit on gold now, so each one carries its own dark ink and a hairline
+// ring: the theme's muted grey measures 2.8:1 on gold and would disappear.
 function StatusChip({ status, t }) {
   if (status === 'processing') {
     return (
-      <span className="animate-soft-pulse flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-[11px] text-muted-foreground">
+      <span className="animate-soft-pulse flex items-center gap-1.5 rounded-full bg-black/10 px-2.5 py-1 text-[11px] font-semibold text-[#33280A] ring-1 ring-black/15">
         <Loader2 className="h-3 w-3 animate-spin" /> {t('documents.reading')}
       </span>
     );
   }
   if (status === 'unreadable') {
     return (
-      <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] text-amber-800">
+      <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-950 ring-1 ring-black/20">
         {t('documents.keptAsReference')}
       </span>
     );
   }
   return (
-    <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] text-emerald-800">
+    <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-950 ring-1 ring-black/15">
       {t('documents.read')}
     </span>
   );
@@ -81,25 +83,27 @@ export default function DocumentRow({ doc, onDelete }) {
   };
 
   return (
-    <li className="overflow-hidden rounded-2xl border border-border/70 bg-card">
-      <div className="flex items-stretch">
+    <li className="overflow-hidden rounded-2xl border border-black/25 bg-card shadow-sm">
+      <div
+        className={`flex items-stretch bg-[#FFD700] ${open ? 'border-b border-black/25' : ''}`}
+      >
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
           aria-expanded={open}
-          className="flex min-w-0 flex-1 items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-secondary/30"
+          className="flex min-w-0 flex-1 items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0A0A0A]"
         >
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10.5px] uppercase tracking-[0.1em] text-muted-foreground">
+              <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#33280A] ring-1 ring-black/15">
                 {t(TYPES[doc.doc_type] || 'documents.typeOther')}
               </span>
               <StatusChip status={doc.status} t={t} />
             </div>
-            <p className="mt-1.5 truncate font-heading text-[15.5px]">{doc.name}</p>
+            <p className="mt-1.5 truncate font-heading text-[15.5px] font-bold text-[#0A0A0A]">{doc.name}</p>
           </div>
           <ChevronDown
-            className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
+            className={`h-4 w-4 shrink-0 text-[#0A0A0A]/70 transition-transform ${open ? 'rotate-180' : ''}`}
             aria-hidden="true"
           />
         </button>
@@ -111,7 +115,7 @@ export default function DocumentRow({ doc, onDelete }) {
           disabled={opening}
           title={t('documents.open')}
           aria-label={`${t('documents.open')}: ${doc.name}`}
-          className="my-2 mr-3 grid w-10 shrink-0 place-items-center rounded-full border border-border/70 text-muted-foreground transition-colors hover:border-[#D4AF37]/60 hover:text-[#D4AF37] disabled:opacity-60"
+          className="my-2 mr-3 grid w-10 shrink-0 place-items-center rounded-full border border-black/30 text-[#0A0A0A]/80 transition-colors hover:bg-black/10 hover:text-[#0A0A0A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A0A0A] disabled:opacity-50"
         >
           {opening ? (
             <Loader2 className="h-4 w-4 animate-spin" />
