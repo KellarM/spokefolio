@@ -641,4 +641,13 @@ export default {
   'interview.drillCountMany': '{count} drills so far',
   'interview.practiceLink': 'Practice interview with this company',
   'interview.backToApplication': 'Back to the application',
+  'interview.startOver': 'Start over',
+  'interview.startOverTitle': 'Start this drill over?',
+  'interview.startOverBody': 'This clears the drill in progress and every answer in it, so the room opens clean. Finished drills and their readiness reports stay on the application.',
+  'interview.startOverCancel': 'Keep going',
+  'interview.startOverConfirm': 'Clear and start again',
+  'interview.startOverDone': 'The drill is cleared. Pick practice or answers to begin again.',
+  'interview.startOverFailed': 'That drill could not be cleared. Please try again.',
+  'interview.newApplication': 'New application',
+  'interview.startOverKeeps': '{count} finished drill(s) kept',
 };

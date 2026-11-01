@@ -611,4 +611,13 @@ export default {
   'interview.drillCountMany': '{count} exercices à ce jour',
   'interview.practiceLink': 'Faire un entretien avec cette entreprise',
   'interview.backToApplication': 'Retour à la candidature',
+  'interview.startOver': 'Recommencer',
+  'interview.startOverTitle': 'Recommencer cet exercice?',
+  'interview.startOverBody': 'Cela efface l’exercice en cours et toutes ses réponses, pour repartir sur une salle propre. Les exercices terminés et leurs bilans restent sur la candidature.',
+  'interview.startOverCancel': 'Continuer',
+  'interview.startOverConfirm': 'Effacer et recommencer',
+  'interview.startOverDone': 'L’exercice est effacé. Choisissez entraînement ou réponses pour recommencer.',
+  'interview.startOverFailed': 'Cet exercice n’a pas pu être effacé. Veuillez réessayer.',
+  'interview.newApplication': 'Nouvelle candidature',
+  'interview.startOverKeeps': '{count} exercice(s) terminé(s) conservé(s)',
 };

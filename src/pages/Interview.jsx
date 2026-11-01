@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Building2, Loader2, RefreshCw } from 'lucide-react';
+import { Building2, Loader2, RefreshCw, RotateCcw, UserPlus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import { useTour } from '@/lib/TourContext';
@@ -8,6 +8,18 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InstructionPopover from '@/components/guide/InstructionPopover';
 import InterviewPanel from '@/components/applications/InterviewPanel';
+import { useToast } from '@/components/ui/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog';
 import StatusBadge from '@/components/applications/StatusBadge';
 import { interviewGuide } from '@/content/interviewGuide';
 import { guideLabel } from '@/content/guideLabels';
@@ -32,6 +44,10 @@ export default function Interview() {
   const [scanning, setScanning] = useState(false);
   const [scanFailed, setScanFailed] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
+  // The panel keeps its own answer text and voice state. Bumping this remounts it,
+  // which is what "start over" and "new application" both need.
+  const [attempt, setAttempt] = useState(0);
+  const { toast } = useToast();
 
   useEffect(() => {
     let alive = true;
@@ -96,6 +112,38 @@ export default function Interview() {
   };
 
   const drills = Array.isArray(selected?.mock_interviews) ? selected.mock_interviews.length : 0;
+  const activeDrill = Array.isArray(selected?.mock_interviews)
+    ? selected.mock_interviews.find((session) => session.status === 'active') || null
+    : null;
+  const finishedDrills = Array.isArray(selected?.mock_interviews)
+    ? selected.mock_interviews.filter((session) => session.status === 'finished').length
+    : 0;
+
+  // Start again: the drill in progress is discarded so the room opens clean. Finished
+  // drills and their readiness reports are not touched - those are the record of work
+  // already done, and they have their own delete control in the list.
+  const startOver = async () => {
+    if (!selected || !activeDrill) return;
+    const remaining = selected.mock_interviews.filter((session) => session.id !== activeDrill.id);
+    try {
+      await base44.entities.JobApplication.update(selected.id, { mock_interviews: remaining });
+      patch(selected.id, { mock_interviews: remaining });
+      setAttempt((n) => n + 1);
+      toast({ title: t('interview.startOverDone') });
+    } catch (error) {
+      toast({ title: t('interview.startOverFailed'), variant: 'destructive' });
+    }
+  };
+
+  // A different employer: clear the choice, drop the panel's state, and put the cursor
+  // back on the picker so the next company is one keystroke away.
+  const newApplication = () => {
+    setSelectedId('');
+    setSearchParams({}, { replace: true });
+    setScanFailed(false);
+    setAttempt((n) => n + 1);
+    requestAnimationFrame(() => document.getElementById('interview-company')?.focus());
+  };
   const drillLabel = drills === 1 ? t('interview.drillCountOne') : t('interview.drillCountMany', { count: drills });
 
   return (
@@ -166,6 +214,37 @@ export default function Interview() {
                 </Link>
               </div>
 
+              {/* Two ways out of a room: wipe this drill and begin again, or move to a
+                  different employer entirely. The second was always possible from the
+                  picker above, but nothing said so once a company was chosen. */}
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {activeDrill && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="secondary" size="sm" className="rounded-full">
+                        <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> {t('interview.startOver')}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{t('interview.startOverTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('interview.startOverBody')}</AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>{t('interview.startOverCancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={startOver}>{t('interview.startOverConfirm')}</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+                <Button variant="ghost" size="sm" className="rounded-full" onClick={newApplication}>
+                  <UserPlus className="mr-1.5 h-3.5 w-3.5" /> {t('interview.newApplication')}
+                </Button>
+                {finishedDrills > 0 && (
+                  <span className="text-[12.5px] text-muted-foreground">{t('interview.startOverKeeps', { count: finishedDrills })}</span>
+                )}
+              </div>
+
               {scanning && (
                 <p className="mt-3 flex items-center gap-2 text-[12.5px] text-muted-foreground">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('interview.scanning', { company: selected.company || '' })}
@@ -187,6 +266,7 @@ export default function Interview() {
 
               <div className="mt-5">
                 <InterviewPanel
+                  key={`${selected.id}:${attempt}`}
                   application={selected}
                   onApplicationUpdate={(changes) => patch(selected.id, changes)}
                   onDrillFinished={() => tour.announce('drill_done')}

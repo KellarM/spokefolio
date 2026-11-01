@@ -589,4 +589,13 @@ export default {
   'interview.drillCountMany': '{count} prove finora',
   'interview.practiceLink': 'Prova il colloquio con questa azienda',
   'interview.backToApplication': 'Torna alla candidatura',
+  'interview.startOver': 'Ricomincia',
+  'interview.startOverTitle': 'Ricomincia questa prova?',
+  'interview.startOverBody': 'Cancella la prova in corso e tutte le sue risposte, per ricominciare con la stanza pulita. Le prove concluse e i loro bilanci restano sulla candidatura.',
+  'interview.startOverCancel': 'Continua',
+  'interview.startOverConfirm': 'Cancella e ricomincia',
+  'interview.startOverDone': 'La prova è cancellata. Scelga esercizio o risposte per ricominciare.',
+  'interview.startOverFailed': 'Non è stato possibile cancellare quella prova. Riprovi.',
+  'interview.newApplication': 'Nuova candidatura',
+  'interview.startOverKeeps': '{count} prova(e) conclusa(e) conservata(e)',
 };

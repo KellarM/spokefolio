@@ -589,4 +589,13 @@ export default {
   'interview.drillCountMany': '{count} ensaios até agora',
   'interview.practiceLink': 'Praticar a entrevista com esta empresa',
   'interview.backToApplication': 'Voltar à candidatura',
+  'interview.startOver': 'Começar de novo',
+  'interview.startOverTitle': 'Começar de novo este ensaio?',
+  'interview.startOverBody': 'Isto apaga o ensaio em curso e todas as suas respostas, para começar com a sala limpa. Os ensaios terminados e os seus relatórios ficam na candidatura.',
+  'interview.startOverCancel': 'Continuar',
+  'interview.startOverConfirm': 'Apagar e começar de novo',
+  'interview.startOverDone': 'O ensaio foi apagado. Escolha prática ou respostas para começar de novo.',
+  'interview.startOverFailed': 'Não foi possível apagar esse ensaio. Tente novamente.',
+  'interview.newApplication': 'Nova candidatura',
+  'interview.startOverKeeps': '{count} ensaio(s) terminado(s) guardado(s)',
 };

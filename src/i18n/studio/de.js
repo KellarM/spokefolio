@@ -626,4 +626,13 @@ export default {
   'interview.drillCountMany': '{count} Übungen bisher',
   'interview.practiceLink': 'Gespräch mit diesem Unternehmen üben',
   'interview.backToApplication': 'Zurück zur Bewerbung',
+  'interview.startOver': 'Neu beginnen',
+  'interview.startOverTitle': 'Diese Übung neu beginnen?',
+  'interview.startOverBody': 'Damit werden die laufende Übung und alle Antworten darin gelöscht, damit der Raum sauber beginnt. Abgeschlossene Übungen und ihre Auswertungen bleiben an der Bewerbung.',
+  'interview.startOverCancel': 'Weitermachen',
+  'interview.startOverConfirm': 'Löschen und neu beginnen',
+  'interview.startOverDone': 'Die Übung ist gelöscht. Wählen Sie Üben oder Antworten, um neu zu beginnen.',
+  'interview.startOverFailed': 'Diese Übung konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.',
+  'interview.newApplication': 'Neue Bewerbung',
+  'interview.startOverKeeps': '{count} abgeschlossene Übung(en) bleiben erhalten',
 };

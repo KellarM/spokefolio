@@ -589,4 +589,13 @@ export default {
   'interview.drillCountMany': '{count} ensayos hasta ahora',
   'interview.practiceLink': 'Practicar la entrevista con esta empresa',
   'interview.backToApplication': 'Volver a la candidatura',
+  'interview.startOver': 'Empezar de nuevo',
+  'interview.startOverTitle': '¿Empezar de nuevo este ensayo?',
+  'interview.startOverBody': 'Esto borra el ensayo en curso y todas sus respuestas, para empezar con la sala limpia. Los ensayos terminados y sus informes se quedan en la candidatura.',
+  'interview.startOverCancel': 'Seguir',
+  'interview.startOverConfirm': 'Borrar y empezar de nuevo',
+  'interview.startOverDone': 'El ensayo está borrado. Elija práctica o respuestas para empezar de nuevo.',
+  'interview.startOverFailed': 'No se pudo borrar ese ensayo. Inténtelo de nuevo.',
+  'interview.newApplication': 'Nueva candidatura',
+  'interview.startOverKeeps': 'Se conservan {count} ensayo(s) terminado(s)',
 };
