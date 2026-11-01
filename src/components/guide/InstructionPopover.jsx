@@ -65,18 +65,32 @@ export default function InstructionPopover({
           id={panelId}
           role="dialog"
           aria-label={title || 'How this works'}
-          className={`absolute top-[30px] z-50 max-w-[92vw] rounded-xl border border-[#D4AF37]/30 bg-[#0B0F17] p-4 text-left shadow-[0_18px_50px_rgba(0,0,0,0.55)] ${
-            sections.length ? 'max-h-[70vh] w-[440px] overflow-y-auto pr-3' : 'w-[320px]'
+          className={`absolute top-[30px] z-50 max-w-[92vw] rounded-xl border border-[#D4AF37]/70 bg-[#0B0F17] text-left shadow-[0_0_28px_-10px_rgba(212,175,55,0.55),0_24px_60px_rgba(0,0,0,0.65)] ${
+            sections.length
+              ? 'max-h-[74vh] w-[520px] max-w-[calc(100vw-2rem)] overflow-y-auto p-5'
+              : 'w-[320px] p-4'
           } ${align === 'end' ? 'right-0' : 'left-0'}`}
         >
           {title && (
-            <p className="font-heading text-[14px] leading-snug text-[#F9FAFB]">{title}</p>
+            <p
+              className={`font-heading leading-snug text-[#F9FAFB] ${
+                sections.length ? 'text-[19px]' : 'text-[14px]'
+              }`}
+            >
+              {title}
+            </p>
           )}
           {intro && (
-            <p className="mt-1 font-body text-[12.5px] leading-relaxed text-[#F9FAFB]/60">{intro}</p>
+            <p
+              className={`mt-1.5 font-body leading-relaxed text-[#A0AAB8] ${
+                sections.length ? 'text-[13px] italic' : 'text-[12.5px]'
+              }`}
+            >
+              {intro}
+            </p>
           )}
           {sections.length > 0 && (
-            <div className="mt-3 space-y-3.5">
+            <div className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2">
               {sections.map((section) => (
                 <div key={section.heading}>
                   <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#D4AF37]/85">
@@ -86,7 +100,7 @@ export default function InstructionPopover({
                     {section.items.map((item) => (
                       <li key={item} className="flex gap-2">
                         <span aria-hidden="true" className="mt-[7px] h-[3px] w-[3px] shrink-0 rounded-full bg-[#F9FAFB]/45" />
-                        <span className="font-body text-[12.5px] leading-relaxed text-[#F9FAFB]/85">{item}</span>
+                        <span className="font-body text-[12.5px] leading-relaxed text-[#E4E1D8]">{item}</span>
                       </li>
                     ))}
                   </ul>
