@@ -51,6 +51,7 @@ export default {
   'history.segmentsOverflow': '{count} bleiben im Feld. Tippen Sie erneut auf speichern.',
   'applications.remote': 'Homeoffice',
   'applications.distanceUnavailable': 'Entfernung nicht verfügbar',
+  'applications.openInMaps': '{address} in Google Maps öffnen',
   'nav.overview': 'Überblick',
   'nav.history': 'Berufshistorie',
   'nav.postings': 'Stellenangebote',

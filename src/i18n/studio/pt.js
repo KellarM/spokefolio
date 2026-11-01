@@ -50,6 +50,7 @@ export default {
   'history.segmentsOverflow': '{count} continuam na caixa. Toque em salvar novamente para adicioná-los.',
   'applications.remote': 'Remoto',
   'applications.distanceUnavailable': 'Distância indisponível',
+  'applications.openInMaps': 'Abrir {address} no Google Maps',
   'nav.overview': 'Visão geral',
   'nav.history': 'Histórico profissional',
   'nav.postings': 'Vagas de emprego',

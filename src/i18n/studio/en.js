@@ -54,6 +54,7 @@ export default {
   'history.segmentsOverflow': '{count} more stay in the box. Tap capture again to add them.',
   'applications.remote': 'Remote',
   'applications.distanceUnavailable': 'Distance unavailable',
+  'applications.openInMaps': 'Open {address} in Google Maps',
   'nav.overview': 'Overview',
   'nav.history': 'Career history',
   'nav.postings': 'Job postings',

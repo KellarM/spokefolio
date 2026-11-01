@@ -50,6 +50,7 @@ export default {
   'history.segmentsOverflow': '{count} restano nel campo. Tocca di nuovo salva per aggiungerle.',
   'applications.remote': 'Da remoto',
   'applications.distanceUnavailable': 'Distanza non disponibile',
+  'applications.openInMaps': 'Apri {address} in Google Maps',
   'nav.overview': 'Panoramica',
   'nav.history': 'Storia lavorativa',
   'nav.postings': 'Offerte di lavoro',

@@ -51,6 +51,7 @@ export default {
   'history.segmentsOverflow': '{count} restent dans le champ. Appuyez encore sur enregistrer pour les ajouter.',
   'applications.remote': 'Télétravail',
   'applications.distanceUnavailable': 'Distance indisponible',
+  'applications.openInMaps': 'Ouvrir {address} dans Google Maps',
   'nav.overview': "Aperçu",
   'nav.history': "Parcours professionnel",
   'nav.postings': "Offres d'emploi",
