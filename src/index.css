@@ -2000,8 +2000,8 @@ select option {
 
 .tour-move {
   position: relative;
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 64px;
 }
 
 .tour-hop {
@@ -2047,14 +2047,14 @@ select option {
   position: absolute;
   inset: 0;
   display: block;
-  width: 52px;
-  height: 52px;
-  border-radius: 9999px;
+  width: 64px;
+  height: 64px;
+  border-radius: 0;
   border: 0;
   padding: 0;
   cursor: pointer;
-  background: radial-gradient(circle at 32% 28%, #FFF6D8 0%, #F5D06B 24%, #D4AF37 58%, #8C6D1F 100%);
-  animation: tourBreathe 2.4s ease-in-out infinite, tourIdle 3.2s ease-in-out infinite;
+  background: none;
+  animation: tourIdle 3.2s ease-in-out infinite;
 }
 
 /* The face: two eyes that blink, a small smile. This is what makes it a
@@ -2066,24 +2066,28 @@ select option {
   pointer-events: none;
 }
 
-/* The face: big white eyes, black pupils, fanned lashes - drawn as one
-   SVG so it stays crisp at every size, hero ball included. */
-.tour-face svg {
+/* The mascot: a monitor in a gold C, presented on white gloves. It sits in
+   the box and breathes with a drop shadow that follows its shape, so the
+   glow hugs the silhouette rather than a rectangle around it. */
+.tour-face img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 6px rgba(212, 175, 55, 0.3));
+  animation: mascotBreathe 2.6s ease-in-out infinite;
 }
 
-.tour-face .tour-eyes {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: tourBlink 4.6s ease-in-out infinite;
-}
-
-@keyframes tourBlink {
-  0%, 91%, 100% { transform: scaleY(1); }
-  94%, 96% { transform: scaleY(0.1); }
+@keyframes mascotBreathe {
+  0%, 100% {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 6px rgba(212, 175, 55, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 18px rgba(212, 175, 55, 0.6));
+  }
 }
 
 @keyframes tourIdle {
@@ -2096,41 +2100,11 @@ select option {
   outline-offset: 3px;
 }
 
-.tour-ball::after {
-  content: '';
-  position: absolute;
-  top: 9px;
-  left: 12px;
-  width: 13px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
-  filter: blur(1px);
-  transform: rotate(-18deg);
-}
-
-@keyframes tourBreathe {
-  0%, 100% {
-    box-shadow:
-      0 0 0 1px rgba(212, 175, 55, 0.4),
-      0 0 16px rgba(212, 175, 55, 0.28),
-      inset -4px -6px 10px rgba(120, 84, 15, 0.4),
-      inset 3px 4px 8px rgba(255, 246, 216, 0.55);
-  }
-  50% {
-    box-shadow:
-      0 0 0 1px rgba(212, 175, 55, 0.55),
-      0 0 34px rgba(212, 175, 55, 0.6),
-      inset -4px -6px 10px rgba(120, 84, 15, 0.4),
-      inset 3px 4px 8px rgba(255, 246, 216, 0.55);
-  }
-}
-
 .tour-shadow {
   position: absolute;
   left: 50%;
   bottom: -14px;
-  width: 42px;
+  width: 46px;
   height: 11px;
   transform: translateX(-50%);
   border-radius: 50%;
@@ -2246,8 +2220,8 @@ select option {
 
 @media (prefers-reduced-motion: reduce) {
   .tour-ball-wrap { transition: none; }
-  .tour-ball { animation: tourBreathe 2.4s ease-in-out infinite; }
-  .tour-eyes { animation: none; }
+  .tour-ball { animation: none; }
+  .tour-face img { animation: none; }
   .tour-shadow { animation: none; opacity: 0.4; }
   .tour-hop, .tour-celebrate, .tour-farewell { animation: none; }
 }
@@ -2256,14 +2230,13 @@ select option {
    Smaller, calmer, cornered. It glows a touch brighter only when it
    actually has something to say. */
 .tour-ball-wrap.helper .tour-move {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
 }
 
 .tour-ball-wrap.helper .tour-ball {
-  width: 40px;
-  height: 40px;
-  animation-duration: 3.4s;
+  width: 44px;
+  height: 44px;
 }
 
 .tour-ball-wrap.helper .tour-shadow {
@@ -2280,13 +2253,13 @@ select option {
    the thing the page is asking you to notice. In the corner of every
    other page it stays small. */
 .tour-ball-wrap.center .tour-move {
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 64px;
 }
 
 .tour-ball-wrap.center .tour-ball {
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 64px;
 }
 
 .tour-ball-wrap.center .tour-shadow {

@@ -16,6 +16,7 @@ import { base44 } from '@/api/base44Client';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import { captureIsSaved } from '@/lib/historyCapture';
 import { speak, mascotMuted, setMascotMuted, mascotHidden, setMascotHidden } from '@/lib/speech';
+import MASCOT from '@/assets/spokefolio-mascot.png';
 import { useTour } from '@/lib/TourContext';
 import VoicePicker from '@/components/tour/VoicePicker';
 import { computeNudge, dismissNudge, markNudgeShown, markNudgeTapped } from '@/lib/nudges';
@@ -34,7 +35,7 @@ import { trackEvent } from '@/lib/analytics';
 // destinations. On the Overview it sits in the middle of the screen; on any
 // other page it waits in the corner.
 
-const BALL_SIZE = 52;
+const BALL_SIZE = 64;
 const EDGE = 16;
 // Room for the speech bubble above the ball without crowding the header.
 const TOP_FLOOR = 132;
@@ -786,24 +787,8 @@ export default function BouncingBallTour() {
             aria-expanded={menuOpen}
           >
             <span className="tour-face" aria-hidden="true">
-              <svg viewBox="0 0 64 64" aria-hidden="true">
-                <g className="tour-eyes">
-                  <ellipse cx="23" cy="27" rx="9.5" ry="11" fill="#ffffff" />
-                  <ellipse cx="41" cy="27" rx="9.5" ry="11" fill="#ffffff" />
-                  <circle cx="24.5" cy="29" r="3.4" fill="#1a1408" />
-                  <circle cx="39.5" cy="29" r="3.4" fill="#1a1408" />
-                  <g stroke="#1a1408" strokeWidth="1.7" strokeLinecap="round">
-                    <line x1="23" y1="15.5" x2="23" y2="11" />
-                    <line x1="17.5" y1="18" x2="14.5" y2="15" />
-                    <line x1="28.5" y1="18" x2="31.5" y2="15" />
-                    <line x1="41" y1="15.5" x2="41" y2="11" />
-                    <line x1="46.5" y1="18" x2="49.5" y2="15" />
-                    <line x1="35.5" y1="18" x2="32.5" y2="15" />
-                  </g>
-                </g>
-                <path d="M 24 42 Q 32 49 40 42" fill="none" stroke="#1a1408" strokeWidth="2.6" strokeLinecap="round" />
-              </svg>
-            </span>
+            <img src={MASCOT} alt="" draggable="false" />
+          </span>
           </button>
         </div>
         {pos.anchored && idleKey && !menuOpen && (
@@ -977,23 +962,7 @@ export default function BouncingBallTour() {
           aria-label={t(captionKey)}
         >
           <span className="tour-face" aria-hidden="true">
-            <svg viewBox="0 0 64 64" aria-hidden="true">
-              <g className="tour-eyes">
-                <ellipse cx="23" cy="27" rx="9.5" ry="11" fill="#ffffff" />
-                <ellipse cx="41" cy="27" rx="9.5" ry="11" fill="#ffffff" />
-                <circle cx="24.5" cy="29" r="3.4" fill="#1a1408" />
-                <circle cx="39.5" cy="29" r="3.4" fill="#1a1408" />
-                <g stroke="#1a1408" strokeWidth="1.7" strokeLinecap="round">
-                  <line x1="23" y1="15.5" x2="23" y2="11" />
-                  <line x1="17.5" y1="18" x2="14.5" y2="15" />
-                  <line x1="28.5" y1="18" x2="31.5" y2="15" />
-                  <line x1="41" y1="15.5" x2="41" y2="11" />
-                  <line x1="46.5" y1="18" x2="49.5" y2="15" />
-                  <line x1="35.5" y1="18" x2="32.5" y2="15" />
-                </g>
-              </g>
-              <path d="M 24 42 Q 32 49 40 42" fill="none" stroke="#1a1408" strokeWidth="2.6" strokeLinecap="round" />
-            </svg>
+            <img src={MASCOT} alt="" draggable="false" />
           </span>
         </button>
       </div>
