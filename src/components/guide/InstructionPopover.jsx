@@ -87,7 +87,7 @@ export default function InstructionPopover({
             )}
           </div>
 
-          <div className="mt-6 grid gap-x-12 gap-y-5 lg:grid-cols-2">
+          <div className="mt-6 space-y-5">
             {sections.map((section) => (
               <section key={section.heading}>
                 <div className="border-b border-b-[#B0854A]/60 pb-1.5">
@@ -97,7 +97,7 @@ export default function InstructionPopover({
                 </div>
                 <div className="mt-2 space-y-1.5">
                   {section.items.map((item) => (
-                    <p key={item} className="text-[14.5px] leading-relaxed text-[#1F2937]">
+                    <p key={item} className="font-heading text-[15px] leading-relaxed text-[#1F2937]">
                       {item}
                     </p>
                   ))}
