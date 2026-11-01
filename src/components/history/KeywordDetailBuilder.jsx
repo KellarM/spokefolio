@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, GripVertical, Loader2, Plus, RefreshCw, Search, Sparkles, Wand2 } from 'lucide-react';
+import { ChevronDown, GripVertical, Loader2, Plus, RefreshCw, Search, Sparkles, Wand2, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import DictateButton from '@/components/common/DictateButton';
 import KeywordDropTray from '@/components/history/KeywordDropTray';
 import { matchBuiltInDetails } from '@/lib/careerDetailLibrary';
+import { liveCheckedIds, isEverySelectableChecked, toggleAllSelection } from '@/lib/checkedSelection';
 
 const CATEGORY_LABELS = {
   certification: 'License / Cert',
@@ -144,13 +145,16 @@ export default function KeywordDetailBuilder({
     [generatedItems, droppedSet]
   );
 
+  // Ticks that are still on screen. An item added to the tray leaves the list, and
+  // a stale id must not count towards "everything is checked".
+  const liveChecked = useMemo(() => liveCheckedIds(selectableItems, checkedIds), [selectableItems, checkedIds]);
+  const allChecked = useMemo(() => isEverySelectableChecked(selectableItems, checkedIds), [selectableItems, checkedIds]);
+
   const toggleSelectAll = () => {
-    if (checkedIds.length === selectableItems.length) {
-      setCheckedIds([]);
-    } else {
-      setCheckedIds(selectableItems.map((i) => i.id));
-    }
+    setCheckedIds(toggleAllSelection(selectableItems, checkedIds));
   };
+
+  const clearChecked = () => setCheckedIds([]);
 
   const handleAddChecked = () => {
     const selected = generatedItems.filter(
@@ -297,13 +301,23 @@ export default function KeywordDetailBuilder({
                     {loading && generatedItems.length === 0 ? 'Finding more…' : 'New ideas'}
                   </button>
                 )}
-                {selectableItems.length > 0 && (
+                {selectableItems.length > 0 && !allChecked && (
                   <button
                     type="button"
                     onClick={toggleSelectAll}
                     className="text-[12px] text-primary hover:underline"
                   >
-                    {checkedIds.length === selectableItems.length ? 'Uncheck all' : 'Check all'}
+                    Check all
+                  </button>
+                )}
+                {liveChecked.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearChecked}
+                    className="inline-flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground hover:underline"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Clear selection
                   </button>
                 )}
               </div>
@@ -365,18 +379,29 @@ export default function KeywordDetailBuilder({
 
           {generatedItems.length > 0 && (
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-3.5">
-              <span className="text-[12px] text-muted-foreground">
-                {checkedIds.length} {checkedIds.length === 1 ? 'item' : 'items'} checked
+              <span className="flex items-center gap-2.5 text-[12px] text-muted-foreground">
+                <span>
+                  {liveChecked.length} {liveChecked.length === 1 ? 'item' : 'items'} checked
+                </span>
+                {liveChecked.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearChecked}
+                    className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-foreground"
+                  >
+                    Clear
+                  </button>
+                )}
               </span>
               <Button
                 type="button"
                 size="sm"
-                disabled={checkedIds.length === 0}
+                disabled={liveChecked.length === 0}
                 onClick={handleAddChecked}
                 className="rounded-full"
               >
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
-                Add selected ({checkedIds.length})
+                Add selected ({liveChecked.length})
               </Button>
             </div>
           )}
@@ -398,6 +423,7 @@ export default function KeywordDetailBuilder({
           setDates={setDates}
           droppedItems={droppedItems}
           onRemoveDropped={(text) => setDroppedItems((prev) => prev.filter((i) => i.text !== text))}
+          onClearDropped={() => setDroppedItems([])}
           onAddCustomPoint={(text) =>
             addSingleItem({ id: `custom-${Date.now()}`, text, category: 'duty' })
           }

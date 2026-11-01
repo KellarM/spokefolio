@@ -19,6 +19,7 @@ export default function KeywordDropTray({
   setDates,
   droppedItems,
   onRemoveDropped,
+  onClearDropped,
   onAddCustomPoint,
   onDropItem,
   onSaveTray
@@ -217,8 +218,20 @@ export default function KeywordDropTray({
 
       {targetMode !== 'active' && (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-3.5">
-          <span className="text-[12px] text-muted-foreground">
-            {droppedItems.length} {droppedItems.length === 1 ? 'detail' : 'details'} in tray
+          <span className="flex flex-wrap items-center gap-2.5 text-[12px] text-muted-foreground">
+            <span>
+              {droppedItems.length} {droppedItems.length === 1 ? 'detail' : 'details'} in tray
+            </span>
+            {droppedItems.length > 0 && onClearDropped && (
+              <button
+                type="button"
+                onClick={onClearDropped}
+                className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-destructive"
+              >
+                <Trash2 className="h-3 w-3" />
+                Clear tray
+              </button>
+            )}
           </span>
           <div className="flex flex-wrap gap-2">
             {targetMode === 'new' && (
