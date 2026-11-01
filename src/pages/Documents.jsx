@@ -51,14 +51,19 @@ export default function Documents() {
         </p>
       </header>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1.15fr]">
+      <div className="mt-8 space-y-10">
         <div data-tour="uploader">
           <DocumentUploader onChanged={load} />
         </div>
 
         <section>
           <div className="flex items-center justify-between gap-3">
-            <h2 className="font-heading text-[20px]">{t('documents.yourFiles')}</h2>
+            <h2 className="font-heading text-[20px]">
+              {t('documents.yourFiles')}
+              {documents.length > 0 && (
+                <span className="ml-2 font-mono text-[12px] text-muted-foreground">{documents.length}</span>
+              )}
+            </h2>
             {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
           </div>
           {documents.length === 0 && !loading ? (

@@ -512,4 +512,6 @@ export default {
   'steps.two': 'Étape 2',
   'steps.three': 'Étape 3',
   'steps.four': 'Étape 4',
+  'documents.whatWasRead': 'Ce qui a été lu',
+  'common.delete': 'Supprimer',
 };

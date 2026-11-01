@@ -527,4 +527,6 @@ export default {
   'steps.two': 'Schritt 2',
   'steps.three': 'Schritt 3',
   'steps.four': 'Schritt 4',
+  'documents.whatWasRead': 'Was gelesen wurde',
+  'common.delete': 'Löschen',
 };

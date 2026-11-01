@@ -542,4 +542,6 @@ export default {
   'steps.two': 'Step 2',
   'steps.three': 'Step 3',
   'steps.four': 'Step 4',
+  'documents.whatWasRead': 'What was read',
+  'common.delete': 'Delete',
 };

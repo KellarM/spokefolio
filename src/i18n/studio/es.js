@@ -490,4 +490,6 @@ export default {
   'steps.two': 'Paso 2',
   'steps.three': 'Paso 3',
   'steps.four': 'Paso 4',
+  'documents.whatWasRead': 'Lo que se leyó',
+  'common.delete': 'Eliminar',
 };
