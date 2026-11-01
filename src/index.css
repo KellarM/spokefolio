@@ -2117,11 +2117,9 @@ select option {
   pointer-events: none;
 }
 
-/* The mascot: Michael's own artwork, handed to the app untouched - the file
-   is byte for byte the one he supplied, so its white backdrop is dealt with
-   here instead of in the pixels. Multiply drops the white out on the light
-   pages it floats over; a drop shadow is deliberately absent, because an
-   opaque image casts a rectangle, not a silhouette. */
+/* The mascot: Michael's own artwork with the paper cut away and nothing else
+   touched - every ink pixel is his. Because the silhouette is real, the glow
+   can hug it again instead of drawing a rectangle around a white plate. */
 .tour-face img {
   position: absolute;
   inset: 0;
@@ -2130,15 +2128,17 @@ select option {
   object-fit: contain;
   user-select: none;
   -webkit-user-drag: none;
-  mix-blend-mode: multiply;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px rgba(212, 175, 55, 0.32));
   animation: mascotBreathe 2.6s ease-in-out infinite;
 }
 
-/* A breath of light rather than a glow: the artwork is unchanged, it just
-   catches the room light as it sits there. */
 @keyframes mascotBreathe {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.05); }
+  0%, 100% {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px rgba(212, 175, 55, 0.32));
+  }
+  50% {
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 18px rgba(212, 175, 55, 0.6));
+  }
 }
 
 @keyframes tourIdle {
