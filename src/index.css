@@ -2117,9 +2117,11 @@ select option {
   pointer-events: none;
 }
 
-/* The mascot: a monitor in a gold C, presented on white gloves. It sits in
-   the box and breathes with a drop shadow that follows its shape, so the
-   glow hugs the silhouette rather than a rectangle around it. */
+/* The mascot: Michael's own artwork, handed to the app untouched - the file
+   is byte for byte the one he supplied, so its white backdrop is dealt with
+   here instead of in the pixels. Multiply drops the white out on the light
+   pages it floats over; a drop shadow is deliberately absent, because an
+   opaque image casts a rectangle, not a silhouette. */
 .tour-face img {
   position: absolute;
   inset: 0;
@@ -2128,17 +2130,15 @@ select option {
   object-fit: contain;
   user-select: none;
   -webkit-user-drag: none;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 6px rgba(212, 175, 55, 0.3));
+  mix-blend-mode: multiply;
   animation: mascotBreathe 2.6s ease-in-out infinite;
 }
 
+/* A breath of light rather than a glow: the artwork is unchanged, it just
+   catches the room light as it sits there. */
 @keyframes mascotBreathe {
-  0%, 100% {
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 6px rgba(212, 175, 55, 0.3));
-  }
-  50% {
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 18px rgba(212, 175, 55, 0.6));
-  }
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.05); }
 }
 
 @keyframes tourIdle {
