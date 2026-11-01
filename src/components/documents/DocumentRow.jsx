@@ -29,11 +29,9 @@ function StatusChip({ status, t }) {
       </span>
     );
   }
-  return (
-    <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-950 ring-1 ring-black/15">
-      {t('documents.read')}
-    </span>
-  );
+  // Read is the ordinary state, so it gets no pill: a badge on every row is
+  // noise, and it crowded the name out of the band.
+  return null;
 }
 
 // One row per file. Closed, it says what the file is and nothing else, so a
@@ -83,7 +81,7 @@ export default function DocumentRow({ doc, onDelete }) {
   };
 
   return (
-    <li className="overflow-hidden rounded-2xl border border-black/25 bg-card shadow-sm">
+    <li className="overflow-hidden rounded-2xl border-2 border-white bg-card shadow-sm">
       <div
         className={`flex items-stretch bg-[#FFD700] ${open ? 'border-b border-black/25' : ''}`}
       >
@@ -140,9 +138,11 @@ export default function DocumentRow({ doc, onDelete }) {
               )}
               {t('documents.open')}
             </Button>
-            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-              {doc.status === 'unreadable' ? t('documents.keptAsReference') : t('documents.read')}
-            </span>
+            {doc.status === 'unreadable' && (
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                {t('documents.keptAsReference')}
+              </span>
+            )}
             <Button
               variant="ghost"
               size="sm"
