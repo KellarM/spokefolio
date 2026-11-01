@@ -83,7 +83,7 @@ export default function DocumentRow({ doc, onDelete }) {
   return (
     <li className="overflow-hidden rounded-2xl border-[6px] border-white bg-card shadow-lg shadow-black/30">
       <div
-        className={`flex items-stretch bg-[#FFD700] ${open ? 'border-b border-black/25' : ''}`}
+        className={`flex items-stretch bg-gold ${open ? 'border-b border-black/25' : ''}`}
       >
         <button
           type="button"
@@ -114,7 +114,7 @@ export default function DocumentRow({ doc, onDelete }) {
           disabled={opening}
           title={t('documents.open')}
           aria-label={`${t('documents.open')}: ${doc.name}`}
-          className="my-2 mr-3 grid h-10 w-10 shrink-0 place-items-center rounded-full border-[3px] border-black bg-transparent text-black transition-colors hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFD700] disabled:opacity-50"
+          className="my-2 mr-3 grid h-10 w-10 shrink-0 place-items-center rounded-full border-[3px] border-black bg-transparent text-black transition-colors hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-gold disabled:opacity-50"
         >
           {opening ? (
             <Loader2 className="h-4 w-4 animate-spin" strokeWidth={3} />

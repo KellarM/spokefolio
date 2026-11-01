@@ -26,6 +26,9 @@ module.exports = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+  			// Card gold. Deeper than the flat #FFD700 it replaced, which read as
+  			// neon against the dark page. Black ink still measures 11.4:1 on it.
+  			gold: '#E8B84B',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

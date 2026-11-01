@@ -39,7 +39,7 @@ export default function EntryList({ entries = [], activeId, selectedIds = [], on
         return (
           <li
             key={entry.id}
-            className={`group flex items-start gap-4 rounded-2xl border-[6px] border-white bg-[#FFD700] px-5 py-4 shadow-lg shadow-black/30 transition-shadow ${
+            className={`group flex items-start gap-4 rounded-2xl border-[6px] border-white bg-gold px-5 py-4 shadow-lg shadow-black/30 transition-shadow ${
               entry.id === activeId ? 'ring-4 ring-accent/70' : ''
             } ${hidden ? 'opacity-60' : ''}`}
           >
@@ -47,7 +47,7 @@ export default function EntryList({ entries = [], activeId, selectedIds = [], on
               checked={selected}
               onCheckedChange={() => onToggle(entry)}
               aria-label={t('history.typeOther')}
-              className="mt-1 shrink-0 border-2 border-black data-[state=checked]:border-black data-[state=checked]:bg-black data-[state=checked]:text-[#FFD700]"
+              className="mt-1 shrink-0 border-2 border-black data-[state=checked]:border-black data-[state=checked]:bg-black data-[state=checked]:text-gold"
             />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
@@ -60,7 +60,7 @@ export default function EntryList({ entries = [], activeId, selectedIds = [], on
                   </span>
                 )}
                 {hidden && (
-                  <span className="rounded-full bg-[#1A1A1A] px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#FFD700]">
+                  <span className="rounded-full bg-[#1A1A1A] px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-gold">
                     {t('history.hiddenTag')}
                   </span>
                 )}
