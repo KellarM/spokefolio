@@ -5,17 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
 import DictateButton from '@/components/common/DictateButton';
 import KeywordDropTray from '@/components/history/KeywordDropTray';
 import { matchBuiltInDetails } from '@/lib/careerDetailLibrary';
 import { liveCheckedIds, isEverySelectableChecked, toggleAllSelection } from '@/lib/checkedSelection';
 
-const CATEGORY_LABELS = {
-  certification: 'License / Cert',
-  equipment: 'Equipment / Tool',
-  duty: 'Operation / Duty',
-  compliance: 'Log / Safety',
-  accomplishment: 'Resume Bullet'
+// Which dictionary key names each category of detail.
+const CATEGORY_KEYS = {
+  certification: 'builder.catCertification',
+  equipment: 'builder.catEquipment',
+  duty: 'builder.catDuty',
+  compliance: 'builder.catCompliance',
+  accomplishment: 'builder.catAccomplishment'
 };
 
 export default function KeywordDetailBuilder({
@@ -27,6 +29,7 @@ export default function KeywordDetailBuilder({
   onAppendToExistingEntry
 }) {
   const { toast } = useToast();
+  const { t } = useStudioLanguage();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [generatedItems, setGeneratedItems] = useState([]);
@@ -111,8 +114,8 @@ export default function KeywordDetailBuilder({
     } catch (error) {
       if (!builtIn.items.length) {
         toast({
-          title: 'Could not generate details',
-          description: error?.response?.data?.error || error.message || 'Please try again.',
+          title: t('builder.toastFailedTitle'),
+          description: error?.response?.data?.error || error.message || t('builder.tryAgain'),
           variant: 'destructive'
         });
       }
@@ -187,7 +190,7 @@ export default function KeywordDetailBuilder({
 
   const handleSaveTray = async (asConfirmed = true) => {
     if (!droppedItems.length) {
-      toast({ title: 'Drag or add at least one detail first' });
+      toast({ title: t('builder.toastNeedsOne') });
       return;
     }
 
@@ -197,7 +200,7 @@ export default function KeywordDetailBuilder({
       return;
     }
 
-    const titleToUse = entryTitle.trim() || searchedQuery || query.trim() || 'Career Experience';
+    const titleToUse = entryTitle.trim() || searchedQuery || query.trim() || t('builder.defaultEntryTitle');
     await onCreateEntryFromTray({
       title: titleToUse,
       organization: organization.trim(),
@@ -217,10 +220,10 @@ export default function KeywordDetailBuilder({
         aria-expanded={open}
       >
         <span className="eyebrow flex items-center gap-2 text-primary">
-          <Wand2 className="h-3.5 w-3.5" /> Keyword & Detail Builder
+          <Wand2 className="h-3.5 w-3.5" /> {t('builder.title')}
         </span>
         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          {open ? 'Hide' : 'Open'}
+          {open ? t('builder.hide') : t('builder.open')}
           <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
         </span>
       </button>
@@ -229,10 +232,10 @@ export default function KeywordDetailBuilder({
         <>
           <div>
             <h2 className="mt-2 font-heading text-[22px] leading-snug">
-              Enter a word or description to generate career details
+              {t('builder.heading')}
             </h2>
             <p className="mt-1 text-[13px] text-muted-foreground">
-              Type any equipment, job title, skill, or short description. Point-form details will appear so you can drag and drop them or tick the checkboxes and click Add.
+              {t('builder.lede')}
             </p>
           </div>
 
@@ -249,7 +252,7 @@ export default function KeywordDetailBuilder({
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type a word, tool, role, or short description…"
+            placeholder={t('builder.placeholder')}
             className="h-10 pl-10 pr-12 text-[14.5px]"
           />
           <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
@@ -272,7 +275,7 @@ export default function KeywordDetailBuilder({
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          Generate details
+          {t('builder.generate')}
         </Button>
       </form>
 
@@ -283,10 +286,10 @@ export default function KeywordDetailBuilder({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="eyebrow">
-                  {searchedQuery ? `Details for “${searchedQuery}”` : 'Generated point-form details'}
+                  {searchedQuery ? t('builder.detailsFor', { query: searchedQuery }) : t('builder.generatedTitle')}
                 </p>
                 <p className="mt-0.5 text-[12px] text-muted-foreground">
-                  Drag items into the tray, or tick the checkboxes and click Add selected.
+                  {t('builder.listHint')}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -298,7 +301,7 @@ export default function KeywordDetailBuilder({
                     className="inline-flex items-center gap-1.5 text-[12px] text-primary hover:underline disabled:opacity-50"
                   >
                     <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-                    {loading && generatedItems.length === 0 ? 'Finding more…' : 'New ideas'}
+                    {loading && generatedItems.length === 0 ? t('builder.findingMore') : t('builder.newIdeas')}
                   </button>
                 )}
                 {selectableItems.length > 0 && !allChecked && (
@@ -307,7 +310,7 @@ export default function KeywordDetailBuilder({
                     onClick={toggleSelectAll}
                     className="text-[12px] text-primary hover:underline"
                   >
-                    Check all
+                    {t('builder.checkAll')}
                   </button>
                 )}
                 {liveChecked.length > 0 && (
@@ -317,7 +320,7 @@ export default function KeywordDetailBuilder({
                     className="inline-flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground hover:underline"
                   >
                     <X className="h-3.5 w-3.5" />
-                    Clear selection
+                    {t('builder.clearSelection')}
                   </button>
                 )}
               </div>
@@ -327,13 +330,13 @@ export default function KeywordDetailBuilder({
               <div className="mt-4 flex min-h-[220px] flex-col items-center justify-center rounded-xl border border-dashed border-border/60 px-4 py-8 text-center">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 <p className="mt-2.5 text-[13.5px] text-muted-foreground">
-                  Generating point-form details for “{searchedQuery}”…
+                  {t('builder.loadingTitle', { query: searchedQuery })}
                 </p>
               </div>
             ) : generatedItems.length === 0 ? (
               <div className="mt-4 flex min-h-[220px] flex-col items-center justify-center rounded-xl border border-dashed border-border/60 px-4 py-8 text-center">
                 <p className="text-[13.5px] text-muted-foreground">
-                  Enter a word or description above and click <span className="text-foreground font-medium">Generate details</span> to see point-form items here.
+                  {t('builder.emptyBefore')} <span className="text-foreground font-medium">{t('builder.generate')}</span> {t('builder.emptyAfter')}
                 </p>
               </div>
             ) : (
@@ -361,14 +364,14 @@ export default function KeywordDetailBuilder({
                           disabled={alreadyAdded}
                           onCheckedChange={() => !alreadyAdded && toggleCheck(item.id)}
                           onClick={(e) => e.stopPropagation()}
-                          aria-label={`Select ${item.text}`}
+                          aria-label={t('builder.checkboxLabel', { text: item.text })}
                           className="shrink-0"
                         />
                         <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground/60 group-hover:text-primary" />
                         <span className="leading-snug">• {item.text}</span>
                       </div>
                       <span className="hidden shrink-0 rounded-full bg-secondary/80 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground sm:inline">
-                        {alreadyAdded ? 'Added' : CATEGORY_LABELS[item.category] || 'Detail'}
+                        {alreadyAdded ? t('builder.added') : CATEGORY_KEYS[item.category] ? t(CATEGORY_KEYS[item.category]) : t('builder.detail')}
                       </span>
                     </li>
                   );
@@ -381,7 +384,7 @@ export default function KeywordDetailBuilder({
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-3.5">
               <span className="flex items-center gap-2.5 text-[12px] text-muted-foreground">
                 <span>
-                  {liveChecked.length} {liveChecked.length === 1 ? 'item' : 'items'} checked
+                  {liveChecked.length === 1 ? t('builder.checkedOne') : t('builder.checkedMany', { count: liveChecked.length })}
                 </span>
                 {liveChecked.length > 0 && (
                   <button
@@ -389,7 +392,7 @@ export default function KeywordDetailBuilder({
                     onClick={clearChecked}
                     className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-foreground"
                   >
-                    Clear
+                    {t('builder.clear')}
                   </button>
                 )}
               </span>
@@ -401,7 +404,7 @@ export default function KeywordDetailBuilder({
                 className="rounded-full"
               >
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
-                Add selected ({liveChecked.length})
+                {t('builder.addSelected', { count: liveChecked.length })}
               </Button>
             </div>
           )}
