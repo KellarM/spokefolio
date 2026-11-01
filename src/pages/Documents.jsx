@@ -5,9 +5,12 @@ import DocumentUploader from '@/components/documents/DocumentUploader';
 import { useTour } from '@/lib/TourContext';
 import DocumentRow from '@/components/documents/DocumentRow';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
+import InstructionPopover from '@/components/guide/InstructionPopover';
+import { referenceFilesGuide } from '@/content/referenceFilesGuide';
 
 export default function Documents() {
-  const { t } = useStudioLanguage();
+  const { t, language } = useStudioLanguage();
+  const guide = referenceFilesGuide(language);
   const tour = useTour();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +47,15 @@ export default function Documents() {
   return (
     <div className="animate-rise">
       <header className="max-w-2xl">
-        <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('documents.title')}</h1>
+        <div className="mt-3 flex items-start gap-3">
+          <h1 className="font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('documents.title')}</h1>
+          <InstructionPopover
+            className="mt-2"
+            title={guide.title}
+            intro={guide.intro}
+            sections={guide.sections}
+          />
+        </div>
         <p className="mt-2 font-mono text-[16px] font-semibold uppercase tracking-[0.1em] text-white">{t('steps.one')}</p>
         <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
           {t('documents.lede')}
