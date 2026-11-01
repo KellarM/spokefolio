@@ -17,6 +17,11 @@ function Nav() {
   const { pathname } = useLocation();
   const isActive = (to) => (to === '/' ? pathname === '/' : pathname.startsWith(to));
   const isHome = pathname === '/';
+  // The interview drill reads its two answers side by side and keeps a report
+  // beside them. A 1200px clamp cuts the third column off the right edge, so
+  // this one page runs the full width of the window. The header and the company
+  // picker keep their own measure - a wide page does not mean wide paragraphs.
+  const isWide = pathname === '/interview';
 
   // The mascot is off until someone asks for it. The logo is the ask, and the
   // label under it says so. Once it is on, the label reports that instead of
@@ -128,7 +133,7 @@ function Nav() {
           <Outlet />
         </main>
       ) : (
-        <main className="mx-auto w-full max-w-[1200px] flex-1 px-6 py-10 lg:px-12 lg:py-14">
+        <main className={`mx-auto w-full flex-1 px-6 py-10 lg:px-12 lg:py-14 ${isWide ? 'max-w-none' : 'max-w-[1200px]'}`}>
           <Outlet />
         </main>
       )}
