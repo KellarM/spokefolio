@@ -16,6 +16,7 @@ export default function InstructionPopover({
   sections = [],
   title,
   intro,
+  label,
   align = 'start',
   className = ''
 }) {
@@ -59,13 +60,14 @@ export default function InstructionPopover({
         aria-controls={panelId}
         aria-label={title || 'How this works'}
         onClick={() => setOpen((value) => !value)}
-        className={`grid h-[22px] w-[22px] place-items-center rounded-full border transition-colors ${
+        className={`inline-flex h-[28px] items-center justify-center gap-1.5 rounded-full border ${label ? 'px-3' : 'w-[28px]'} font-mono text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
           open
-            ? 'border-[#D4AF37] bg-[#D4AF37]/15 text-[#D4AF37]'
-            : 'border-border/70 text-muted-foreground hover:border-[#D4AF37]/60 hover:text-[#D4AF37]'
+            ? 'border-[#F0C75E] bg-[#F0C75E] text-[#0B0F17] shadow-[0_0_16px_-2px_rgba(212,175,55,0.75)]'
+            : 'border-[#D4AF37]/70 bg-[#D4AF37]/12 text-[#E5C264] hover:border-[#F0C75E] hover:bg-[#D4AF37]/20 hover:text-[#F5D889] hover:shadow-[0_0_14px_-3px_rgba(212,175,55,0.6)]'
         }`}
       >
-        <HelpCircle className="h-[13px] w-[13px]" aria-hidden="true" />
+        <HelpCircle className="h-[14px] w-[14px]" aria-hidden="true" />
+        {label && <span className="whitespace-nowrap">{label}</span>}
       </button>
 
       {/* A page, not a popup: the sheet matches the 1200px content column the

@@ -20,6 +20,7 @@ import { sortEntriesByDate } from '@/lib/entryOrder';
 import retryOnTimeout from '@/lib/retryOnTimeout';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import InstructionPopover from '@/components/guide/InstructionPopover';
+import { guideLabel } from '@/content/guideLabels';
 import { careerHistoryGuide } from '@/content/careerHistoryGuide';
 
 const COMPLETE_PHRASE = /resume history is complete/i;
@@ -546,6 +547,7 @@ export default function HistoryCapture() {
           <div className="mt-3 flex items-start gap-3">
             <h1 className="font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('history.title')}</h1>
             <InstructionPopover
+              label={guideLabel(language)}
               className="mt-2"
               title={guide.title}
               intro={guide.intro}

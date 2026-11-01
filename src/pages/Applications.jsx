@@ -9,6 +9,7 @@ import SalaryPill from '@/components/applications/SalaryPill';
 import JobLocation from '@/components/applications/JobLocation';
 import DeleteApplicationButton from '@/components/applications/DeleteApplicationButton';
 import InstructionPopover from '@/components/guide/InstructionPopover';
+import { guideLabel } from '@/content/guideLabels';
 import { applicationsGuide } from '@/content/applicationsGuide';
 import ActivityCalendar from '@/components/applications/ActivityCalendar';
 import RunScoreBadge from '@/components/applications/RunScoreBadge';
@@ -226,7 +227,8 @@ export default function Applications() {
             </span>
           </h1>
           <InstructionPopover
-            className="mt-2"
+              label={guideLabel(language)}
+              className="mt-2"
             title={guide.title}
             intro={guide.intro}
             sections={guide.sections}

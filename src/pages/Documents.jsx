@@ -6,6 +6,7 @@ import { useTour } from '@/lib/TourContext';
 import DocumentRow from '@/components/documents/DocumentRow';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import InstructionPopover from '@/components/guide/InstructionPopover';
+import { guideLabel } from '@/content/guideLabels';
 import { referenceFilesGuide } from '@/content/referenceFilesGuide';
 
 export default function Documents() {
@@ -50,7 +51,8 @@ export default function Documents() {
         <div className="mt-3 flex items-start gap-3">
           <h1 className="font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('documents.title')}</h1>
           <InstructionPopover
-            className="mt-2"
+              label={guideLabel(language)}
+              className="mt-2"
             title={guide.title}
             intro={guide.intro}
             sections={guide.sections}
