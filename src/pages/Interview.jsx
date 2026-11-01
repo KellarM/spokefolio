@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Building2, Loader2, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
+import { useTour } from '@/lib/TourContext';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InstructionPopover from '@/components/guide/InstructionPopover';
@@ -21,6 +22,7 @@ import { guideLabel } from '@/content/guideLabels';
 // application, and the applications page links here rather than duplicating it.
 export default function Interview() {
   const { t, language } = useStudioLanguage();
+  const tour = useTour();
   const [searchParams, setSearchParams] = useSearchParams();
   const guide = interviewGuide(language);
 
@@ -187,6 +189,7 @@ export default function Interview() {
                 <InterviewPanel
                   application={selected}
                   onApplicationUpdate={(changes) => patch(selected.id, changes)}
+                  onDrillFinished={() => tour.announce('drill_done')}
                 />
               </div>
             </section>

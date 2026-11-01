@@ -105,7 +105,8 @@ export function TourProvider({ children }) {
           story: 'entry_done',
           story_prompts: 'entry_saved',
           files: 'files_done',
-          files_add: 'files_done'
+          files_add: 'files_done',
+          interview: 'drill_done'
         }[current.step];
         if (signal !== expects) return;
         persist({ ...current, celebrated: true });

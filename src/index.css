@@ -544,7 +544,7 @@
 .mec-steps {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 14px;
   margin: 0 80px 40px;
   animation: fade 1s 0.45s ease-out both;
@@ -586,9 +586,10 @@
 .mec-step-label {
   color: #F9FAFB;
   font: 500 14px system-ui, sans-serif;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .mec-step.gold {
@@ -1040,6 +1041,11 @@
   .mec-steps {
     margin: 0 24px 36px;
     grid-template-columns: repeat(2, 1fr);
+  }
+  /* Five pills in a two-column grid leave the last one stranded on the left.
+     The payoff pill takes the full width instead, so the bar ends as a bar. */
+  .mec-step:last-child {
+    grid-column: 1 / -1;
   }
   .mec-ticker {
     margin: 0 24px;

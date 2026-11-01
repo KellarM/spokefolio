@@ -82,15 +82,20 @@ export default function StudioHero({ draftCount = 0, profile }) {
   }, [greeting]);
 
   // The Step Order, numbered so the order is unmistakable: bring the
-  // reference files in, capture the history, find the postings, then tailor.
-  // Uploading comes first because the file is the fastest thing a client can
-  // hand over, and the resume parser can then seed the history for them.
-  // The last step is the payoff, so it stays solid gold.
+  // reference files in, capture the history, find the postings, tailor, then
+  // walk into the room prepared. Uploading comes first because the file is the
+  // fastest thing a client can hand over, and the resume parser can then seed
+  // the history for them.
+  //
+  // Gold marks where the sequence ends, not the loudest thing on the page: the
+  // drill is the last thing before the real meeting, so it carries the gold and
+  // tailoring reads as an ordinary step now.
   const STEPS = [
     { n: 1, to: '/documents', label: t('home.navUpload') },
     { n: 2, to: '/history', label: t('home.captureHistory') },
     { n: 3, to: '/postings', label: t('nav.postings') },
-    { n: 4, to: '/tailor-application', label: t('common.tailorResume'), gold: true }
+    { n: 4, to: '/tailor-application', label: t('common.tailorResume') },
+    { n: 5, to: '/interview', label: t('nav.interview'), gold: true }
   ];
 
   return (
@@ -126,7 +131,7 @@ export default function StudioHero({ draftCount = 0, profile }) {
         </div>
       </section>
 
-      {/* The four steps, edge to edge, numbered left to right. */}
+      {/* The five steps, edge to edge, numbered left to right. */}
       <section className="mec-steps" data-tour="overview-steps" aria-label={t('home.stepsAria')}>
         {STEPS.map((step) => (
           <Link

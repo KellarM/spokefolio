@@ -15,7 +15,7 @@ import DeleteSessionButton from '@/components/applications/DeleteSessionButton';
 // is kept on the application record, so past sessions and their readiness reports
 // stay with the job. A side panel shows the prep material: proof points, known gaps,
 // company notes, and questions worth asking them.
-export default function InterviewPanel({ application, onApplicationUpdate }) {
+export default function InterviewPanel({ application, onApplicationUpdate, onDrillFinished }) {
   const { toast } = useToast();
   const [answer, setAnswer] = useState('');
   const [busy, setBusy] = useState(null); // 'start' | 'answer' | 'next' | 'finish' | null
@@ -79,6 +79,9 @@ export default function InterviewPanel({ application, onApplicationUpdate }) {
       });
       const data = response?.data || {};
       if (data.mock_interviews) onApplicationUpdate({ mock_interviews: data.mock_interviews });
+      // A finished session is a real fact, so the trail is told about it here
+      // rather than guessed from a page visit.
+      if (mode === 'finish') onDrillFinished?.();
       if (mode === 'answer') {
         setAnswer('');
         if (data.done) {

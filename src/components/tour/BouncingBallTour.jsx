@@ -105,7 +105,7 @@ const parkPosition = () => {
 };
 
 // The journey: identity -> story (capture -> edits -> prompts -> more?) ->
-// posting -> apply -> farewell. The story phase asks real questions with
+// posting -> apply -> interview -> farewell. The story phase asks real questions with
 // real answers; its sub-steps advance on yes/no choices and real saves.
 const NEXT_STEP = {
   identity: 'files',
@@ -115,7 +115,8 @@ const NEXT_STEP = {
   story_edits: 'story_prompts',
   story_prompts: 'posting',
   posting: 'apply',
-  apply: 'farewell'
+  apply: 'interview',
+  interview: 'farewell'
 };
 const STEP_PAGE = {
   identity: '/profile',
@@ -126,6 +127,7 @@ const STEP_PAGE = {
   files_add: '/documents',
   posting: '/postings',
   apply: '/postings',
+  interview: '/interview',
   farewell: '/'
 };
 
@@ -156,6 +158,9 @@ const anchorElement = (step, pathname, celebrated) => {
   }
   if ((step === 'files' || step === 'files_add') && pathname === '/documents' && !celebrated) {
     return document.querySelector('[data-tour="uploader"]');
+  }
+  if (step === 'interview' && pathname === '/interview' && !celebrated) {
+    return document.querySelector('[data-tour="interview-picker"]');
   }
   // A step whose page is elsewhere anchors beside the Overview's hero
   // copy - 'tap me and I'll take you there' is spoken from clear space,
@@ -630,6 +635,7 @@ export default function BouncingBallTour() {
   // ---- The caption and the mascot's voice, computed before the idle
   // return so every hook stays unconditional ----
   const onApplyPage = onPostings || onTailor;
+  const onInterviewPage = pathname === '/interview';
 
   const captionKey =
     step === 'identity'
@@ -676,7 +682,13 @@ export default function BouncingBallTour() {
               : onApplyPage
                 ? 'tour.apply'
                 : 'tour.applyAway'
-            : 'tour.farewell';
+            : step === 'interview'
+              ? celebrated
+                ? 'tour.interviewDone'
+                : onInterviewPage
+                  ? 'tour.interview'
+                  : 'tour.interviewAway'
+              : 'tour.farewell';
 
   // The idle bubble's line - a data-driven nudge first, otherwise the
   // page's own next step. On the Overview that next step is the client's
