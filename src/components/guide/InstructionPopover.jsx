@@ -68,22 +68,26 @@ export default function InstructionPopover({
         <HelpCircle className="h-[13px] w-[13px]" aria-hidden="true" />
       </button>
 
+      {/* A page, not a popup: the sheet matches the 1200px content column the
+          rest of the app is laid out on, so it reads the same width as the page
+          behind it. Fixed and centred, because a page-width panel cannot hang
+          off a 22px icon without crossing the viewport edge. */}
       {open && isDocument && (
         <div
           id={panelId}
           role="dialog"
           aria-label={title || 'How this works'}
-          className={`absolute top-[30px] z-50 max-h-[74vh] w-[520px] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-lg border border-[#B0854A]/45 bg-[#FDFCFA] px-7 py-6 text-left shadow-[0_28px_70px_rgba(0,0,0,0.6)] ${anchor}`}
+          className="fixed left-1/2 top-[96px] z-[60] max-h-[80vh] w-[min(1200px,calc(100vw-2rem))] -translate-x-1/2 overflow-y-auto rounded-lg border border-[#B0854A]/45 bg-[#FDFCFA] px-8 py-7 text-left shadow-[0_40px_90px_rgba(0,0,0,0.7)] sm:px-12 sm:py-10"
         >
           {/* The résumé header: serif name, brass bar, brass italic line. */}
           <div className="border-l-[5px] border-l-[#B0854A] pl-4">
-            <p className="font-heading text-[23px] leading-tight text-[#1B4159]">{title}</p>
+            <p className="font-heading text-[30px] leading-tight tracking-tight text-[#1B4159] sm:text-[36px]">{title}</p>
             {intro && (
               <p className="mt-1.5 text-[12.5px] italic leading-relaxed text-[#8A6531]">{intro}</p>
             )}
           </div>
 
-          <div className="mt-5 space-y-4">
+          <div className="mt-6 grid gap-x-12 gap-y-5 lg:grid-cols-2">
             {sections.map((section) => (
               <section key={section.heading}>
                 <div className="border-b border-b-[#B0854A]/60 pb-1.5">
@@ -93,7 +97,7 @@ export default function InstructionPopover({
                 </div>
                 <div className="mt-2 space-y-1.5">
                   {section.items.map((item) => (
-                    <p key={item} className="text-[14px] leading-relaxed text-[#1F2937]">
+                    <p key={item} className="text-[14.5px] leading-relaxed text-[#1F2937]">
                       {item}
                     </p>
                   ))}
