@@ -6,7 +6,6 @@ import { trackAppOpen } from '@/lib/analytics';
 import { useAuth } from '@/lib/AuthContext';
 import StudioHero from '@/components/home/StudioHero';
 import RecentApplications from '@/components/home/RecentApplications';
-import InstructionPopover from '@/components/guide/InstructionPopover';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import { useTour } from '@/lib/TourContext';
 
@@ -88,15 +87,7 @@ export default function Home() {
         <RecentApplications applications={applications.slice(0, 2)} />
 
         <section className="mec-panel">
-          <div className="flex items-center gap-2">
-            <div className="mec-eyebrow">{t('home.masterHistory')}</div>
-            <InstructionPopover
-              align="start"
-              title={t('guide.historyTitle')}
-              intro={t('guide.historyIntro')}
-              steps={[t('guide.h1'), t('guide.h2'), t('guide.h3')]}
-            />
-          </div>
+          <div className="mec-eyebrow">{t('home.masterHistory')}</div>
           {busy ? (
             <div className="mec-load" style={{ marginTop: 12 }}>
               {t('home.loadingStudio')}
