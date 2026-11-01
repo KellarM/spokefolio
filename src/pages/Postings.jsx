@@ -255,7 +255,7 @@ export default function Postings() {
     <div className="animate-rise">
       <header className="max-w-2xl">
                 <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('postings.title')}</h1>
-                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]">{t('steps.three')}</p>
+                <p className="mt-2 font-mono text-[16px] font-semibold uppercase tracking-[0.1em] text-white">{t('steps.three')}</p>
         <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
           {t('postings.lede')}
         </p>

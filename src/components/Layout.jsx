@@ -84,7 +84,7 @@ function Nav() {
             >
               <span>{item.label}</span>
               {item.step && (
-                <span className="block font-mono text-[9px] uppercase tracking-[0.18em] opacity-55">
+                <span className="mt-0.5 block font-mono text-[18px] font-semibold uppercase tracking-[0.08em] text-white">
                   {t(item.step)}
                 </span>
               )}

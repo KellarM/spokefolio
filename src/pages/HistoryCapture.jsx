@@ -542,7 +542,7 @@ export default function HistoryCapture() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
                     <h1 className="mt-3 font-heading text-[30px] leading-tight tracking-tight sm:text-[36px]">{t('history.title')}</h1>
-                    <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]">{t('steps.two')}</p>
+                    <p className="mt-2 font-mono text-[16px] font-semibold uppercase tracking-[0.1em] text-white">{t('steps.two')}</p>
           <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
             {t('history.lede')}
           </p>
