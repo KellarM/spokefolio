@@ -443,12 +443,22 @@ export default function HistoryCapture() {
     setBusy(true);
     try {
       const response = await base44.functions.invoke('finalizeHistory', { entries: confirmed, location: profile.location || '' });
-      const data = response.data || {};
+      const data = response?.data || {};
+      // A capture is only "saved" once the master summary actually exists. The
+      // function can come back without one, and recording a save then left the
+      // history looking finished on this page while the overview had nothing to
+      // show - the exact "saved but no master history" state.
+      const summary = String(data.master_summary || '').trim();
+      if (!summary) {
+        reportError(t('history.toastLockFailed'), new Error(data.error || t('history.lockNoSummary')));
+        setBusy(false);
+        return;
+      }
       await save({
         history_complete: true,
         history_signature: captureNow,
         history_saved_at: new Date().toISOString(),
-        master_summary: data.master_summary || profile.master_summary || '',
+        master_summary: summary,
         core_skills: data.core_skills || [],
         target_titles: data.target_titles || [],
         content_language: data.language || '',

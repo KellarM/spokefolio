@@ -26,7 +26,11 @@ export default function Home() {
         base44.entities.SupportingDocument.list('-created_date', 100),
         base44.entities.JobApplication.list('-created_date', 20)
       ]);
-      setEntries((entryRecords || []).filter((entry) => !entry.hidden));
+      // Every entry is kept here, hidden ones included. The capture signature
+      // is written over the whole set when the history is saved, so asking the
+      // "is this saved?" question with a filtered list can never match - that
+      // is what left a saved history looking like it had never been captured.
+      setEntries(entryRecords || []);
       setDocuments(documentRecords || []);
       setApplications(applicationRecords || []);
     } catch {
@@ -45,9 +49,10 @@ export default function Home() {
 
   // Saved, not merely once-saved: if entries changed after the last capture,
   // the overview says so instead of showing a summary that has moved on.
+  const visibleEntries = entries.filter((entry) => !entry.hidden);
   const historyComplete = loading ? !!profile.history_complete : captureIsSaved(entries, profile);
-  const confirmed = entries.filter((entry) => entry.status === 'confirmed');
-  const draftCount = entries.filter((entry) => entry.status === 'draft').length;
+  const confirmed = visibleEntries.filter((entry) => entry.status === 'confirmed');
+  const draftCount = visibleEntries.filter((entry) => entry.status === 'draft').length;
   const busy = loading || loadingProfile;
 
   // Auto-start, once per account, and only for a studio that still has
@@ -55,10 +60,10 @@ export default function Home() {
   // captured yet. Anyone established only ever sees the summoner pill.
   useEffect(() => {
     if (busy || !user || !tour.ready || tour.hasRecord) return;
-    const stepsDone = entries.length > 0 && !!(profile && profile.full_name);
+    const stepsDone = visibleEntries.length > 0 && !!(profile && profile.full_name);
     if (stepsDone) return;
     tour.start({ step: profile && profile.full_name ? 'story' : 'identity' });
-  }, [busy, user, profile, entries.length, tour]);
+  }, [busy, user, profile, visibleEntries.length, tour]);
 
   return (
     <div>
@@ -66,7 +71,7 @@ export default function Home() {
 
       <div className="mec-ticker">
         <div className="mec-tk">
-          <b>{entries.length}</b>
+          <b>{visibleEntries.length}</b>
           <span>{t('home.tickerEntries')}</span>
         </div>
         <div className="mec-tk">
@@ -92,11 +97,16 @@ export default function Home() {
             <div className="mec-load" style={{ marginTop: 12 }}>
               {t('home.loadingStudio')}
             </div>
-          ) : historyComplete && profile.master_summary ? (
+          ) : String(profile.master_summary || '').trim() ? (
             <div>
               <p className="mt-3 font-body text-[17px] leading-relaxed text-[#F9FAFB]/90">
                 {profile.master_summary}
               </p>
+              {!historyComplete && (
+                <p className="mt-3 font-body text-[14px] leading-relaxed text-[#D4AF37]">
+                  {t('home.summaryStale')}
+                </p>
+              )}
               {Array.isArray(profile.core_skills) && profile.core_skills.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {profile.core_skills.slice(0, 14).map((skill) => (
