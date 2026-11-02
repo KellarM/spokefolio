@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Loader2, Plus } from 'lucide-react';
+import { ArrowRight, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Loader2, Plus, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import StatusBadge from '@/components/applications/StatusBadge';
 import SalaryPill from '@/components/applications/SalaryPill';
@@ -32,6 +33,9 @@ export default function Applications() {
   const [locating, setLocating] = useState(false);
   const [scores, setScores] = useState({});
   const [manualOrder, setManualOrder] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshNote, setRefreshNote] = useState('');
+  const { toast } = useToast();
   const { profile } = useProfile();
 
   // The card-level quick action: applied outside the flow, mark it here.
@@ -219,6 +223,56 @@ export default function Applications() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Briefings are saved with the application, so a field added later reaches only
+  // new applications. This finds the ones written before the current shape and
+  // rebuilds them a small batch at a time, because each one is a web lookup.
+  const staleBriefs = applications.filter((application) => {
+    const research = application.company_research;
+    return (
+      (application.company || '').trim() &&
+      (!research || !research.overview || !('website' in research) || !('drug_screening' in research))
+    );
+  }).length;
+
+  const refreshBriefs = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    let done = 0;
+    let failed = 0;
+    let remaining = staleBriefs;
+    setRefreshNote(`Refreshing 0 of ${staleBriefs}…`);
+    try {
+      // Guarded loop: if the server keeps reporting progress we stop anyway
+      // rather than spin forever on a fault that never resolves.
+      for (let batch = 0; batch < 40 && remaining > 0; batch += 1) {
+        const response = await base44.functions.invoke('refreshCompanyBriefs', { limit: 2 });
+        const data = response?.data || {};
+        if (data.error) throw new Error(data.error);
+        const updatedCount = (data.updated || []).length;
+        failed += (data.failed || []).length;
+        done += updatedCount;
+        remaining = Number(data.remaining ?? 0);
+        setRefreshNote(`Refreshing ${done} of ${done + remaining}${failed ? ` · ${failed} failed` : ''}…`);
+        if (!updatedCount && !(data.failed || []).length) break;
+      }
+      await load();
+      toast({
+        title: failed
+          ? `Refreshed ${done}, ${failed} could not be rebuilt`
+          : `Refreshed ${done} company breakdown${done === 1 ? '' : 's'}`,
+        description: failed ? 'Run it again in a moment and the failures get another try.' : undefined
+      });
+    } catch (error) {
+      toast({
+        title: 'Could not refresh the company breakdowns',
+        description: error?.response?.data?.error || error.message,
+        variant: 'destructive'
+      });
+    }
+    setRefreshNote('');
+    setRefreshing(false);
+  };
+
   return (
     <div className="animate-rise">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -247,6 +301,12 @@ export default function Applications() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {staleBriefs > 0 && (
+            <Button variant="secondary" className="rounded-full" onClick={refreshBriefs} disabled={refreshing}>
+              {refreshing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+              {refreshing ? refreshNote || 'Refreshing…' : `Refresh ${staleBriefs} company breakdown${staleBriefs === 1 ? '' : 's'}`}
+            </Button>
+          )}
           <ActivityCalendar applications={applications} />
           <Button asChild className="rounded-full">
             <Link to="/tailor-application">
