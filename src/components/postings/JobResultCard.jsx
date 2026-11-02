@@ -2,6 +2,7 @@ import React from 'react';
 import { ExternalLink, Loader2, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import JobLocation from '@/components/applications/JobLocation';
+import FlagCompanyButton from '@/components/postings/FlagCompanyButton';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 const hostOf = (url) => {
@@ -13,7 +14,7 @@ const hostOf = (url) => {
 };
 
 // One posting the search turned up, with the ways forward: keep it, write a résumé for it, or drop it.
-export default function JobResultCard({ result, busy, onKeep, onTailor, onDismiss }) {
+export default function JobResultCard({ result, busy, onKeep, onTailor, onDismiss, blocked = [], onFlagged }) {
   const { t } = useStudioLanguage();
   const host = hostOf(result.source_url);
   const badge =
@@ -33,12 +34,22 @@ export default function JobResultCard({ result, busy, onKeep, onTailor, onDismis
           </span>
         )}
       </div>
-      <p className="mt-1 text-[12.5px] text-muted-foreground">
-        {result.company}
-        {result.pay ? ` · ${result.pay}` : ''}
-        {result.posted ? ` · ${result.posted}` : ''}
-        {host ? ` · ${host}` : ''}
-      </p>
+      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+        <p className="text-[12.5px] text-muted-foreground">
+          {result.company}
+          {result.pay ? ` · ${result.pay}` : ''}
+          {result.posted ? ` · ${result.posted}` : ''}
+          {host ? ` · ${host}` : ''}
+        </p>
+        <FlagCompanyButton
+          company={result.company}
+          sourceUrl={result.source_url}
+          title={result.job_title}
+          blocked={blocked}
+          onFlagged={onFlagged}
+          compact
+        />
+      </div>
       <JobLocation
         address={result.work_address}
         distanceKm={result.drive_distance_km}

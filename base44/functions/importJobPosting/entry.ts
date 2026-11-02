@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { cleanText } from '../../shared/career.ts';
 import { inspectJobBankPosting } from '../../shared/jobBank.ts';
 import { estimateCommutes } from '../../shared/commute.ts';
+import { isBlocked } from '../../shared/blockedCompanies.ts';
 
 const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
@@ -121,6 +122,11 @@ export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
+    // A flagged employer cannot be imported, whether the posting arrives by
+    // link or by paste. Same list the search filters on.
+    const blockedEmployers = user
+      ? await base44.entities.BlockedCompany.list('-created_date', 200).catch(() => [])
+      : [];
     if (!user) return Response.json({ error: 'Please sign in.' }, { status: 401 });
 
     let body = {};
@@ -149,6 +155,12 @@ export default async function (req) {
     // Pasted text is used exactly as given: only the employer and role are read out of it.
     if (pasted.length >= MIN_PASTED_TEXT) {
       const details = await readDetails(base44, '', pasted, false);
+      if (isBlocked(details.company, '', blockedEmployers)) {
+        return Response.json(
+          { error: 'This employer is on your blocked list. Unblock it on the Postings page to import this posting.' },
+          { status: 409 }
+        );
+      }
       const enriched = await attachCommute({
         status: 'ok',
         source_url: '',
@@ -178,6 +190,12 @@ export default async function (req) {
       if (jb && jb.fullDescription && jb.fullDescription.length >= MIN_PASTED_TEXT) {
         const primaryUrl = jb.externalUrl || jb.jobBankUrl;
         const details = await readDetails(base44, primaryUrl, jb.fullDescription, false);
+        if (isBlocked(jb.company || details.company, primaryUrl, blockedEmployers)) {
+          return Response.json(
+            { error: 'This employer is on your blocked list. Unblock it on the Postings page to import this posting.' },
+            { status: 409 }
+          );
+        }
         const enriched = await attachCommute({
           status: 'ok',
           source_url: primaryUrl,
@@ -217,6 +235,12 @@ export default async function (req) {
     }
 
     const details = await readDetails(base44, url.toString(), page, true);
+    if (isBlocked(details.company, url.toString(), blockedEmployers)) {
+      return Response.json(
+        { error: 'This employer is on your blocked list. Unblock it on the Postings page to import this posting.' },
+        { status: 409 }
+      );
+    }
     const enriched = await attachCommute({
       status: 'ok',
       source_url: url.toString(),

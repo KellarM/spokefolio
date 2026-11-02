@@ -3,6 +3,7 @@ import { cleanText } from '../../shared/career.ts';
 import { matchesLocationFilter, searchJobBank } from '../../shared/jobBank.ts';
 import { detectCountry } from '../../shared/geo.ts';
 import { estimateCommutes } from '../../shared/commute.ts';
+import { filterBlocked } from '../../shared/blockedCompanies.ts';
 
 const MAX_RESULTS = 8;
 const MAX_HISTORY = 10;
@@ -435,19 +436,29 @@ export default async function (req) {
         ? `roles that fit your history (${titles.length ? titles.join(', ') : 'no titles could be drawn from it yet'})${where}`
         : `"${category}"${where}`;
 
+    // Employers the client has flagged never reach the results. Filtered on the
+    // way out, so a blocked posting costs no import and no tailoring.
+    const blockedEmployers = await base44.entities.BlockedCompany.list('-created_date', 200).catch(() => []);
+    const { kept, dropped } = filterBlocked(results, blockedEmployers);
+
     return Response.json({
       status: 'ok',
       mode,
       category,
       location,
       titles,
-      results,
+      results: kept,
+      blocked_dropped: dropped,
       // A line is shown only when there is something to explain: an empty list, and what to try instead.
-      note: results.length
-        ? ''
-        : detectCountry(location) === 'US' || detectCountry(homeLocation) === 'US'
-          ? `No single posting came back from the US job sites for ${searched}. Some job sites will only show a search page to an automatic search. Try a broader category, a wider distance, or a nearby city or region.`
-          : `No single posting came back from Canada's Job Bank or the job sites for ${searched}. Some job sites will only show a search page to an automatic search. Try a broader category, a wider distance, or a nearby city or region.`
+      note: kept.length
+        ? dropped
+          ? `${dropped} posting${dropped === 1 ? '' : 's'} from employer${dropped === 1 ? '' : 's'} you flagged ${dropped === 1 ? 'was' : 'were'} left out.`
+          : ''
+        : dropped
+          ? `${dropped} posting${dropped === 1 ? '' : 's'} came back, all from employers you flagged, so none are shown.`
+          : detectCountry(location) === 'US' || detectCountry(homeLocation) === 'US'
+            ? `No single posting came back from the US job sites for ${searched}. Some job sites will only show a search page to an automatic search. Try a broader category, a wider distance, or a nearby city or region.`
+            : `No single posting came back from Canada's Job Bank or the job sites for ${searched}. Some job sites will only show a search page to an automatic search. Try a broader category, a wider distance, or a nearby city or region.`
     });
   } catch (error) {
     return Response.json({ error: error.message || 'The job search did not go through.' }, { status: 500 });

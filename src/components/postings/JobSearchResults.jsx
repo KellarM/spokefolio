@@ -5,7 +5,7 @@ import JobResultCard from '@/components/postings/JobResultCard';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 
 // The postings the last search found, with the way to keep, tailor or drop each one.
-export default function JobSearchResults({ search, savingKey, onKeep, onTailor, onDismiss, onClear }) {
+export default function JobSearchResults({ search, savingKey, onKeep, onTailor, onDismiss, onClear, blocked = [], onFlagged }) {
   const { t } = useStudioLanguage();
   const { results, note, mode, category, location, titles, distance, minPay, payPeriod } = search;
 
@@ -71,6 +71,8 @@ export default function JobSearchResults({ search, savingKey, onKeep, onTailor, 
               onKeep={() => onKeep(result)}
               onTailor={() => onTailor(result)}
               onDismiss={() => onDismiss(result)}
+              blocked={blocked}
+              onFlagged={onFlagged}
             />
           ))}
         </ul>

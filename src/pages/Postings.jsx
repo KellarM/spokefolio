@@ -9,6 +9,7 @@ import PostingImportForm from '@/components/postings/PostingImportForm';
 import JobSearchPanel from '@/components/postings/JobSearchPanel';
 import JobSearchResults from '@/components/postings/JobSearchResults';
 import JobBoardDirectory from '@/components/postings/JobBoardDirectory';
+import BlockedCompaniesPanel from '@/components/postings/BlockedCompaniesPanel';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import InstructionPopover from '@/components/guide/InstructionPopover';
 import GuidePrompt from '@/components/guide/GuidePrompt';
@@ -16,6 +17,7 @@ import { guideLabel } from '@/content/guideLabels';
 import { jobPostingsGuide } from '@/content/jobPostingsGuide';
 import useProfile from '@/hooks/useProfile';
 import { pillClass } from '@/components/postings/JobSearchFilters';
+import { loadBlocked } from '@/lib/blockedCompanies';
 import { Search, FolderSearch } from 'lucide-react';
 
 // The last search stays on this device for this account, so results survive
@@ -70,6 +72,25 @@ export default function Postings() {
   const [locating, setLocating] = useState(false);
   const [search, setSearchState] = useState(null);
   const [savingKey, setSavingKey] = useState('');
+  const [blocked, setBlocked] = useState([]);
+
+  // The blocklist is loaded once per visit. A missing entity (before the schema
+  // sync reaches the app) returns an empty list rather than breaking the page.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const records = await loadBlocked();
+      if (!cancelled) setBlocked(records);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const refreshBlocked = useCallback(async () => {
+    setBlocked(await loadBlocked());
+  }, []);
+
   const [tab, setTab] = useState('search');
 
   const load = useCallback(async () => {
@@ -315,6 +336,8 @@ export default function Postings() {
             onTailor={tailorResult}
             onDismiss={dismissResult}
             onClear={() => setSearch(null)}
+            blocked={blocked}
+            onFlagged={refreshBlocked}
           />
         )}
 
@@ -322,6 +345,8 @@ export default function Postings() {
           onExtracted={add}
           hint={t('postings.importHint')}
         />
+
+        <BlockedCompaniesPanel blocked={blocked} onChange={refreshBlocked} />
       </div>
 
       {locating && (

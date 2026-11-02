@@ -1,0 +1,55 @@
+{
+  "name": "BlockedCompany",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "match_key": {
+      "type": "string"
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "reason": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "application",
+        "search",
+        "manual"
+      ],
+      "default": "manual"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "flagged_count": {
+      "type": "number",
+      "default": 1
+    },
+    "last_flagged_at": {
+      "type": "string"
+    },
+    "sample_title": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}
