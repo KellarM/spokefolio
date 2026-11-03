@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Download, Loader2, MessageSquare, Mic, RotateCcw, Sparkles } from 'lucide-react';
+import { Download, ListChecks, Loader2, MessageSquare, Mic, RotateCcw, Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,6 +23,7 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
   const [answer, setAnswer] = useState('');
   const [busy, setBusy] = useState(null); // 'start' | 'answer' | 'next' | 'finish' | null
   const [workshopDone, setWorkshopDone] = useState(false);
+  const [openTranscripts, setOpenTranscripts] = useState({});
 
   const sessions = Array.isArray(application.mock_interviews) ? application.mock_interviews : [];
   const active = sessions.find((s) => s.status === 'active') || null;
@@ -156,6 +157,16 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
   const latestFinished = finished.find((session) => session.turns?.length > 0) || null;
 
   const askCount = active?.turns?.length || 0;
+  const newestFinishedId = finished[0]?.id || null;
+
+  // A drill that has just ended opens its own transcript. The questions are the part
+  // people want back, and they should not have to hunt for a collapsed panel to find them.
+  useEffect(() => {
+    if (!newestFinishedId) return;
+    setOpenTranscripts((prev) => (prev[newestFinishedId] !== undefined
+      ? prev
+      : { ...prev, [newestFinishedId]: true }));
+  }, [newestFinishedId]);
 
   return (
     <section className="mt-6 space-y-4">
@@ -349,7 +360,7 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
           <div className="mt-6 space-y-3 border-t border-border/60 pt-5">
             <p className="eyebrow">Past sessions</p>
             {finished.map((session) => (
-              <details key={session.id} className="rounded-xl border border-border/70 px-4 py-3">
+              <details key={session.id} open={session.id === newestFinishedId} className="rounded-xl border border-border/70 px-4 py-3">
                 <summary className="cursor-pointer text-[13px] font-medium">
                   {new Date(session.started_at).toLocaleDateString('en-CA', { dateStyle: 'medium' })}
                   {' · '}
@@ -365,21 +376,69 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
                     )}
                     <DeleteSessionButton onDelete={() => deleteSession(session.id)} />
                   </div>
-                  {session.session_type === 'answers' && session.turns?.length > 0 && (
-                    <ol className="list-decimal space-y-1.5 pl-4">
-                      {session.turns.map((turn, i) => (
-                        <li key={i}>
-                          {turn.question}
-                          {String(turn.answer || '').trim() && (
-                            <span className="mt-0.5 block text-muted-foreground">My answer: {turn.answer}</span>
-                          )}
-                          {turn.feedback?.improve && (
-                            <span className="mt-0.5 block text-muted-foreground">To improve: {turn.feedback.improve}</span>
-                          )}
-                        </li>
-                      ))}
-                    </ol>
+                  {session.turns?.length > 0 && (
+                    <div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full"
+                        onClick={() => setOpenTranscripts((prev) => ({
+                          ...prev,
+                          [session.id]: !prev[session.id],
+                        }))}
+                      >
+                        <ListChecks className="mr-2 h-3.5 w-3.5" />
+                        {openTranscripts[session.id]
+                          ? t('applications.hideQA')
+                          : `${t('applications.showQA')} (${session.turns.length})`}
+                      </Button>
+
+                      {openTranscripts[session.id] && (
+                        <div className="mt-3 space-y-3">
+                          {session.turns.map((turn, i) => (
+                            <div key={i} className="rounded-xl border border-border/70 bg-muted/30 px-4 py-3">
+                              <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                {t('applications.qaQuestion')} {i + 1}
+                              </span>
+                              <p className="text-[13.5px]">{turn.question}</p>
+
+                              {Array.isArray(turn.examples) && turn.examples.length > 0 && (
+                                <div className="mt-2 space-y-1">
+                                  <span className="block text-[11px] font-semibold uppercase tracking-wide text-accent">
+                                    {t('applications.qaOffered')}
+                                  </span>
+                                  {turn.examples.map((example, k) => (
+                                    <p key={k} className="text-[12.5px] text-muted-foreground">
+                                      {example?.story ? `${example.story}: ` : ''}
+                                      {example?.answer}
+                                    </p>
+                                  ))}
+                                </div>
+                              )}
+
+                              <div className="mt-2.5 border-t border-border/60 pt-2">
+                                <span className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                  {t('applications.qaYourAnswer')}
+                                </span>
+                                <p className="text-[13px]">
+                                  {String(turn.answer || '').trim() || t('applications.qaNoAnswer')}
+                                </p>
+                                {turn.feedback?.landed && (
+                                  <p className="mt-1.5 text-[12.5px] text-muted-foreground">{turn.feedback.landed}</p>
+                                )}
+                                {turn.feedback?.improve && (
+                                  <p className="mt-1 text-[12.5px] text-muted-foreground">
+                                    {t('applications.qaImprove')}: {turn.feedback.improve}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   )}
+
                   {session.summary?.readiness && (
                     <p className="text-[13.5px]">{session.summary.readiness}</p>
                   )}
