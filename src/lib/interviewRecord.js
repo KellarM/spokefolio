@@ -35,6 +35,7 @@ export function buildInterviewRecord({ application, session, labels = {} }) {
     said: 'WHAT YOU SAID',
     landed: 'HOW IT LANDED',
     improve: 'To improve',
+    model: 'THE ANSWER TO GIVE',
     nothing: 'No answer was saved for this question.',
     summary: 'READINESS REPORT',
     strengths: 'What worked',
@@ -179,6 +180,16 @@ export function buildInterviewRecord({ application, session, labels = {} }) {
       y += 11;
       if (fb.landed) line(fb.landed, { size: 9.5, gap: 4 });
       if (fb.improve) line(`${L.improve}: ${fb.improve}`, { size: 9.5, colour: MUTED, gap: 4 });
+      if (fb.model_answer) {
+        y += 4;
+        need(16);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(...GOLD);
+        doc.text(L.model, MARGIN, y);
+        y += 11;
+        line(fb.model_answer, { size: 9.5, gap: 4 });
+      }
     }
   });
 

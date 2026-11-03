@@ -443,6 +443,7 @@ export default {
   'applications.qaYourAnswer': 'O que disseste',
   'applications.qaNoAnswer': 'Não foi guardada resposta para esta.',
   'applications.qaImprove': 'A melhorar',
+  'applications.qaModel': 'A resposta a dar',
   'applications.upcomingInterview': 'Próxima entrevista',
   'applications.interviewLabel': 'Entrevista',
   'applications.historyLabel': 'Mudanças de status',

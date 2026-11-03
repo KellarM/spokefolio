@@ -464,6 +464,7 @@ export default {
   'applications.qaYourAnswer': 'Was du gesagt hast',
   'applications.qaNoAnswer': 'Für diese wurde keine Antwort gespeichert.',
   'applications.qaImprove': 'Verbessern',
+  'applications.qaModel': 'Die Antwort, die du geben solltest',
   'applications.upcomingInterview': 'Nächstes Vorstellungsgespräch',
   'applications.interviewLabel': 'Vorstellungsgespräch',
   'applications.historyLabel': 'Statusänderungen',

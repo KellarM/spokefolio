@@ -464,6 +464,7 @@ export default {
   'applications.qaYourAnswer': "Ce que vous avez dit",
   'applications.qaNoAnswer': "Aucune réponse enregistrée pour celle-ci.",
   'applications.qaImprove': "À améliorer",
+  'applications.qaModel': "La réponse à donner",
   'applications.upcomingInterview': 'Prochain entretien',
   'applications.interviewLabel': 'Entretien',
   'applications.historyLabel': 'Changements de statut',

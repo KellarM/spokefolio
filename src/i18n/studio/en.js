@@ -476,6 +476,7 @@ export default {
   'applications.qaYourAnswer': 'What you said',
   'applications.qaNoAnswer': 'No answer was saved for this one.',
   'applications.qaImprove': 'To improve',
+  'applications.qaModel': 'The answer to give',
   'applications.upcomingInterview': 'Upcoming interview',
   'applications.interviewLabel': 'Interview',
   'applications.historyLabel': 'Status changes',

@@ -431,6 +431,14 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
                                     {t('applications.qaImprove')}: {turn.feedback.improve}
                                   </p>
                                 )}
+                                {turn.feedback?.model_answer && (
+                                  <div className="mt-2.5 rounded-lg border border-accent/40 bg-accent/5 px-3.5 py-3">
+                                    <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-accent">
+                                      {t('applications.qaModel')}
+                                    </span>
+                                    <p className="text-[13px]">{turn.feedback.model_answer}</p>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           ))}
