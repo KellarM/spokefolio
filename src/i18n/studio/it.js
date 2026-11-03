@@ -430,7 +430,7 @@ export default {
   'applications.interviewDate': 'Data del colloquio',
   'applications.interviewAt': 'Ora del colloquio',
   'applications.interviewSaved': 'Colloquio programmato',
-  'applications.downloadRecord': 'Verbale (PDF)',
+  'applications.downloadRecord': "Stampa verbale (PDF)",
   'applications.downloadRecordSaved': 'Verbale del colloquio salvato',
   'applications.downloadRecordHint': 'La domanda, la tua risposta e la valutazione, in PDF.',
   'applications.downloadRecordEmpty': 'Non c’è ancora nulla da salvare',

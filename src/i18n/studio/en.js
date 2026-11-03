@@ -463,7 +463,7 @@ export default {
   'applications.interviewDate': 'Interview date',
   'applications.interviewAt': 'Interview time',
   'applications.interviewSaved': 'Interview scheduled',
-  'applications.downloadRecord': 'Record (PDF)',
+  'applications.downloadRecord': 'Print record (PDF)',
   'applications.downloadRecordSaved': 'Interview record saved',
   'applications.downloadRecordHint': 'Question, your answer and the grade, saved as a PDF.',
   'applications.downloadRecordEmpty': 'Nothing to save yet',

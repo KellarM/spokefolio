@@ -430,7 +430,7 @@ export default {
   'applications.interviewDate': 'Data da entrevista',
   'applications.interviewAt': 'Hora da entrevista',
   'applications.interviewSaved': 'Entrevista agendada',
-  'applications.downloadRecord': 'Registro (PDF)',
+  'applications.downloadRecord': "Imprimir o registo (PDF)",
   'applications.downloadRecordSaved': 'Registo da entrevista guardado',
   'applications.downloadRecordHint': 'A pergunta, a tua resposta e a nota, em PDF.',
   'applications.downloadRecordEmpty': 'Ainda não há nada para guardar',

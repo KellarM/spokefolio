@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Loader2, RotateCcw } from 'lucide-react';
+import { Download, Loader2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import WorkshopAnswerBox from '@/components/applications/WorkshopAnswerBox';
 
 // Mock interview, answers type: the interviewer asks one question at a time and shows
 // two answers the candidate could give, each built from a different experience in
 // their history, with room underneath for their own third answer.
-export default function AnswerWorkshop({ session, busy, atEnd, onCall }) {
+export default function AnswerWorkshop({ session, busy, atEnd, onCall, onDownload, downloadLabel }) {
   const turns = Array.isArray(session.turns) ? session.turns : [];
   // A question reopened for another attempt comes back without its answer, so the words
   // already written are handed to the box to retry from.
@@ -96,6 +96,12 @@ export default function AnswerWorkshop({ session, busy, atEnd, onCall }) {
           {busy === 'finish' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           End session
         </Button>
+        {onDownload && (
+          <Button variant="outline" className="rounded-full" onClick={onDownload}>
+            <Download className="mr-2 h-4 w-4" />
+            {downloadLabel || 'Print record (PDF)'}
+          </Button>
+        )}
         <span className="ml-auto text-[12px] text-muted-foreground">
           {turns.length} question{turns.length === 1 ? '' : 's'}
         </span>

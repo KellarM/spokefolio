@@ -451,7 +451,7 @@ export default {
   'applications.interviewDate': 'Datum des Vorstellungsgesprächs',
   'applications.interviewAt': 'Uhrzeit des Vorstellungsgesprächs',
   'applications.interviewSaved': 'Vorstellungsgespräch geplant',
-  'applications.downloadRecord': 'Protokoll (PDF)',
+  'applications.downloadRecord': "Protokoll drucken (PDF)",
   'applications.downloadRecordSaved': 'Interviewprotokoll gespeichert',
   'applications.downloadRecordHint': 'Die Frage, deine Antwort und die Bewertung, als PDF.',
   'applications.downloadRecordEmpty': 'Noch nichts zu speichern',

@@ -451,7 +451,7 @@ export default {
   "applications.interviewDate": "Date de l'entretien",
   "applications.interviewAt": "Heure de l'entretien",
   'applications.interviewSaved': 'Entretien planifié',
-  'applications.downloadRecord': 'Relevé (PDF)',
+  'applications.downloadRecord': "Imprimer le relevé (PDF)",
   'applications.downloadRecordSaved': "Relevé d’entretien enregistré",
   'applications.downloadRecordHint': "La question, votre réponse et la note, en PDF.",
   'applications.downloadRecordEmpty': "Rien à enregistrer pour le moment",

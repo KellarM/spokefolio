@@ -209,7 +209,14 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
         )}
 
         {active && isWorkshop && (
-          <AnswerWorkshop session={active} busy={busy} atEnd={workshopDone} onCall={call} />
+          <AnswerWorkshop
+            session={active}
+            busy={busy}
+            atEnd={workshopDone}
+            onCall={call}
+            onDownload={() => downloadRecord(active)}
+            downloadLabel={t('applications.downloadRecord')}
+          />
         )}
 
         {active && !isWorkshop && (
@@ -322,11 +329,17 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Button className="rounded-full" onClick={() => call('finish')} disabled={busy === 'finish'}>
                   {busy === 'finish' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Wrap up and get my report
                 </Button>
+                {active?.turns?.length > 0 && (
+                  <Button variant="outline" className="rounded-full" onClick={() => downloadRecord(active)}>
+                    <Download className="mr-2 h-4 w-4" />
+                    {t('applications.downloadRecord')}
+                  </Button>
+                )}
               </div>
             )}
           </div>
