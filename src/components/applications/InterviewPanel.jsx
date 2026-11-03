@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Loader2, MessageSquare, Mic, RotateCcw, Sparkles } from 'lucide-react';
+import { Download, Loader2, MessageSquare, Mic, RotateCcw, Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,6 +9,8 @@ import { useToast } from '@/components/ui/use-toast';
 import AnswerWorkshop from '@/components/applications/AnswerWorkshop';
 import InterviewVoice from '@/components/applications/InterviewVoice';
 import DeleteSessionButton from '@/components/applications/DeleteSessionButton';
+import { useStudioLanguage } from '@/lib/StudioLanguage';
+import { downloadInterviewRecord } from '@/lib/interviewRecord';
 
 // The Interview section: the app plays the hiring company's HR interviewer for this
 // specific role. Answers can be typed or spoken with the dictate button. Every drill
@@ -17,6 +19,7 @@ import DeleteSessionButton from '@/components/applications/DeleteSessionButton';
 // worth asking - sits beneath the drill in the same column.
 export default function InterviewPanel({ application, onApplicationUpdate, onDrillFinished }) {
   const { toast } = useToast();
+  const { t } = useStudioLanguage();
   const [answer, setAnswer] = useState('');
   const [busy, setBusy] = useState(null); // 'start' | 'answer' | 'next' | 'finish' | null
   const [workshopDone, setWorkshopDone] = useState(false);
@@ -123,6 +126,35 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
     toast({ title: 'Session deleted', description: 'That mock interview and its report are gone.' });
   };
 
+
+  // The record on paper: every question asked, both answers that were offered, what the
+  // candidate actually said, and the grade. Generated from the session itself, so it is
+  // the drill as it happened rather than a retelling of it.
+  const downloadRecord = (session) => {
+    if (!session || !(session.turns?.length > 0)) {
+      toast({
+        title: t('applications.downloadRecordEmpty'),
+        description: t('applications.downloadRecordEmptyHint'),
+      });
+      return;
+    }
+    try {
+      downloadInterviewRecord({ application, session });
+      toast({
+        title: t('applications.downloadRecordSaved'),
+        description: t('applications.downloadRecordHint'),
+      });
+    } catch (error) {
+      toast({
+        title: t('applications.downloadRecordFailed'),
+        description: error?.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const latestFinished = finished.find((session) => session.turns?.length > 0) || null;
+
   const askCount = active?.turns?.length || 0;
 
   return (
@@ -163,6 +195,16 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
               {busy === 'start' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
               {busy === 'start' ? 'The interviewer is getting ready…' : 'Mock interview / Answers'}
             </Button>
+            {(active?.turns?.length > 0 || latestFinished) && (
+              <Button
+                variant="outline"
+                className="rounded-full"
+                onClick={() => downloadRecord(active || latestFinished)}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {t('applications.downloadRecord')}
+              </Button>
+            )}
           </div>
         )}
 
@@ -301,7 +343,13 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
                   {session.turns?.length || 0} questions
                 </summary>
                 <div className="mt-3 space-y-3 text-[13px]">
-                  <div className="flex justify-end">
+                  <div className="flex justify-end gap-2">
+                    {session.turns?.length > 0 && (
+                      <Button variant="outline" size="sm" className="rounded-full" onClick={() => downloadRecord(session)}>
+                        <Download className="mr-2 h-3.5 w-3.5" />
+                        {t('applications.downloadRecord')}
+                      </Button>
+                    )}
                     <DeleteSessionButton onDelete={() => deleteSession(session.id)} />
                   </div>
                   {session.session_type === 'answers' && session.turns?.length > 0 && (
