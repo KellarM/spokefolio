@@ -124,6 +124,18 @@ export default function DocumentRow({ doc, onDelete }) {
             <ExternalLink className="h-4 w-4" strokeWidth={3} />
           )}
         </button>
+
+        {/* Removing a file has to be reachable without opening it first: hunting
+            for the control inside a collapsed row reads as "cannot be removed". */}
+        <button
+          type="button"
+          onClick={() => onDelete(doc)}
+          title={t('common.remove')}
+          aria-label={`${t('common.remove')}: ${doc.name}`}
+          className="my-2 mr-3 grid h-10 w-10 shrink-0 place-items-center rounded-full border-[3px] border-black bg-transparent text-black transition-colors hover:bg-black hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-gold"
+        >
+          <Trash2 className="h-4 w-4" strokeWidth={3} />
+        </button>
       </div>
 
       {open && (

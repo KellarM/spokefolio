@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { FileUp, Loader2 } from 'lucide-react';
+import { FileUp, Loader2, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,21 @@ export default function DocumentUploader({ onChanged }) {
   const [docType, setDocType] = useState('previous_resume');
   const [notes, setNotes] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // A file chosen by mistake has to be undoable before it is uploaded, otherwise
+  // the only way out is to reload the page and start again.
+  const dropFile = (index) => {
+    setFiles((current) => current.filter((_, i) => i !== index));
+    if (files.length <= 1 && inputRef.current) inputRef.current.value = '';
+  };
+
+  const cancelSelection = () => {
+    setFiles([]);
+    setNotes('');
+    setDocType('previous_resume');
+    // Clearing the input's value is what lets the same file be picked again.
+    if (inputRef.current) inputRef.current.value = '';
+  };
 
   const upload = async () => {
     if (!files.length) return;
@@ -80,13 +95,38 @@ export default function DocumentUploader({ onChanged }) {
       </label>
 
       {files.length > 0 && (
-        <ul className="mt-3 space-y-1.5">
-          {files.map((file) => (
-            <li key={file.name} className="truncate rounded-lg bg-secondary px-3 py-2 text-[12.5px]">
-              {file.name}
-            </li>
-          ))}
-        </ul>
+        <div className="mt-3">
+          <ul className="space-y-1.5">
+            {files.map((file, index) => (
+              <li
+                key={`${file.name}-${index}`}
+                className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-1.5 text-[12.5px]"
+              >
+                <span className="min-w-0 flex-1 truncate">{file.name}</span>
+                <button
+                  type="button"
+                  onClick={() => dropFile(index)}
+                  title={t('common.remove')}
+                  aria-label={`${t('common.remove')}: ${file.name}`}
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-black/20 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                >
+                  <X className="h-3.5 w-3.5" strokeWidth={3} />
+                </button>
+              </li>
+            ))}
+          </ul>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="mt-2 rounded-full text-muted-foreground hover:text-foreground"
+            onClick={cancelSelection}
+            disabled={busy}
+          >
+            <X className="mr-1.5 h-3.5 w-3.5" />
+            {t('common.cancel')}
+          </Button>
+        </div>
       )}
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
