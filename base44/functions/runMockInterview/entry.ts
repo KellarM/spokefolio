@@ -277,13 +277,17 @@ async function uniqueExamples(prompt: string, schema: any, priors: string[]) {
   const second: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
     prompt: `${prompt}
 
-CORRECTION REQUIRED. The pair you just wrote repeats an answer already given in this drill:
+CORRECTION REQUIRED. The pair you just wrote repeats an answer already given in this drill. Here is the earlier answer it repeats, and about ${Math.round(clash.score * 100)}% of it has come back:
 """
-${clash.answer}
+${clash.earlier}
 """
-About ${Math.round(clash.score * 100)}% of it appears again, in the same order. Write the pair again. Neither answer may repeat that answer, its sentences, its opening or the same combination of evidence, and a light rewording does not count as a different answer. Draw on a different incident, or a different aspect of the same experience with different specifics, and keep every answer distinct from all the answers above.`,
+Write the pair again, and take a genuinely different incident from the record: a different task, a different outcome, different evidence. Neither answer may reuse that earlier answer's sentences, its opening, its numbers, its evidence or its sequence of events, and a light rewording does not count as a different answer. A different aspect of an experience already used is allowed only when it carries different specifics. Keep both answers distinct from every answer above.`,
     response_json_schema: schema
   });
+
+  // A correction that comes back empty is no better than the repeat, and the
+  // drill still has to hand back an answer.
+  if (!examplesOf(second?.examples).length) return first;
 
   const firstScore = worstOverlap(examplesOf(first?.examples), priors);
   const secondScore = worstOverlap(examplesOf(second?.examples), priors);
@@ -609,7 +613,7 @@ Rules:
 - Ground every judgment in the resume and the posting. If the answer dodges the question, misses an obvious metric from the resume, or sounds rehearsed and hollow, say so plainly in "improve". No flattery.
 - Stay in the interviewer's lane: you know this candidate exactly as the person who will actually meet them does, from the resume and the posting, and they can only judge what was said out loud. Never fault an answer for leaving out something that appears only in the background notes, never ask them to account for it, and never suggest they were hiding it: what a candidate puts on their own resume is their call, and nobody in that room can miss what they never saw.
 - Never invent experience the candidate does not have. If they claimed something that is in neither the resume nor the recorded history, call it out in "improve"; if the history does record it, they were right to say it, so judge the answer on how well it answered the question instead.
-- Never hand back an answer to give that repeats one you already offered earlier in this drill, or says the same thing in different words: two questions answered with one story is what a rehearsed script sounds like. Where the natural example has already been used, reach for a different incident or a different aspect of it, with different evidence.
+- Never hand back an answer to give that repeats one you already offered earlier in this drill, or says the same thing in different words: two questions answered with one story is what a rehearsed script sounds like. The opening, the numbers, the evidence and the sequence of events must all differ from every answer already offered above. When the experience that fits has already been used, take a different incident from it, or a different aspect of it with different specifics, rather than retelling it; and when nothing distinct is left in the record, answer from a different angle of the posting.
 - model_answer is the answer you wish they had given: the same answer done properly. First person, in the candidate's own voice, using only experience that is in the resume or the history above. 3 to 5 spoken sentences that directly answer this question, name the specific example, and include a concrete detail from the resume (a number, a system, a program) where one exists. Fold in whatever "improve" says was missing. Invent nothing new, and keep every detail inside the one experience it came from: never move a fact to another role, and never state a system, method or setting the resume does not record for that experience. If the question assumes something the candidate's history does not have, answer from the nearest real experience and say plainly where theirs differed.
 - Questions already asked: ${askedCount}. Cover the posting's requirements across the drill; do not repeat a question.
 ${askedCount >= MAX_TURNS ? '- The drill has reached its question limit: set next_question to null.' : ''}
@@ -655,7 +659,11 @@ Return model_answer only.`,
           }
         });
         const replacement = text(rewritten?.model_answer, 1600);
-        if (replacement && overlap(replacement, repeated.earlier) < repeated.score) modelAnswer = replacement;
+        // Keep whichever answer clashes least with everything already offered: a
+        // rewrite that dodges the one quoted answer but echoes another is no better.
+        const worstOf = (candidate: string) =>
+          alreadyGiven.reduce((worst: number, earlier: string) => Math.max(worst, overlap(candidate, earlier)), 0);
+        if (replacement && worstOf(replacement) < worstOf(modelAnswer)) modelAnswer = replacement;
       }
 
       turns[openIndex].feedback = {
