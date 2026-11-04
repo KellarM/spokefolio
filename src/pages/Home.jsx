@@ -17,14 +17,41 @@ export default function Home() {
   const [entries, setEntries] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [applications, setApplications] = useState([]);
+  const [resumeCount, setResumeCount] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  // The ticker used to report the twenty applications the page happens to hold,
+  // which looked like a ceiling on the work done rather than a count of it. The
+  // number is now counted across every page, so it keeps rising past the point
+  // where the recent list stops.
+  const countResumes = async () => {
+    const pageSize = 100;
+    let total = 0;
+    let skip = 0;
+    for (let guard = 0; guard < 100; guard += 1) {
+      const page = (await base44.entities.JobApplication.list('-created_date', pageSize, skip)) || [];
+      total += page.filter((application) => {
+        const resume = application && application.resume;
+        if (!resume) return false;
+        return Boolean(
+          (resume.summary && String(resume.summary).trim()) ||
+            (Array.isArray(resume.experience) && resume.experience.length > 0) ||
+            (Array.isArray(resume.skills) && resume.skills.length > 0)
+        );
+      }).length;
+      if (page.length < pageSize) break;
+      skip += pageSize;
+    }
+    return total;
+  };
 
   const load = useCallback(async () => {
     try {
-      const [entryRecords, documentRecords, applicationRecords] = await Promise.all([
+      const [entryRecords, documentRecords, applicationRecords, resumeTotal] = await Promise.all([
         base44.entities.CareerEntry.list('-created_date', 200),
         base44.entities.SupportingDocument.list('-created_date', 100),
-        base44.entities.JobApplication.list('-created_date', 20)
+        base44.entities.JobApplication.list('-created_date', 20),
+        countResumes().catch(() => 0)
       ]);
       // Every entry is kept here, hidden ones included. The capture signature
       // is written over the whole set when the history is saved, so asking the
@@ -33,6 +60,7 @@ export default function Home() {
       setEntries(entryRecords || []);
       setDocuments(documentRecords || []);
       setApplications(applicationRecords || []);
+      setResumeCount(resumeTotal || 0);
     } catch {
       // Unauthenticated preview fallback
     }
@@ -83,7 +111,7 @@ export default function Home() {
           <span>{t('home.tickerFiles')}</span>
         </div>
         <div className="mec-tk">
-          <b>{applications.length}</b>
+          <b>{resumeCount}</b>
           <span>{t('home.tickerResumes')}</span>
         </div>
       </div>

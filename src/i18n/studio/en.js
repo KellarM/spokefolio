@@ -108,7 +108,7 @@ export default {
   'home.tickerEntries': 'Entries',
   'home.tickerConfirmed': 'Confirmed',
   'home.tickerFiles': 'Files',
-  'home.tickerResumes': 'Résumés',
+  'home.tickerResumes': 'Résumés Tailored',
   'home.masterHistory': 'Master history',
   'home.loadingStudio': 'Loading your studio…',
   'home.completeHistory': 'Complete and lock in your career history to generate your master summary.',
