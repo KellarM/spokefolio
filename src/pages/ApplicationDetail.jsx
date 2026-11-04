@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Calendar as CalendarIcon, Clock, Download, ExternalLink, Eye, Loader2, Mail, MessageSquare, Pencil, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { base44 } from '@/api/base44Client';
 import { trackEvent } from '@/lib/analytics';
+import { recordEdit, undoEdit, undoLabel } from '@/lib/resumeHistory';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -153,11 +154,48 @@ export default function ApplicationDetail() {
     toast({ title, description: error?.response?.data?.error || error.message, variant: 'destructive' });
   };
 
-  const handleResumeChange = (nextResume) => {
+  // Every change to the résumé is recorded before it lands, so a change that turns out
+  // to be worse can be put back without rebuilding it by hand. Typing inside a short
+  // window counts as one edit; an accepted proposal is always its own.
+  const historyRef = useRef([]);
+  const [undoState, setUndoState] = useState({ count: 0, label: '' });
+
+  const syncUndo = () => {
+    setUndoState({ count: historyRef.current.length, label: undoLabel(historyRef.current) });
+  };
+
+  const recordResumeEdit = (meta = {}) => {
+    historyRef.current = recordEdit(historyRef.current, {
+      before: resume,
+      label: meta.label || '',
+      discrete: meta.discrete === true
+    });
+    syncUndo();
+  };
+
+  const handleResumeChange = (nextResume, meta = {}) => {
+    recordResumeEdit(meta);
     setResume(nextResume);
     if (application?.id) {
       base44.entities.JobApplication.update(application.id, { resume: nextResume }).catch(() => {});
     }
+  };
+
+  // Put back the résumé as it was before the last edit, and save it, so a reload does
+  // not bring the worse version back.
+  const undoLastEdit = () => {
+    const { entry, rest } = undoEdit(historyRef.current);
+    if (!entry) return;
+    historyRef.current = rest;
+    syncUndo();
+    setResume(entry.resume);
+    if (application?.id) {
+      base44.entities.JobApplication.update(application.id, { resume: entry.resume }).catch(() => {});
+    }
+    toast({
+      title: entry.label ? `Undid: ${entry.label}` : 'Last edit undone',
+      description: 'Run the check again to see the mark move.'
+    });
   };
 
   const persist = async (patch = {}) => {
@@ -324,6 +362,7 @@ export default function ApplicationDetail() {
         interview_prep: null
       });
       setApplication(updated);
+      recordResumeEdit({ discrete: true, label: 'Rewrote the résumé for this posting' });
       setResume(updated.resume || nextResume);
       setCoverLetter(updated.cover_letter || nextLetter);
       await saveProfile({ headline: nextResume.headline }).catch(() => {});
@@ -516,7 +555,10 @@ export default function ApplicationDetail() {
   const acceptProposal = () => {
     if (!proposal) return;
     if (proposal.outcome === 'ready') {
-      handleResumeChange(proposal.resume);
+      handleResumeChange(proposal.resume, {
+        discrete: true,
+        label: proposal.fix?.title ? 'Added the suggested change' : 'Added a suggested change'
+      });
       toast({ title: 'Added to the résumé', description: 'Run the check again to see the mark move.' });
     }
     setProposal(null);
@@ -636,6 +678,9 @@ export default function ApplicationDetail() {
       )}
 
       <ResumeRunPanel
+        canUndo={undoState.count > 0}
+        undoLabel={undoState.label}
+        onUndo={undoLastEdit}
         run={runs[0] || null}
         history={runs}
         onRun={runCheck}

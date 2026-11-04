@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Loader2, Play, Plus, TrendingUp } from 'lucide-react';
+import { ChevronDown, Loader2, Play, Plus, TrendingUp, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ResumeRunDetail from '@/components/applications/ResumeRunDetail';
 import RunFixProposal from '@/components/applications/RunFixProposal';
@@ -51,7 +51,10 @@ export default function ResumeRunPanel({
   applyingIndex = null,
   proposal,
   onAcceptProposal,
-  onDiscardProposal
+  onDiscardProposal,
+  canUndo = false,
+  undoLabel = '',
+  onUndo
 }) {
   const band = (run && BANDS[run.band]) || FALLBACK;
   const previous = history.length > 1 ? history[1].score : null;
@@ -102,6 +105,16 @@ export default function ResumeRunPanel({
               {open ? 'Hide the breakdown' : 'Show the breakdown'}
             </Button>
           )}
+          <Button
+            variant="outline"
+            className="rounded-full"
+            onClick={onUndo}
+            disabled={!canUndo || running}
+            title={canUndo ? `Put the résumé back to before: ${undoLabel}` : 'Nothing to undo yet'}
+          >
+            <Undo2 className="mr-2 h-4 w-4" />
+            Undo last edit
+          </Button>
           <Button className="rounded-full" onClick={onRun} disabled={running}>
             {running ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
             {run ? 'Run again' : 'Run the check'}
