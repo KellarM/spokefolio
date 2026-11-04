@@ -35,9 +35,10 @@ export default async function (req) {
     const recipient = body?.recipient && typeof body.recipient === 'object' ? { ...body.recipient } : {};
     // Named after the company the letter is written to, whether the page said so or not.
     recipient.company = await resolveCompanyForDocument({
-      company: recipient.company,
+      // The page sends the company on the recipient and, since this fix, beside it too.
+      company: recipient.company || body?.company,
       label: body?.label,
-      jobTitle: recipient.job_title,
+      jobTitle: recipient.job_title || body?.job_title,
       listApplications: () => applicationsFor(req)
     });
 

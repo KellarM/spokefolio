@@ -3,23 +3,19 @@ import { Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 import { downloadDocxFile } from '@/lib/downloadDocx';
+import { downloadPdfFile } from '@/lib/downloadPdf';
 
-function downloadPdfFile(base64, filename, fallback = 'resume.pdf') {
-  const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
-  const blob = new Blob([bytes], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename || fallback;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+// The server names the file ("Kellar - Resume - Rexel Group.pdf"). What it sends back is
+// the name the browser must use, so a missing one is an error, never a guessed name.
+function namedFile(data, kind) {
+  const filename = String(data?.filename || '').trim();
+  if (!filename) throw new Error(`The ${kind} came back without a file name.`);
+  return filename;
 }
 
 // Both downloads are the tailored résumé this application holds, in the style it uses —
 // the same document the Word button in the header and the emailed package are built from.
-export default function ResumeDownloadButtons({ profile, resume, template, layout, styleOverrides, label, company = '', className = '' }) {
+export default function ResumeDownloadButtons({ profile, resume, template, layout, styleOverrides, label, company = '', jobTitle = '', className = '' }) {
   const { toast } = useToast();
   const [busy, setBusy] = useState('');
 
@@ -35,11 +31,13 @@ export default function ResumeDownloadButtons({ profile, resume, template, layou
           layout,
           style_overrides: styleOverrides,
           label,
-          company
+          company,
+          job_title: jobTitle
         });
         if (!data?.base64) throw new Error('The PDF came back empty.');
-        downloadPdfFile(data.base64, data.filename, 'resume.pdf');
-        toast({ title: 'Résumé PDF downloaded', description: data.filename });
+        const filename = namedFile(data, 'PDF');
+        downloadPdfFile(data.base64, filename);
+        toast({ title: 'Résumé PDF downloaded', description: filename });
       } else {
         const { data } = await base44.functions.invoke('exportResumeDocx', {
           profile,
@@ -48,11 +46,13 @@ export default function ResumeDownloadButtons({ profile, resume, template, layou
           template,
           layout,
           style_overrides: styleOverrides,
-          company
+          company,
+          job_title: jobTitle
         });
         if (!data?.base64) throw new Error('The Word document came back empty.');
-        downloadDocxFile(data.base64, data.filename, 'resume.docx');
-        toast({ title: 'Word document downloaded', description: data.filename });
+        const filename = namedFile(data, 'Word document');
+        downloadDocxFile(data.base64, filename);
+        toast({ title: 'Word document downloaded', description: filename });
       }
     } catch (error) {
       toast({

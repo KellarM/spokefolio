@@ -24,12 +24,14 @@ export function lastNameOf(fullName: unknown): string {
   return parts.length ? parts[parts.length - 1] : '';
 }
 
-/** Characters that break a download on Windows, macOS or a web form. */
+/**
+ * Characters that break a download on Windows, macOS or a web form. Those are
+ * removed and nothing else: the words of a name or a company are kept exactly as
+ * written, spaces included, so "Rexel  Group" never comes back as "Rexel Group".
+ */
 function cleanPart(value: unknown): string {
   return String(value || '')
-    .replace(/[\\/:*?"<>|\u0000-\u001f]+/g, ' ')
-    .replace(/\s*-\s*$/g, '')
-    .replace(/\s{2,}/g, ' ')
+    .replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '')
     .trim();
 }
 

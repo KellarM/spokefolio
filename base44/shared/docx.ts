@@ -501,10 +501,11 @@ function packDocx(body, filename, style, portrait) {
   return { base64: toBase64(bytes), filename: safeFilename(filename) };
 }
 
+// The name comes from filenames.ts already. Only the characters a filesystem
+// refuses are taken out here, and the spaces around them are left alone.
 function safeFilename(base, fallback = 'document') {
   const clean = String(base || '')
-    .replace(/[\\/:*?"<>|]+/g, '-')
-    .replace(/\s+/g, ' ')
+    .replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '')
     .trim()
     .slice(0, 120);
   return (clean || fallback) + '.docx';

@@ -230,12 +230,14 @@ export default function ApplicationDetail() {
         resume: saved.resume || resume,
         label,
         company: saved.company || '',
+        job_title: saved.job_title || '',
         template,
         layout,
         style_overrides: styleOverrides
       });
       const { base64, filename } = response.data || {};
-      downloadDocxFile(base64, filename, 'resume.docx');
+      if (!filename) throw new Error('The export did not name the file.');
+      downloadDocxFile(base64, filename);
       toast({ title: 'Word document downloaded', description: filename });
     } catch (error) {
       reportError('Could not build the Word document', error);
@@ -250,10 +252,13 @@ export default function ApplicationDetail() {
       const response = await base44.functions.invoke('exportCoverLetterDocx', {
         profile,
         cover_letter: saved.cover_letter || coverLetter,
+        company: saved.company || '',
+        job_title: saved.job_title || '',
         recipient: { company: saved.company, job_title: saved.job_title }
       });
       const { base64, filename } = response.data || {};
-      downloadDocxFile(base64, filename, 'cover-letter.docx');
+      if (!filename) throw new Error('The export did not name the file.');
+      downloadDocxFile(base64, filename);
       toast({ title: 'Cover letter downloaded', description: filename });
     } catch (error) {
       reportError('Could not build the cover letter', error);
@@ -268,10 +273,13 @@ export default function ApplicationDetail() {
       const response = await base44.functions.invoke('exportCoverLetterPdf', {
         profile,
         cover_letter: saved.cover_letter || coverLetter,
+        company: saved.company || '',
+        job_title: saved.job_title || '',
         recipient: { company: saved.company, job_title: saved.job_title }
       });
       const { base64, filename } = response.data || {};
-      downloadPdfFile(base64, filename, 'cover-letter.pdf');
+      if (!filename) throw new Error('The export did not name the file.');
+      downloadPdfFile(base64, filename);
       toast({ title: 'Cover letter PDF downloaded', description: filename });
     } catch (error) {
       reportError('Could not build the cover letter PDF', error);
@@ -718,6 +726,7 @@ export default function ApplicationDetail() {
           <div className="flex flex-wrap items-center gap-2">
             <ResumeDownloadButtons
               company={application?.company || ''}
+              jobTitle={application?.job_title || ''}
               profile={profile}
               resume={resume}
               template={template}
