@@ -9,7 +9,7 @@
 // file readable by applicant tracking systems.
 
 import { PDFDocument, StandardFonts, rgb } from 'npm:pdf-lib@1.17.1';
-import { documentFile } from './filenames.ts';
+import { documentFile, documentName } from './filenames.ts';
 import { applyLayoutToTheme, applyStyleOverrides, resolveDocxConfig, resolveDocxTheme, tintHex } from './resumeTemplates.ts';
 import { fitResumeToPages } from './resumeFit.ts';
 
@@ -377,6 +377,11 @@ export async function buildResumePdf({
   const side = Math.max(34, twips(theme.margin, 50.4));
   const margin: Margins = { top: side, right: side, bottom: side, left: side };
   const { doc, writer: w, families } = await open(margin);
+  // The title is what a print or Save-as-PDF dialog offers as the file name, so the
+  // document carries the same name the download would have given it.
+  doc.setTitle(documentName({ fullName: profile?.full_name, kind: 'resume', company }));
+  doc.setProducer('Spokefolio');
+  if (profile?.full_name) doc.setAuthor(String(profile.full_name));
   const pick = (name: unknown): FontSet => (isSerif(name) ? families.serif : families.sans);
 
   // --- identity block ---
@@ -675,6 +680,9 @@ export async function buildCoverLetterPdf({
 }) {
   const margin: Margins = { top: 54, right: 54, bottom: 54, left: 54 };
   const { doc, writer: w, families } = await open(margin);
+  doc.setTitle(documentName({ fullName: profile?.full_name, kind: 'cover', company: recipient?.company }));
+  doc.setProducer('Spokefolio');
+  if (profile?.full_name) doc.setAuthor(String(profile.full_name));
   const fonts = families.sans;
 
   w.text(profile?.full_name || 'Your Name', { font: fonts.bold, size: 20, after: 2 });
