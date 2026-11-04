@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { buildResumeDocx } from '../../shared/docx.ts';
+import { resolveCompany } from '../../shared/filenames.ts';
 import { resolveDocxConfig, sanitizeResumeLayout, sanitizeResumeStyleOverrides } from '../../shared/resumeTemplates.ts';
 import { loadPhoto } from '../../shared/photo.ts';
 
@@ -46,7 +47,7 @@ export default async function (req) {
 
     const overrides = sanitizeResumeStyleOverrides(body?.style_overrides);
     // The posting this résumé is aimed at, so the file carries the company in its name.
-    const company = typeof body?.company === 'string' ? body.company : '';
+    const company = resolveCompany(body?.company, body?.label);
     const { base64, filename } = buildResumeDocx({ profile, resume, label, template, photo, layout, overrides, company });
 
     return Response.json({ base64, filename });

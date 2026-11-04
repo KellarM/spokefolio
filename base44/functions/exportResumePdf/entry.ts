@@ -1,4 +1,5 @@
 import { buildResumePdf } from '../../shared/pdf.ts';
+import { resolveCompany } from '../../shared/filenames.ts';
 import { sanitizeResumeLayout, sanitizeResumeStyleOverrides } from '../../shared/resumeTemplates.ts';
 
 // Draws the tailored résumé on the server, in the style that application uses, and hands
@@ -32,7 +33,7 @@ export default async function (req) {
 
     const overrides = sanitizeResumeStyleOverrides(body?.style_overrides);
     // The posting this résumé is aimed at, so the file carries the company in its name.
-    const company = typeof body?.company === 'string' ? body.company : '';
+    const company = resolveCompany(body?.company, body?.label);
     const { bytes, filename, pages } = await buildResumePdf({ profile, resume, template, layout, overrides, company });
 
     return Response.json({ base64: toBase64(bytes), filename, pages });

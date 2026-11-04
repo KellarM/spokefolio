@@ -50,3 +50,32 @@ export function documentFile({ fullName, kind, company, extension }: { fullName?
   // A very long company name still has to survive a filesystem path.
   return documentName({ fullName, kind, company }).slice(0, 120).trim() + '.' + ext;
 }
+
+/**
+ * The company out of the label a page already sends.
+ *
+ * Two shapes reach the server: the download buttons label a document
+ * "Company_Job Title", and the header download labels it "Job Title - Company".
+ * Both are read here so a client that predates the explicit company field still
+ * produces a correctly named file. "Resume_..." is the placeholder for an
+ * application with no company yet, so it means nothing and is ignored.
+ */
+export function companyFromLabel(label: unknown): string {
+  const text = String(label || '').trim();
+  if (!text) return '';
+  const underscore = text.indexOf('_');
+  if (underscore > 0) {
+    const head = text.slice(0, underscore).trim();
+    return head.toLowerCase() === 'resume' || head.toLowerCase() === 'cover' ? '' : head;
+  }
+  const parts = text.split(' - ').map((part) => part.trim()).filter(Boolean);
+  if (parts.length < 2) return '';
+  const last = parts[parts.length - 1];
+  return last.toLowerCase() === 'resume' || last.toLowerCase() === 'cover' ? '' : last;
+}
+
+/** The company to name a file after: the explicit field first, then the label. */
+export function resolveCompany(company: unknown, label: unknown): string {
+  const explicit = cleanPart(company);
+  return explicit || companyFromLabel(label);
+}
