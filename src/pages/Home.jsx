@@ -9,6 +9,35 @@ import RecentApplications from '@/components/home/RecentApplications';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import { useTour } from '@/lib/TourContext';
 
+const RESUME_PAGE = 100;
+const RESUME_PAGE_LIMIT = 100;
+
+// A tailored résumé is what makes an application count on the ticker: a saved
+// posting with nothing written for it is not work done.
+const carriesResume = (record) => {
+  const resume = record?.resume || {};
+  return Boolean(
+    String(resume.summary || '').trim() ||
+      (Array.isArray(resume.experience) && resume.experience.length > 0) ||
+      (Array.isArray(resume.skills) && resume.skills.length > 0)
+  );
+};
+
+// The ticker counts every résumé on the account. Reading the length of the
+// recent block's page froze the figure at twenty the moment the account passed
+// twenty applications, which read as a cap on the work done. This walks the
+// account in blocks instead, and stops on a short page.
+const countResumes = async () => {
+  let total = 0;
+  for (let page = 0; page < RESUME_PAGE_LIMIT; page += 1) {
+    const records = await base44.entities.JobApplication.list('-created_date', RESUME_PAGE, page * RESUME_PAGE);
+    const batch = records || [];
+    total += batch.filter(carriesResume).length;
+    if (batch.length < RESUME_PAGE) break;
+  }
+  return total;
+};
+
 export default function Home() {
   const { t } = useStudioLanguage();
   const tour = useTour();
@@ -17,14 +46,17 @@ export default function Home() {
   const [entries, setEntries] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [applications, setApplications] = useState([]);
+  const [resumeCount, setResumeCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     try {
-      const [entryRecords, documentRecords, applicationRecords] = await Promise.all([
+      const [entryRecords, documentRecords, applicationRecords, resumeTotal] = await Promise.all([
         base44.entities.CareerEntry.list('-created_date', 200),
         base44.entities.SupportingDocument.list('-created_date', 100),
-        base44.entities.JobApplication.list('-created_date', 20)
+        // The newest twenty feed the recent block; the count comes from the walk.
+        base44.entities.JobApplication.list('-created_date', 20),
+        countResumes()
       ]);
       // Every entry is kept here, hidden ones included. The capture signature
       // is written over the whole set when the history is saved, so asking the
@@ -33,6 +65,7 @@ export default function Home() {
       setEntries(entryRecords || []);
       setDocuments(documentRecords || []);
       setApplications(applicationRecords || []);
+      setResumeCount(resumeTotal || 0);
     } catch {
       // Unauthenticated preview fallback
     }
@@ -83,7 +116,7 @@ export default function Home() {
           <span>{t('home.tickerFiles')}</span>
         </div>
         <div className="mec-tk">
-          <b>{applications.length}</b>
+          <b>{resumeCount}</b>
           <span>{t('home.tickerResumes')}</span>
         </div>
       </div>
