@@ -28,7 +28,12 @@ export default function DocumentUploader({ onChanged }) {
   // the only way out is to reload the page and start again.
   const dropFile = (index) => {
     setFiles((current) => current.filter((_, i) => i !== index));
-    if (files.length <= 1 && inputRef.current) inputRef.current.value = '';
+    // The input still holds the whole original pick, and a browser fires no
+    // change event for a selection it already has - so a file dropped from the
+    // list could not be picked again. Clearing it means any file can be chosen
+    // again the moment it is removed. The chosen files live in state, not in
+    // the input, so the upload itself is untouched.
+    if (inputRef.current) inputRef.current.value = '';
   };
 
   const cancelSelection = () => {
