@@ -56,7 +56,8 @@ export default function Home() {
         base44.entities.SupportingDocument.list('-created_date', 100),
         // The newest twenty feed the recent block; the count comes from the walk.
         base44.entities.JobApplication.list('-created_date', 20),
-        countResumes()
+        // A failed walk must not take the rest of the overview down with it.
+        countResumes().catch(() => 0)
       ]);
       // Every entry is kept here, hidden ones included. The capture signature
       // is written over the whole set when the history is saved, so asking the
