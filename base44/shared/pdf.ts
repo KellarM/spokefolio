@@ -9,6 +9,7 @@
 // file readable by applicant tracking systems.
 
 import { PDFDocument, StandardFonts, rgb } from 'npm:pdf-lib@1.17.1';
+import { documentFile } from './filenames.ts';
 import { applyLayoutToTheme, applyStyleOverrides, resolveDocxConfig, resolveDocxTheme, tintHex } from './resumeTemplates.ts';
 import { fitResumeToPages } from './resumeFit.ts';
 
@@ -352,6 +353,7 @@ function cleanFilename(parts: unknown[], fallback: string) {
 
 export async function buildResumePdf({
   profile,
+  company,
   resume,
   template,
   layout,
@@ -359,6 +361,8 @@ export async function buildResumePdf({
 }: {
   profile: any;
   resume: any;
+  // The posting this résumé is aimed at. It only feeds the file name.
+  company?: string;
   template?: string;
   layout?: any;
   overrides?: any;
@@ -653,7 +657,11 @@ export async function buildResumePdf({
   }
 
   const bytes = await doc.save();
-  return { bytes, filename: cleanFilename([profile?.full_name, 'Resume'], 'Resume'), pages: doc.getPageCount() };
+  return {
+    bytes,
+    filename: documentFile({ fullName: profile?.full_name, kind: 'resume', company, extension: 'pdf' }),
+    pages: doc.getPageCount()
+  };
 }
 
 export async function buildCoverLetterPdf({
@@ -689,7 +697,7 @@ export async function buildCoverLetterPdf({
   const bytes = await doc.save();
   return {
     bytes,
-    filename: cleanFilename([profile?.full_name, recipient?.company, 'Cover Letter'], 'Cover Letter'),
+    filename: documentFile({ fullName: profile?.full_name, kind: 'cover', company: recipient?.company, extension: 'pdf' }),
     pages: doc.getPageCount()
   };
 }

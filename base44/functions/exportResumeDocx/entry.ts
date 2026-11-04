@@ -45,7 +45,9 @@ export default async function (req) {
     }
 
     const overrides = sanitizeResumeStyleOverrides(body?.style_overrides);
-    const { base64, filename } = buildResumeDocx({ profile, resume, label, template, photo, layout, overrides });
+    // The posting this résumé is aimed at, so the file carries the company in its name.
+    const company = typeof body?.company === 'string' ? body.company : '';
+    const { base64, filename } = buildResumeDocx({ profile, resume, label, template, photo, layout, overrides, company });
 
     return Response.json({ base64, filename });
   } catch (error) {

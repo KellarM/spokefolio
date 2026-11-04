@@ -191,6 +191,7 @@ export default function ApplicationDetail() {
         profile,
         resume: saved.resume || resume,
         label,
+        company: saved.company || '',
         template,
         layout,
         style_overrides: styleOverrides
@@ -671,6 +672,7 @@ export default function ApplicationDetail() {
           <p className="eyebrow">{previewMode ? 'Preview — the finished document' : 'Résumé — click any field to edit'}</p>
           <div className="flex flex-wrap items-center gap-2">
             <ResumeDownloadButtons
+              company={application?.company || ''}
               profile={profile}
               resume={resume}
               template={template}
@@ -725,7 +727,7 @@ export default function ApplicationDetail() {
       <CoverLetterSection
         value={coverLetter}
         onChange={setCoverLetter}
-        company={application.company}
+        company={application?.company}
         onDownload={downloadLetter}
         downloading={downloadingLetter}
         onDownloadPdf={downloadLetterPdf}

@@ -31,7 +31,9 @@ export default async function (req) {
     const layout = sanitizeResumeLayout(body?.layout);
 
     const overrides = sanitizeResumeStyleOverrides(body?.style_overrides);
-    const { bytes, filename, pages } = await buildResumePdf({ profile, resume, template, layout, overrides });
+    // The posting this résumé is aimed at, so the file carries the company in its name.
+    const company = typeof body?.company === 'string' ? body.company : '';
+    const { bytes, filename, pages } = await buildResumePdf({ profile, resume, template, layout, overrides, company });
 
     return Response.json({ base64: toBase64(bytes), filename, pages });
   } catch (error) {

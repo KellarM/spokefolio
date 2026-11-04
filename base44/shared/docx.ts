@@ -3,6 +3,7 @@
 
 import { applyLayoutToTheme, applyStyleOverrides, resolveDocxConfig, resolveDocxTheme, tintHex } from './resumeTemplates.ts';
 import { fitResumeToPages } from './resumeFit.ts';
+import { documentName } from './filenames.ts';
 
 const encoder = new TextEncoder();
 
@@ -511,18 +512,21 @@ function safeFilename(base, fallback = 'document') {
 
 const packStyle = (t) => ({ margin: t.margin, font: t.bodyFont, size: t.bodySize, line: t.bodyLine });
 
-export function buildResumeDocx({ profile, resume, label, template, photo, layout, overrides }) {
+export function buildResumeDocx({ profile, resume, label, template, photo, layout, overrides, company = '' }) {
   // The style's own placement and section order, with the candidate's adjustments and the
   // parts they restyled by clicking them in the preview on top.
   const theme = applyStyleOverrides(applyLayoutToTheme(resolveDocxTheme(template), layout), overrides);
   const config = resolveDocxConfig(template, layout);
   const portrait = config.photo && photo ? photo : null;
-  const person = (profile && profile.full_name) || 'Resume';
   // However long the content grew, the file prints as two full pages.
   const fitted = fitResumeToPages(resume || {}, template);
-  const extra = label || (fitted && fitted.headline) || '';
   const body = buildBody(profile || {}, fitted, theme, config, portrait);
-  return packDocx(body, [person, extra].filter(Boolean).join(' - '), packStyle(theme), portrait);
+  return packDocx(
+    body,
+    documentName({ fullName: profile?.full_name, kind: 'resume', company }),
+    packStyle(theme),
+    portrait
+  );
 }
 
 // The cover letter keeps the editorial house style whatever résumé style is chosen.
@@ -551,7 +555,7 @@ export function buildCoverLetterDocx({ profile, cover_letter, recipient }) {
 
   return packDocx(
     parts.join(''),
-    [details.full_name || 'Cover Letter', org, 'Cover Letter'].filter(Boolean).join(' - '),
+    documentName({ fullName: details.full_name, kind: 'cover', company: org }),
     packStyle(theme)
   );
 }

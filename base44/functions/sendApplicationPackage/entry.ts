@@ -303,7 +303,7 @@ export default async function (req: Request) {
       }
       // The parts restyled by clicking them in the preview travel with the résumé too.
       const overrides = sanitizeResumeStyleOverrides(body?.style_overrides || application.resume_style_overrides);
-      const pdf = await buildResumePdf({ profile, resume, template, layout, overrides });
+      const pdf = await buildResumePdf({ profile, resume, template, layout, overrides, company: application.company });
       const stored = await uploadPrivatePdf(base44, pdf.bytes, pdf.filename);
       resumeLink = stored.signed_url;
       resumeUri = stored.file_uri;
