@@ -142,6 +142,10 @@ function transcriptOf(session: any): string {
     lines.push('CANDIDATE: ' + text(turn.answer, 2500) || '(no answer)');
     if (turn.feedback) {
       lines.push(`(feedback given: landed: ${text(turn.feedback.landed, 400)}; improve: ${text(turn.feedback.improve, 400)})`);
+      if (turn.feedback.model_answer) {
+        // Shown so the next answer to give cannot quietly become this one again.
+        lines.push('(answer to give already offered - do not reuse or reword: ' + text(turn.feedback.model_answer, 600) + ')');
+      }
     }
   }
   return lines.join('\n');
@@ -156,6 +160,136 @@ function examplesOf(value: unknown, max = 2): any[] {
     : [];
 }
 
+// Whether two answers are the same answer.
+//
+// The workshop used to guard only against drawing a pair from the same
+// experience, so the same story could come back under a new question with the
+// wording barely disturbed: a real interviewer notices that instantly, and it
+// makes the candidate sound rehearsed rather than experienced. These helpers
+// read the words rather than the label, using three-word runs, so a lightly
+// reworded answer still scores as the same answer.
+const STOP_WORDS = new Set([
+  'a', 'an', 'and', 'as', 'at', 'be', 'but', 'by', 'for', 'from', 'had', 'has', 'have',
+  'he', 'her', 'his', 'i', 'if', 'in', 'is', 'it', 'its', 'me', 'my', 'of', 'on', 'or',
+  'our', 'she', 'so', 'that', 'the', 'their', 'them', 'then', 'there', 'they', 'this',
+  'to', 'was', 'we', 'were', 'what', 'when', 'which', 'who', 'will', 'with', 'would',
+  'you', 'your'
+]);
+
+function contentWords(value: string): string[] {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s']/g, ' ')
+    .split(/\s+/)
+    .filter((word) => word && !STOP_WORDS.has(word));
+}
+
+function wordRuns(value: string): Set<string> {
+  const words = contentWords(value);
+  const runs = new Set<string>();
+  for (let i = 0; i + 2 < words.length; i += 1) runs.add(words.slice(i, i + 3).join(' '));
+  return runs;
+}
+
+// Containment rather than Jaccard, on two levels, because there are two ways to
+// repeat yourself and each hides from the other. Copied-and-trimmed text keeps
+// long word runs and moves almost none of its vocabulary, while a paraphrase
+// keeps the vocabulary and breaks every run. Measured on real answers, a
+// paraphrase of one story scored 13% on runs and 78% on words, so the larger of
+// the two is what gets compared. Deliberately not averaged: an average would
+// let a plain paraphrase through at around 45%.
+function overlap(a: string, b: string): number {
+  const leftRuns = wordRuns(a);
+  const rightRuns = wordRuns(b);
+  let byRun = 0;
+  if (leftRuns.size && rightRuns.size) {
+    let shared = 0;
+    for (const run of leftRuns) if (rightRuns.has(run)) shared += 1;
+    byRun = shared / Math.min(leftRuns.size, rightRuns.size);
+  }
+
+  const leftWords = new Set(contentWords(a));
+  const rightWords = new Set(contentWords(b));
+  let byWord = 0;
+  if (leftWords.size && rightWords.size) {
+    let shared = 0;
+    for (const word of leftWords) if (rightWords.has(word)) shared += 1;
+    byWord = shared / Math.min(leftWords.size, rightWords.size);
+  }
+
+  return Math.max(byRun, byWord);
+}
+
+// Every answer already on screen in this drill: both model answers per
+// question, and the graded answer to give in a practice drill.
+function priorAnswers(session: any): string[] {
+  const out: string[] = [];
+  for (const turn of Array.isArray(session?.turns) ? session.turns : []) {
+    for (const example of Array.isArray(turn?.examples) ? turn.examples : []) {
+      if (example?.answer) out.push(String(example.answer));
+    }
+    if (turn?.feedback?.model_answer) out.push(String(turn.feedback.model_answer));
+  }
+  return out;
+}
+
+// The worst clash in a fresh pair, against everything already said and against
+// the other answer in the same pair. A pair with two answers from different
+// experiences will share ordinary vocabulary, so the bar is high on purpose:
+// this is looking for the same answer twice, not for shared words.
+function reuseClash(examples: any[], priors: string[], limit: number) {
+  const seen = [...priors];
+  for (const example of examples) {
+    const answer = text(example?.answer, 2000);
+    if (!answer) continue;
+    for (const earlier of seen) {
+      const score = overlap(answer, earlier);
+      if (score >= limit) return { score, answer, earlier };
+    }
+    seen.push(answer);
+  }
+  return null;
+}
+
+function worstOverlap(examples: any[], priors: string[]): number {
+  let worst = 0;
+  for (const example of examples) {
+    for (const earlier of priors) worst = Math.max(worst, overlap(text(example?.answer, 2000), earlier));
+  }
+  const list = examples.map((example) => text(example?.answer, 2000)).filter(Boolean);
+  for (let i = 0; i < list.length; i += 1) {
+    for (let j = i + 1; j < list.length; j += 1) worst = Math.max(worst, overlap(list[i], list[j]));
+  }
+  return worst;
+}
+
+// One rewrite, then the better of the two: the drill has to hand back an answer
+// either way, and a second rejection is not worth another model call.
+async function uniqueExamples(prompt: string, schema: any, priors: string[]) {
+  const limit = 0.55;
+  const first: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    prompt,
+    response_json_schema: schema
+  });
+  const clash = reuseClash(examplesOf(first?.examples), priors, limit);
+  if (!clash) return first;
+
+  const second: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    prompt: `${prompt}
+
+CORRECTION REQUIRED. The pair you just wrote repeats an answer already given in this drill:
+"""
+${clash.answer}
+"""
+About ${Math.round(clash.score * 100)}% of it appears again, in the same order. Write the pair again. Neither answer may repeat that answer, its sentences, its opening or the same combination of evidence, and a light rewording does not count as a different answer. Draw on a different incident, or a different aspect of the same experience with different specifics, and keep every answer distinct from all the answers above.`,
+    response_json_schema: schema
+  });
+
+  const firstScore = worstOverlap(examplesOf(first?.examples), priors);
+  const secondScore = worstOverlap(examplesOf(second?.examples), priors);
+  return secondScore <= firstScore ? second : first;
+}
+
 // What the answer workshop has already asked, and which experience each shown pair
 // came from, so the next pair never repeats one.
 function workshopTranscript(session: any): string {
@@ -163,7 +297,10 @@ function workshopTranscript(session: any): string {
   for (const turn of Array.isArray(session?.turns) ? session.turns : []) {
     lines.push('INTERVIEWER: ' + text(turn.question, 500));
     for (const example of Array.isArray(turn.examples) ? turn.examples : []) {
-      lines.push('  pair already shown, drawn from: ' + text(example.story, 200));
+      // The answer itself, not just where it came from: the wording is what
+      // must not come back.
+      lines.push('  ALREADY GIVEN (do not reuse, quote or reword): ' + text(example.answer, 400));
+      lines.push('    drawn from: ' + text(example.story, 200));
     }
   }
   return lines.join('\n') || '(nothing asked yet)';
@@ -176,6 +313,7 @@ const WORKSHOP_RULES = `Rules for each pair of answers:
 - The answer must squarely answer the question asked. Read what the question assumes and check it against what is recorded: if the question describes a manual, paper-based process and their real experience ran on scanners, say so plainly and answer from the nearest genuine experience, naming where theirs differed. Never dress a recorded fact up to sound like the situation being asked about.
 - Each answer is in the candidate's own voice, first person, spoken the way they would say it out loud: 3 to 5 sentences that directly answer the question, carrying the concrete detail the resume gives for that experience (a number, a system, a program, a certification).
 - Both answers must be strong and usable on their own; the candidate will borrow whichever fits.
+- No answer may repeat an earlier answer in this drill, or say the same thing in different words. In a real interview, answering two questions with one story twice is the clearest sign of a rehearsed script, so the words, the opening, the numbers and the sequence of events must all be different from every answer above. If the only experience left has already been used, take a different incident from it: a different task, a different outcome, different evidence. If nothing distinct is left in the record, answer from a different angle of the posting rather than telling the same story again.
 - story: a short label naming the experience it came from, in the record's own terms: employer, role or project, and period, e.g. "Kuehne & Nagel - 3M Canada logistics, 1989-2008".
 - examples: exactly 2.`;
 
@@ -286,8 +424,8 @@ export default async function (req: Request) {
       }
 
       if (text(body?.session_type, 20) === 'answers') {
-        const workshop: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
-          prompt: `${contextBlock(application, resume, history)}
+        const workshop: any = await uniqueExamples(
+          `${contextBlock(application, resume, history)}
 
 You are the HR interviewer for this role at this company. You are running an answer workshop: you ask the question, then you show the candidate two answers they could give.
 
@@ -301,8 +439,9 @@ Produce:
 1. greeting: 1 or 2 sentences in character that open the workshop and say that after each question they will see two answers they could give.
 2. question: the single best opening question for THIS specific role. One question only.
 3. examples: exactly 2 answers, from two different experiences (see the rules above). Trace every detail in an answer back to that one experience's own lines before you write it, and drop anything you cannot.`,
-          response_json_schema: WORKSHOP_START_SCHEMA
-        });
+          WORKSHOP_START_SCHEMA,
+          []
+        );
 
         const workshopSession = {
           id: crypto.randomUUID(),
@@ -470,6 +609,7 @@ Rules:
 - Ground every judgment in the resume and the posting. If the answer dodges the question, misses an obvious metric from the resume, or sounds rehearsed and hollow, say so plainly in "improve". No flattery.
 - Stay in the interviewer's lane: you know this candidate exactly as the person who will actually meet them does, from the resume and the posting, and they can only judge what was said out loud. Never fault an answer for leaving out something that appears only in the background notes, never ask them to account for it, and never suggest they were hiding it: what a candidate puts on their own resume is their call, and nobody in that room can miss what they never saw.
 - Never invent experience the candidate does not have. If they claimed something that is in neither the resume nor the recorded history, call it out in "improve"; if the history does record it, they were right to say it, so judge the answer on how well it answered the question instead.
+- Never hand back an answer to give that repeats one you already offered earlier in this drill, or says the same thing in different words: two questions answered with one story is what a rehearsed script sounds like. Where the natural example has already been used, reach for a different incident or a different aspect of it, with different evidence.
 - model_answer is the answer you wish they had given: the same answer done properly. First person, in the candidate's own voice, using only experience that is in the resume or the history above. 3 to 5 spoken sentences that directly answer this question, name the specific example, and include a concrete detail from the resume (a number, a system, a program) where one exists. Fold in whatever "improve" says was missing. Invent nothing new, and keep every detail inside the one experience it came from: never move a fact to another role, and never state a system, method or setting the resume does not record for that experience. If the question assumes something the candidate's history does not have, answer from the nearest real experience and say plainly where theirs differed.
 - Questions already asked: ${askedCount}. Cover the posting's requirements across the drill; do not repeat a question.
 ${askedCount >= MAX_TURNS ? '- The drill has reached its question limit: set next_question to null.' : ''}
@@ -482,10 +622,46 @@ Produce:
         response_json_schema: ANSWER_SCHEMA
       });
 
+      let modelAnswer = text(result?.model_answer, 1600);
+      const alreadyGiven = turns
+        .filter((turn: any) => turn !== turns[openIndex] && turn?.feedback?.model_answer)
+        .map((turn: any) => String(turn.feedback.model_answer));
+      const repeated = alreadyGiven
+        .map((earlier: string) => ({ earlier, score: overlap(modelAnswer, earlier) }))
+        .sort((a: any, b: any) => b.score - a.score)[0];
+      if (repeated && repeated.score >= 0.6) {
+        // The grade stands; only the words are rewritten, so this costs one
+        // small call and cannot change what the candidate was told about their answer.
+        const quoted = ['"""', repeated.earlier, '"""'].join('\n');
+        const rewritten: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt: `${contextBlock(application, resume, history)}
+
+You wrote this answer for a candidate to give, in reply to their interview question.
+
+THE QUESTION: ${text(turns[openIndex].question, 500)}
+
+YOUR ANSWER: ${modelAnswer}
+
+It repeats an answer you already gave earlier in the same interview:
+${quoted}
+
+Rewrite YOUR ANSWER so it answers the same question at the same standard, but tells a different story or a different part of one: a different opening, different evidence, different numbers where the record has them, and nothing carried over from the answer above. Keep it first person, spoken, 3 to 5 sentences, and use only experience the resume or the history records. Invent nothing.
+
+Return model_answer only.`,
+          response_json_schema: {
+            type: 'object',
+            properties: { model_answer: { type: 'string' } },
+            required: ['model_answer']
+          }
+        });
+        const replacement = text(rewritten?.model_answer, 1600);
+        if (replacement && overlap(replacement, repeated.earlier) < repeated.score) modelAnswer = replacement;
+      }
+
       turns[openIndex].feedback = {
         landed: text(result?.landed, 600),
         improve: text(result?.improve, 600),
-        model_answer: text(result?.model_answer, 1600)
+        model_answer: modelAnswer
       };
 
       const nextQuestion = text(result?.next_question, 500);
@@ -509,10 +685,10 @@ Produce:
         return Response.json({ ok: true, mock_interviews: sessions, done: true });
       }
 
-      const result: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `${contextBlock(application, resume, history)}
+      const result: any = await uniqueExamples(
+        `${contextBlock(application, resume, history)}
 
-You are the HR interviewer running an answer workshop. What you have already asked, and the experience each pair was drawn from:
+You are the HR interviewer running an answer workshop. What you have already asked, and what you have already offered as answers:
 
 ${workshopTranscript(session)}
 
@@ -524,9 +700,10 @@ ${WORKSHOP_RULES}
 
 Produce:
 1. question: your next question in character, one question only. Probe a requirement in the posting that has not been covered yet; do not repeat an earlier question. Return an empty string only when the posting's main requirements have all been covered.
-2. examples: exactly 2 answers, from two different experiences (see the rules above). Trace every detail in an answer back to that one experience's own lines before you write it, and drop anything you cannot.`,
-        response_json_schema: WORKSHOP_NEXT_SCHEMA
-      });
+2. examples: exactly 2 answers, from two different experiences (see the rules above). Trace every detail in an answer back to that one experience's own lines before you write it, and drop anything you cannot. Neither answer may repeat, quote or reword anything under ALREADY GIVEN.`,
+        WORKSHOP_NEXT_SCHEMA,
+        priorAnswers(session)
+      );
 
       const nextQuestion = text(result?.question, 500);
       if (!nextQuestion) {
