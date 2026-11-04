@@ -1,10 +1,18 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { buildResumePdf } from '../../shared/pdf.ts';
-import { resolveCompany } from '../../shared/filenames.ts';
+import { resolveCompanyForDocument } from '../../shared/companyForName.ts';
 import { sanitizeResumeLayout, sanitizeResumeStyleOverrides } from '../../shared/resumeTemplates.ts';
 
 // Draws the tailored résumé on the server, in the style that application uses, and hands
 // the bytes back for download. The PDF is built from the application's own résumé object,
 // the same one the Word export and the emailed package use.
+// Reads the candidate's own applications so a document can still be named after the
+// company when the page that asked for it did not say which company that was.
+async function applicationsFor(req: any) {
+  const base44 = createClientFromRequest(req);
+  return await base44.entities.JobApplication.list('-updated_date', 50);
+}
+
 function toBase64(bytes: Uint8Array) {
   let binary = '';
   for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
@@ -33,7 +41,11 @@ export default async function (req) {
 
     const overrides = sanitizeResumeStyleOverrides(body?.style_overrides);
     // The posting this résumé is aimed at, so the file carries the company in its name.
-    const company = resolveCompany(body?.company, body?.label);
+    const company = await resolveCompanyForDocument({
+      company: body?.company,
+      label: body?.label,
+      listApplications: () => applicationsFor(req)
+    });
     const { bytes, filename, pages } = await buildResumePdf({ profile, resume, template, layout, overrides, company });
 
     return Response.json({ base64: toBase64(bytes), filename, pages });

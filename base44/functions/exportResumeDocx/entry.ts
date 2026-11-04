@@ -1,8 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { buildResumeDocx } from '../../shared/docx.ts';
-import { resolveCompany } from '../../shared/filenames.ts';
+import { resolveCompanyForDocument } from '../../shared/companyForName.ts';
 import { resolveDocxConfig, sanitizeResumeLayout, sanitizeResumeStyleOverrides } from '../../shared/resumeTemplates.ts';
 import { loadPhoto } from '../../shared/photo.ts';
+
+// Reads the candidate's own applications so a document can still be named after the
+// company when the page that asked for it did not say which company that was.
+async function applicationsFor(req: any) {
+  const base44 = createClientFromRequest(req);
+  return await base44.entities.JobApplication.list('-updated_date', 50);
+}
 
 export default async function (req) {
   try {
@@ -47,7 +54,11 @@ export default async function (req) {
 
     const overrides = sanitizeResumeStyleOverrides(body?.style_overrides);
     // The posting this résumé is aimed at, so the file carries the company in its name.
-    const company = resolveCompany(body?.company, body?.label);
+    const company = await resolveCompanyForDocument({
+      company: body?.company,
+      label: body?.label,
+      listApplications: () => applicationsFor(req)
+    });
     const { base64, filename } = buildResumeDocx({ profile, resume, label, template, photo, layout, overrides, company });
 
     return Response.json({ base64, filename });
