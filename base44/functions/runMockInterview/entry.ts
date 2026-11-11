@@ -116,6 +116,28 @@ function list(value: unknown, max = 10, each = 400): string[] {
   return Array.isArray(value) ? value.map((v) => text(v, each)).filter(Boolean).slice(0, max) : [];
 }
 
+// The report's score, read generously: a model that answers "85 out of 100" or
+// "85/100" has still answered the question.
+function scoreOf(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return Math.max(0, Math.min(100, Math.round(value)));
+  }
+  const match = String(value ?? '').match(/\d{1,3}/);
+  if (!match) return null;
+  const parsed = Number(match[0]);
+  return Number.isFinite(parsed) ? Math.max(0, Math.min(100, Math.round(parsed))) : null;
+}
+
+// The verdict, from whatever wording the report came back with.
+function verdictOf(value: unknown): string {
+  const raw = text(value, 120).toLowerCase();
+  if (!raw) return '';
+  if (/next.?round|another (conversation|round|interview)|maybe|borderline|on the fence/.test(raw)) return 'next_round';
+  if (/\bno\b|not (yet|hire|hired|a fit)|turn(ed)? down|reject|decline/.test(raw)) return 'no';
+  if (/\byes\b|would (get|hire|be hired)|hire|offer|advance|strong yes/.test(raw)) return 'yes';
+  return '';
+}
+
 function resumeOutline(resume: any): string {
   const lines: string[] = [];
   if (resume?.summary) lines.push('Summary: ' + text(resume.summary, 1200));
@@ -765,13 +787,13 @@ ${transcriptOf(session)}
 
 Judge them as the person who will actually interview them would, from the resume, the posting and this transcript alone: the wider background notes are not part of that room, so a detail the candidate chose not to put on their resume is neither a weakness nor anything to rehearse.
 
-Produce a readiness report for the candidate, as a sharp coach would:
-1. readiness: one honest paragraph on whether this candidate is ready to interview for this role, and the impression the transcript leaves. Judge the answers as they stand and be fair in both directions: if they answered the questions and held up under the follow-ups, say plainly, in those words, that the candidate is ready. If they were vague or dodged the questions, say that just as plainly. The verdict follows the transcript; it never averages toward caution.
-2. strengths: 2 to 5 things that clearly landed, each one specific to the transcript. Credit what was actually said, including any question the candidate handled well.
-3. rehearse: what to practice before the real interview, each item a real weakness from the transcript. This list may be empty: when the answers held up, an empty list is the honest answer, and items are never invented to fill it.
-4. best_proof_points: 2 or 3 proof points from the resume that this candidate should make sure they say out loud in the real interview, phrased in the candidate's voice.
-5. interview_score: how this candidate performed in THIS interview, as a whole number out of 100, judged only on the transcript. Use the whole scale: 85 to 100 is an interview that would carry the offer, 65 to 84 is solid with something left to prove, 45 to 64 is competent but unconvincing against this posting's bar, below 45 would not survive the room. Do not cluster near the middle and do not temper a strong interview toward caution.
-6. verdict: "yes" when this candidate would get the job on this interview, "next_round" when they are worth another conversation but not decided, "no" when they would be turned down. Weigh the resume fit above where the posting's hard requirements are concerned, and let the verdict follow the transcript plainly in both directions.
+Produce a readiness report for the candidate, as a sharp coach would. The score and the verdict come first: they are what the client reads, and a long answer must never crowd them out.
+1. interview_score: how this candidate performed in THIS interview, as a whole number out of 100, judged only on the transcript. Use the whole scale: 85 to 100 is an interview that would carry the offer, 65 to 84 is solid with something left to prove, 45 to 64 is competent but unconvincing against this posting's bar, below 45 would not survive the room. Do not cluster near the middle and do not temper a strong interview toward caution.
+2. verdict: "yes" when this candidate would get the job on this interview, "next_round" when they are worth another conversation but not decided, "no" when they would be turned down. Weigh the resume fit above where the posting's hard requirements are concerned, and let the verdict follow the transcript plainly in both directions.
+3. readiness: one honest paragraph on whether this candidate is ready to interview for this role, and the impression the transcript leaves. Judge the answers as they stand and be fair in both directions: if they answered the questions and held up under the follow-ups, say plainly, in those words, that the candidate is ready. If they were vague or dodged the questions, say that just as plainly. The verdict follows the transcript; it never averages toward caution.
+4. strengths: 2 to 5 things that clearly landed, each one specific to the transcript. Credit what was actually said, including any question the candidate handled well.
+5. rehearse: what to practice before the real interview, each item a real weakness from the transcript. This list may be empty: when the answers held up, an empty list is the honest answer, and items are never invented to fill it.
+6. best_proof_points: 2 or 3 proof points from the resume that this candidate should make sure they say out loud in the real interview, phrased in the candidate's voice.
 
 Plain language. No filler.`,
         response_json_schema: SUMMARY_SCHEMA
@@ -781,12 +803,38 @@ Plain language. No filler.`,
       session.finished_at = now;
       // Drop any unanswered question left hanging.
       session.turns = (Array.isArray(session.turns) ? session.turns : []).filter((t: any) => String(t?.answer || '').trim() !== '');
-      const rawInterviewScore = Number(result?.interview_score);
-      const interviewScore = Number.isFinite(rawInterviewScore)
-        ? Math.max(0, Math.min(100, Math.round(rawInterviewScore)))
-        : null;
-      const rawVerdict = text(result?.verdict, 20).toLowerCase();
-      const verdict = ['yes', 'next_round', 'no'].includes(rawVerdict) ? rawVerdict : '';
+      let interviewScore = scoreOf(result?.interview_score);
+      let verdict = verdictOf(result?.verdict);
+
+      // The two figures the client reads first can be the ones a long report drops.
+      // Rather than hand back an unscored result, ask for them on their own.
+      if (interviewScore == null || !verdict) {
+        const scored: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt: `You are the hiring manager who just interviewed this candidate for this job.
+
+JOB
+Title: ${text(application.job_title, 200)}
+Company: ${text(application.company, 200)}
+Posting:
+"""
+${text(application.job_description, 6000)}
+"""
+
+Transcript of the interview:
+${transcriptOf(session)}
+
+Give two answers only:
+1. interview_score: a whole number from 0 to 100 for how this candidate performed in this interview. 85 to 100 would carry an offer, 65 to 84 is solid with something left to prove, 45 to 64 is competent but unconvincing, below 45 would not survive the room. Judge only what was said.
+2. verdict: "yes" if they would get the job on this interview, "next_round" if they are worth another conversation but not decided, "no" if they would be turned down. Say the lower-case word and nothing else.`,
+          response_json_schema: {
+            type: 'object',
+            properties: { interview_score: { type: 'integer' }, verdict: { type: 'string' } },
+            required: ['interview_score', 'verdict']
+          }
+        });
+        if (interviewScore == null) interviewScore = scoreOf(scored?.interview_score);
+        if (!verdict) verdict = verdictOf(scored?.verdict);
+      }
       // The score leans on what happened in the room (60%) and keeps the resume's own
       // evidence for the posting in view (40%). With no resume check on file there is
       // nothing to blend, so the interview score stands on its own.
