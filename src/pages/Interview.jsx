@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InstructionPopover from '@/components/guide/InstructionPopover';
 import InterviewPanel from '@/components/applications/InterviewPanel';
+import InterviewScorecard from '@/components/interview/InterviewScorecard';
 import { useToast } from '@/components/ui/use-toast';
 import {
   AlertDialog,
@@ -119,6 +120,14 @@ export default function Interview() {
     ? selected.mock_interviews.filter((session) => session.status === 'finished').length
     : 0;
 
+  // The newest finished drill that produced a result. Sessions are kept newest first,
+  // so the first match is the one that belongs at the top of the room.
+  const finishedResult = Array.isArray(selected?.mock_interviews)
+    ? selected.mock_interviews.find(
+        (session) => session.status === 'finished' && typeof session?.summary?.score === 'number'
+      ) || null
+    : null;
+
   // Start again: the drill in progress is discarded so the room opens clean. Finished
   // drills and their readiness reports are not touched - those are the record of work
   // already done, and they have their own delete control in the list.
@@ -205,6 +214,10 @@ export default function Interview() {
 
           {selected && (
             <section className="mt-8">
+              {/* The last drill's result, first: the verdict and the score are what
+                  the client came back to see. Absent until a drill has been finished. */}
+              <InterviewScorecard application={selected} session={finishedResult} />
+
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 <h2 className="font-heading text-[22px] leading-tight">{selected.company || t('interview.pickPlaceholder')}</h2>
                 <StatusBadge status={selected.status} />

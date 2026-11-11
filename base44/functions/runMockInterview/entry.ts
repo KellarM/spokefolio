@@ -98,9 +98,11 @@ const SUMMARY_SCHEMA = {
     readiness: { type: 'string' },
     strengths: { type: 'array', items: { type: 'string' } },
     rehearse: { type: 'array', items: { type: 'string' } },
-    best_proof_points: { type: 'array', items: { type: 'string' } }
+    best_proof_points: { type: 'array', items: { type: 'string' } },
+    interview_score: { type: 'integer' },
+    verdict: { type: 'string', enum: ['yes', 'next_round', 'no'] }
   },
-  required: ['readiness', 'strengths', 'rehearse', 'best_proof_points']
+  required: ['readiness', 'strengths', 'rehearse', 'best_proof_points', 'interview_score', 'verdict']
 };
 
 function text(value: unknown, max = 2000): string {
@@ -743,8 +745,19 @@ Produce:
         return Response.json({ ok: true, mock_interviews: sessions });
       }
 
+      // The result the client sees at the top of the page blends the two things that
+      // decide a real application: how the answers landed in the room, and how well the
+      // resume already evidences the posting. The newest resume check is the one counted.
+      const fitPage: any = await base44.entities.ResumeRun
+        .filter({ application_id: applicationId }, { sort: '-created_date', limit: 1 })
+        .catch(() => null);
+      const fitRow = (Array.isArray(fitPage) ? fitPage : fitPage?.items || [])[0];
+      const resumeFit = Number.isFinite(Number(fitRow?.score)) ? Math.round(Number(fitRow.score)) : null;
+
       const result: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `${contextBlock(application, resume, history)}
+
+RESUME FIT FOR THIS POSTING (how well the tailored resume already evidences what the posting asks for): ${resumeFit == null ? 'not checked yet' : `${resumeFit} out of 100`}
 
 The mock interview is over. Full transcript:
 
@@ -757,6 +770,8 @@ Produce a readiness report for the candidate, as a sharp coach would:
 2. strengths: 2 to 5 things that clearly landed, each one specific to the transcript. Credit what was actually said, including any question the candidate handled well.
 3. rehearse: what to practice before the real interview, each item a real weakness from the transcript. This list may be empty: when the answers held up, an empty list is the honest answer, and items are never invented to fill it.
 4. best_proof_points: 2 or 3 proof points from the resume that this candidate should make sure they say out loud in the real interview, phrased in the candidate's voice.
+5. interview_score: how this candidate performed in THIS interview, as a whole number out of 100, judged only on the transcript. Use the whole scale: 85 to 100 is an interview that would carry the offer, 65 to 84 is solid with something left to prove, 45 to 64 is competent but unconvincing against this posting's bar, below 45 would not survive the room. Do not cluster near the middle and do not temper a strong interview toward caution.
+6. verdict: "yes" when this candidate would get the job on this interview, "next_round" when they are worth another conversation but not decided, "no" when they would be turned down. Weigh the resume fit above where the posting's hard requirements are concerned, and let the verdict follow the transcript plainly in both directions.
 
 Plain language. No filler.`,
         response_json_schema: SUMMARY_SCHEMA
@@ -766,11 +781,30 @@ Plain language. No filler.`,
       session.finished_at = now;
       // Drop any unanswered question left hanging.
       session.turns = (Array.isArray(session.turns) ? session.turns : []).filter((t: any) => String(t?.answer || '').trim() !== '');
+      const rawInterviewScore = Number(result?.interview_score);
+      const interviewScore = Number.isFinite(rawInterviewScore)
+        ? Math.max(0, Math.min(100, Math.round(rawInterviewScore)))
+        : null;
+      const rawVerdict = text(result?.verdict, 20).toLowerCase();
+      const verdict = ['yes', 'next_round', 'no'].includes(rawVerdict) ? rawVerdict : '';
+      // The score leans on what happened in the room (60%) and keeps the resume's own
+      // evidence for the posting in view (40%). With no resume check on file there is
+      // nothing to blend, so the interview score stands on its own.
+      const blended = interviewScore == null
+        ? null
+        : resumeFit == null
+          ? interviewScore
+          : Math.round(interviewScore * 0.6 + resumeFit * 0.4);
+
       session.summary = {
         readiness: text(result?.readiness, 1500),
         strengths: list(result?.strengths, 4, 300),
         rehearse: list(result?.rehearse, 4, 300),
-        best_proof_points: list(result?.best_proof_points, 3, 300)
+        best_proof_points: list(result?.best_proof_points, 3, 300),
+        interview_score: interviewScore,
+        ...(resumeFit == null ? {} : { resume_fit: resumeFit }),
+        score: blended,
+        verdict
       };
 
       await base44.entities.JobApplication.update(applicationId, { mock_interviews: sessions });

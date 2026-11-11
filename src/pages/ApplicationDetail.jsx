@@ -20,6 +20,7 @@ import CompanyBrief from '@/components/applications/CompanyBrief';
 import SendPackageDialog from '@/components/applications/SendPackageDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import ResumeRunPanel from '@/components/applications/ResumeRunPanel';
+import InterviewScorecard from '@/components/interview/InterviewScorecard';
 import ResumeDocument from '@/components/resume/ResumeDocument';
 import PreviewDocument from '@/components/resume/PreviewDocument';
 import ResumeDownloadButtons from '@/components/resume/ResumeDownloadButtons';
@@ -572,6 +573,12 @@ export default function ApplicationDetail() {
     setProposal(null);
   };
 
+  // The result of the most recent finished drill, shown at the top of the page.
+  const finishedResult =
+    (Array.isArray(application?.mock_interviews) ? application.mock_interviews : []).find(
+      (session) => session?.status === 'finished' && typeof session?.summary?.score === 'number'
+    ) || null;
+
   if (loading || loadingProfile) {
     return (
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -652,6 +659,8 @@ export default function ApplicationDetail() {
           </Button>
         </div>
       </header>
+
+      <InterviewScorecard application={application} session={finishedResult} />
 
       <JobPostingPanel description={application.job_description} sourceUrl={application.source_url} />
 

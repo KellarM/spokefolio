@@ -466,6 +466,27 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "score": {
+                "type": "integer",
+                "description": "The interview result out of 100: the answers given in the room, blended with how well the tailored resume already evidences the posting."
+              },
+              "interview_score": {
+                "type": "integer",
+                "description": "How the candidate performed in this interview alone, out of 100, judged on the transcript."
+              },
+              "resume_fit": {
+                "type": "integer",
+                "description": "The resume check score for this posting at the time of the interview, out of 100. Absent when no check had been run."
+              },
+              "verdict": {
+                "type": "string",
+                "enum": [
+                  "yes",
+                  "next_round",
+                  "no"
+                ],
+                "description": "The hiring verdict from this interview: yes they would get the job, worth another conversation, or no."
               }
             }
           }
