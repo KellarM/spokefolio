@@ -8,6 +8,7 @@ import { filterBlocked } from '../../shared/blockedCompanies.ts';
 const MAX_RESULTS = 8;
 const MAX_HISTORY = 10;
 const MAX_TITLES = 2;
+const MAX_TERMS = 3;
 const BANK_PER_TERM = 5;
 
 const TRANSLATION_SCHEMA = {
@@ -282,6 +283,28 @@ async function searchOnce(base44, category, location, homeLocation, distanceKm, 
   return { results: filtered };
 }
 
+// Several roles searched at once can each find something, so the lists are taken in
+// turns rather than one after another: with two roles, the page shows both instead of
+// eight postings for the first and none for the second. Nothing is returned twice.
+function mergeLists(lists) {
+  const out = [];
+  const seen = new Set();
+  let round = 0;
+  while (out.length < MAX_RESULTS && lists.some((list) => list.length > round)) {
+    for (const list of lists) {
+      if (out.length >= MAX_RESULTS) break;
+      const item = list[round];
+      if (!item) continue;
+      const key = keyOf(item);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(item);
+    }
+    round += 1;
+  }
+  return out;
+}
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -390,25 +413,44 @@ export default async function (req) {
         });
       });
     } else {
+      // Several roles can be searched in one go, written as a comma-separated list
+      // ("operations manager, dispatcher"): each one is its own search, and the
+      // postings they find share the page.
+      const terms = category
+        .split(',')
+        .map((term) => cleanText(term, 120))
+        .filter((term) => term.length > 1)
+        .slice(0, MAX_TERMS);
+      if (!terms.length) terms.push(category);
+
       // Canada's national board only covers Canadian locations; the wider web
       // search carries the United States on its own.
       const inCanada = detectCountry(location) !== 'US' && detectCountry(homeLocation) !== 'US';
-      const [bank, found] = await Promise.all([
-        inCanada
-          ? searchJobBank({
-              keywords: category,
-              location,
-              homeLocation,
-              distanceKm,
-              minPay,
-              payPeriod,
-              limit: BANK_PER_TERM,
-              language
-            }).catch(() => [])
-          : Promise.resolve([]),
-        searchOnce(base44, category, location, homeLocation, distanceKm, limits)
-      ]);
-      results = [...bank, ...found.results].slice(0, MAX_RESULTS);
+      const attempts = await Promise.allSettled(
+        terms.map((term) =>
+          Promise.all([
+            inCanada
+              ? searchJobBank({
+                  keywords: term,
+                  location,
+                  homeLocation,
+                  distanceKm,
+                  minPay,
+                  payPeriod,
+                  limit: BANK_PER_TERM,
+                  language
+                }).catch(() => [])
+              : Promise.resolve([]),
+            searchOnce(base44, term, location, homeLocation, distanceKm, limits)
+          ])
+        )
+      );
+
+      results = mergeLists(
+        attempts
+          .filter((attempt) => attempt.status === 'fulfilled')
+          .map((attempt) => [...attempt.value[0], ...attempt.value[1].results])
+      );
     }
 
     // Postings that did not arrive in the person's language are translated into it.
