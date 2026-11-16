@@ -645,6 +645,14 @@ export default function ApplicationDetail() {
             {rewriting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
             Rewrite
           </Button>
+          {application.source_url && (
+            <Button asChild variant="secondary" className="rounded-full">
+              <a href={application.source_url} target="_blank" rel="noreferrer">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                {t('common.openPosting')}
+              </a>
+            </Button>
+          )}
           <Button className="rounded-full" onClick={applyNow} disabled={downloading}>
             {downloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ExternalLink className="mr-2 h-4 w-4" />}
             {t('apply.cta')}
