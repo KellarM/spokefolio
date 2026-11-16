@@ -20,45 +20,42 @@ import { pillClass } from '@/components/postings/JobSearchFilters';
 import { loadBlocked } from '@/lib/blockedCompanies';
 import { Search, FolderSearch } from 'lucide-react';
 
-// The last search stays on this device for this account, so results survive
-// changing screens or a page refresh. Nothing ever re-runs on its own: running
-// a search again stays a manual click on the client.
-const SEARCH_KEY = 'spokefolio:search';
+// The last search is kept on the account itself, not in the browser: the postings a
+// search found stay on this page through every move away from it (tailoring one of
+// them, opening an application, a refresh) and are only ever replaced by the next
+// search, or dropped when the person clears them. Nothing ever re-runs on its own:
+// running a search again stays a manual click on the client.
+const STORED_TEXT_LIMIT = 500;
 
-const readStoredSearch = (email) => {
-  try {
-    const raw = email ? window.localStorage.getItem(`${SEARCH_KEY}:${email}`) : null;
-    const parsed = raw ? JSON.parse(raw) : null;
-    return parsed && Array.isArray(parsed.results) ? parsed : null;
-  } catch (e) {
-    return null;
-  }
-};
+const toRecord = (search) => ({
+  mode: search.mode === 'profile' ? 'profile' : 'criteria',
+  terms: String(search.category || ''),
+  titles: Array.isArray(search.titles) ? search.titles : [],
+  location: String(search.location || ''),
+  distance_km: Number(search.distance) || 0,
+  min_pay: Number(search.minPay) || 0,
+  pay_period: search.payPeriod === 'hour' ? 'hour' : 'year',
+  note: String(search.note || ''),
+  // The descriptions are the bulk of a result, and the full text is read again from
+  // the posting itself when it is kept, so only the opening is stored here.
+  results: (search.results || []).map((item) => ({
+    ...item,
+    job_description: String(item.job_description || '').slice(0, STORED_TEXT_LIMIT)
+  })),
+  ran_at: new Date().toISOString()
+});
 
-const storeSearch = (email, search) => {
-  const key = `${SEARCH_KEY}:${email}`;
-  try {
-    if (!search) {
-      window.localStorage.removeItem(key);
-      return;
-    }
-    window.localStorage.setItem(key, JSON.stringify(search));
-  } catch (e) {
-    try {
-      // The descriptions are the bulk. Trim them and try once more.
-      const light = {
-        ...search,
-        results: (search.results || []).map((item) => ({
-          ...item,
-          job_description: String(item.job_description || '').slice(0, 500)
-        }))
-      };
-      window.localStorage.setItem(key, JSON.stringify(light));
-    } catch (e2) {
-      // The search still works without persistence.
-    }
-  }
-};
+const fromRecord = (record) => ({
+  mode: record.mode === 'profile' ? 'profile' : 'criteria',
+  category: record.terms || '',
+  titles: Array.isArray(record.titles) ? record.titles : [],
+  location: record.location || '',
+  distance: Number(record.distance_km) || 0,
+  minPay: Number(record.min_pay) || 0,
+  payPeriod: record.pay_period === 'hour' ? 'hour' : 'year',
+  note: record.note || '',
+  results: Array.isArray(record.results) ? record.results : []
+});
 
 export default function Postings() {
   const { t, language } = useStudioLanguage();
@@ -71,6 +68,7 @@ export default function Postings() {
   const [loading, setLoading] = useState(true);
   const [locating, setLocating] = useState(false);
   const [search, setSearchState] = useState(null);
+  const [searchId, setSearchId] = useState(null);
   const [savingKey, setSavingKey] = useState('');
   const [blocked, setBlocked] = useState([]);
 
@@ -100,12 +98,26 @@ export default function Postings() {
     return records || [];
   }, []);
 
+  // The search that was on the page last time comes back with the account, so the
+  // postings it found are still there after tailoring one or leaving the page.
   useEffect(() => {
-    const email = (profile.email || '').trim();
-    if (email && search === null) {
-      setSearchState(readStoredSearch(email));
-    }
-  }, [profile.email]); // eslint-disable-line react-hooks/exhaustive-deps
+    let cancelled = false;
+    (async () => {
+      try {
+        const records = await base44.entities.PostingSearch.list('-created_date', 1);
+        const record = Array.isArray(records) ? records[0] : null;
+        if (!cancelled && record) {
+          setSearchId(record.id);
+          setSearchState(fromRecord(record));
+        }
+      } catch (error) {
+        // The page works without the last search; a new one still runs.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -188,27 +200,40 @@ export default function Postings() {
     }
   };
 
+  // Showing a search and keeping it for later are the same act: the results are on
+  // screen and saved in the same call, and clearing them is what removes them.
   const setSearch = useCallback(
-    (value) => {
+    async (value) => {
       setSearchState(value);
-      const email = (profile.email || '').trim();
-      if (email) storeSearch(email, value);
+      try {
+        if (!value) {
+          if (searchId) await base44.entities.PostingSearch.delete(searchId);
+          setSearchId(null);
+          return;
+        }
+        const payload = toRecord(value);
+        if (searchId) {
+          await base44.entities.PostingSearch.update(searchId, payload);
+        } else {
+          const created = await base44.entities.PostingSearch.create(payload);
+          setSearchId(created.id);
+        }
+      } catch (error) {
+        // The results still stay on screen for this visit.
+      }
     },
-    [profile.email]
+    [searchId]
   );
 
   const dismissResult = (result) => {
+    if (!search) return;
     const key = `${result.source_url || result.job_title}-${result.company}`;
-    setSearch((prev) =>
-      prev
-        ? {
-            ...prev,
-            results: prev.results.filter(
-              (item) => `${item.source_url || item.job_title}-${item.company}` !== key
-            )
-          }
-        : prev
-    );
+    setSearch({
+      ...search,
+      results: search.results.filter(
+        (item) => `${item.source_url || item.job_title}-${item.company}` !== key
+      )
+    });
   };
 
   // Keeping a search result makes it a posting like any other, with the employer's own page read for the full text.

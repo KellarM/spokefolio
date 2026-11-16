@@ -1,0 +1,66 @@
+{
+  "name": "PostingSearch",
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "criteria",
+        "profile"
+      ],
+      "default": "criteria"
+    },
+    "terms": {
+      "type": "string",
+      "description": "The role or roles typed into the search, exactly as typed."
+    },
+    "titles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "location": {
+      "type": "string"
+    },
+    "distance_km": {
+      "type": "number",
+      "default": 0
+    },
+    "min_pay": {
+      "type": "number",
+      "default": 0
+    },
+    "pay_period": {
+      "type": "string",
+      "default": "year"
+    },
+    "note": {
+      "type": "string"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "default": []
+    },
+    "ran_at": {
+      "type": "string"
+    }
+  },
+  "required": [],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
