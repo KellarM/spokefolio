@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Download, ListChecks, Loader2, MessageSquare, Mic, RotateCcw, Sparkles } from 'lucide-react';
+import { Download, ListChecks, Loader2, MessageSquare, Mic, RotateCcw, Sparkles, Volume2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -62,6 +62,21 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
     const index = active.turns.indexOf(pendingQuestion);
     return index >= 0 ? { index, question: pendingQuestion.question } : null;
   }, [active?.turns, pendingQuestion]);
+
+  // Which turn the interviewer is on right now, so its question can carry the
+  // repeat control.
+  const pendingIndex = useMemo(() => {
+    if (!pendingQuestion || !active?.turns) return -1;
+    return active.turns.indexOf(pendingQuestion);
+  }, [active?.turns, pendingQuestion]);
+
+  // Ask it again: the question stays on screen and the interviewer says it once
+  // more. Voice mode is switched on when it is off, because the whole point of
+  // the repeat is to hear the question.
+  const repeatQuestion = () => {
+    setAskNonce((n) => n + 1);
+    if (!voiceOn) setVoiceOn(true);
+  };
 
   // The newest graded answer, spoken once by the voice loop.
   const voiceFeedback = useMemo(() => {
@@ -255,9 +270,22 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
             {active.turns?.map((turn, index) => (
               <div key={index} className="space-y-2.5">
                 <div className="rounded-xl border border-border/70 bg-muted/40 px-4 py-3 text-[14px]">
-                  <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Interviewer
-                  </span>
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Interviewer
+                    </span>
+                    {index === pendingIndex && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 shrink-0 rounded-full px-2 text-[11.5px] text-muted-foreground hover:text-foreground"
+                        onClick={repeatQuestion}
+                      >
+                        <Volume2 className="mr-1.5 h-3.5 w-3.5" /> Repeat question
+                      </Button>
+                    )}
+                  </div>
                   {turn.question}
                 </div>
                 {String(turn.answer || '').trim() && (
