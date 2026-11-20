@@ -22,14 +22,14 @@ const PHASE_LABEL = {
   thinking: 'Interviewer is thinking…'
 };
 
-export default function InterviewVoice({ active, greeting, pendingQuestion, feedback, askNonce = 0, onAnswer, onNext, onExit }) {
+export default function InterviewVoice({ active, greeting, pendingQuestion, feedback, askNonce = 0, onAnswer, onDraft, onNext, onExit }) {
   const { phase, setPhase, heard, setHeard, say, listenOnce, stopAll } = useInterviewVoice();
 
   // The loop is driven by the question index and the feedback index - stable
   // numbers, so a re-render (busy spinners, toasts) never restarts a run or
   // cancels a live microphone. The latest props ride along in this ref.
-  const latestRef = useRef({ greeting, pendingQuestion, feedback, onAnswer, onNext, onExit });
-  latestRef.current = { greeting, pendingQuestion, feedback, onAnswer, onNext, onExit };
+  const latestRef = useRef({ greeting, pendingQuestion, feedback, onAnswer, onDraft, onNext, onExit });
+  latestRef.current = { greeting, pendingQuestion, feedback, onAnswer, onDraft, onNext, onExit };
 
   // Bookkeeping for what has already been spoken, so a re-render never
   // repeats a question or a piece of feedback.
@@ -63,7 +63,7 @@ export default function InterviewVoice({ active, greeting, pendingQuestion, feed
     const stop = () => { cancelled = true; stopAll(); };
 
     (async () => {
-      const { greeting: hi, pendingQuestion: q, feedback: fb, onAnswer: answer, onNext: next, onExit: exit } = latestRef.current;
+      const { greeting: hi, pendingQuestion: q, feedback: fb, onDraft: draft, onNext: next, onExit: exit } = latestRef.current;
 
       if (!spokenRef.current.greeted && hi) {
         spokenRef.current.greeted = true;
@@ -99,33 +99,14 @@ export default function InterviewVoice({ active, greeting, pendingQuestion, feed
           if (!cancelled) exit();
           return;
         }
-        setPhase('thinking');
-        const data = await answer(text);
+        // What was heard goes into the answer box and waits there. Nothing is
+        // sent and no question moves on until the candidate presses Send
+        // answer: a pause, a half-finished thought or the interviewer's own
+        // voice caught by the mic must never submit an answer for them.
+        draft(text);
+        setPhase('speaking');
+        await say('That is in the answer box. Add anything you missed, then send it when you are ready.', { bargeable: false });
         if (cancelled) return;
-        if (data?.done) {
-          setPhase('speaking');
-          await say("That's everything I need. Open the readiness report whenever you're ready.", { bargeable: false });
-          if (!cancelled) exit();
-          return;
-        }
-        // Not done: the panel just recorded the answer and its feedback;
-        // the feedback effect below picks it up on this run's next pass.
-        const done = latestRef.current.feedback;
-        if (done && spokenRef.current.fb !== done.index) {
-          spokenRef.current.fb = done.index;
-          setPhase('speaking');
-          await say(done.text, { bargeable: false });
-          if (cancelled) return;
-          setPhase('thinking');
-          const nextData = await next();
-          if (cancelled) return;
-          if (nextData?.done) {
-            setPhase('speaking');
-            await say("That covers the posting. End the session when you're ready.", { bargeable: false });
-            if (!cancelled) exit();
-            return;
-          }
-        }
         setPhase('idle');
         return;
       }
@@ -178,7 +159,7 @@ export default function InterviewVoice({ active, greeting, pendingQuestion, feed
         <p className="mt-1.5 text-[12px] italic text-muted-foreground">&ldquo;{heard}&rdquo;</p>
       )}
       <p className="mt-1 text-[11.5px] text-muted-foreground">
-        The interviewer asks, you answer out loud, and the mic stops when you pause. Say &ldquo;close&rdquo; to stop. You can also type at any time.
+        The interviewer asks, you answer out loud, and the mic stops when you pause. What you said lands in the answer box - send it when you are ready. Say &ldquo;close&rdquo; to stop. You can also type at any time.
       </p>
     </div>
   );

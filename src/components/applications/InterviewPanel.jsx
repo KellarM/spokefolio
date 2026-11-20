@@ -239,6 +239,7 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
               feedback={voiceFeedback}
               askNonce={askNonce}
               onAnswer={(text) => call('answer', { answer: text })}
+              onDraft={(text) => setAnswer(text)}
               onNext={() => call('next')}
               onExit={() => setVoiceOn(false)}
             />

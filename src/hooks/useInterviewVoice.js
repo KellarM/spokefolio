@@ -10,7 +10,7 @@ import { shapeUtterance } from '@/lib/speech';
 // orchestrated by InterviewVoice; this hook only knows how to talk and hear.
 
 const TURN_MAX_MS = 60000;       // one spoken interview answer caps at a minute
-const SILENCE_STOP_MS = 3000;   // this much quiet after speech ends the turn
+const SILENCE_STOP_MS = 5000;   // this much quiet after speech ends the turn (a breath mid-answer is not the end)
 const SPEECH_MIN_MS = 350;       // speech must last this long before silence-stop can arm
 const LISTEN_NUDGE_MS = 12000;   // nothing said for this long: the mic gives up
 const LEVEL_THRESHOLD = 0.015;   // quiet rooms sit far below this; AGC lifts speech above it
