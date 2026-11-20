@@ -21,3 +21,20 @@
   .text-\[36px\] { font-size: 38px; }
   .text-\[0\.8rem\] { font-size: calc(0.8rem + 2px); }
 }
+
+/* ---- Copying page text ----
+   Every page holds the client's own material - their history, postings,
+   questions, transcripts - so its text must be selectable, and the highlight
+   has to be visible: the studio's ::selection was a 16% gold wash that all but
+   vanished on the navy page, so tracing text looked like nothing happened.
+   `body` in the selector wins over the bare ::selection in index.css. */
+main,
+main * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+body ::selection {
+  background: #D4AF37;
+  color: #0B0F17;
+}
