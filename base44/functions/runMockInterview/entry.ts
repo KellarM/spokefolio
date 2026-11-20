@@ -18,6 +18,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 //   next   - workshop only: the next question with its pair of model answers [answers]
 //   finish - close the session: practice gets a readiness summary, answers just closes
 //            (there are no answers of their own to grade in the workshop)
+//   rephrase - say the open question again in plainer words, without changing it
 //   redo   - reopen a question already answered, so the candidate gets a second attempt:
 //            the answer and its feedback are cleared and the drill resumes there. In a
 //            practice drill the questions that followed came out of that answer, so they
@@ -857,6 +858,50 @@ Give two answers only:
 
       await base44.entities.JobApplication.update(applicationId, { mock_interviews: sessions });
       return Response.json({ ok: true, mock_interviews: sessions });
+    }
+
+    // Asking the interviewer to put the question another way: the same single ask in
+    // plainer words, so a candidate who did not catch it hears it again. Nothing is
+    // stored - the question on the record stays the question that was asked.
+    if (mode === 'rephrase') {
+      const session = activeSession(sessions);
+      if (!session) {
+        return Response.json({ error: 'No interview drill is in progress. Start one first.' }, { status: 400 });
+      }
+
+      const turns = Array.isArray(session.turns) ? session.turns : [];
+      const requested = Number(body?.turn_index);
+      const index =
+        Number.isInteger(requested) && requested >= 0 && requested < turns.length
+          ? requested
+          : turns.map((t: any) => String(t?.answer || '').trim()).lastIndexOf('');
+      if (index < 0 || !turns[index]) {
+        return Response.json({ error: 'There is no open question to rephrase.' }, { status: 400 });
+      }
+
+      const result: any = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt: `You are the HR interviewer for this role at this company.
+
+You asked the candidate this question:
+"""
+${text(turns[index].question, 500)}
+"""
+
+The candidate did not catch it. Ask the same question again in different words: plainer and shorter sentences, the same single ask, nothing added and nothing dropped. No preamble, no apology, no greeting, and no second question. Keep every constraint the original carries (a specific example, a timeframe, a named system) exactly as it was.
+
+Return only the reworded question.`,
+        response_json_schema: {
+          type: 'object',
+          properties: { question: { type: 'string' } },
+          required: ['question']
+        }
+      });
+
+      const rephrased = text(result?.question, 500);
+      if (!rephrased) {
+        return Response.json({ error: 'The interviewer could not reword that question. Try again.' }, { status: 502 });
+      }
+      return Response.json({ ok: true, question: rephrased });
     }
 
     if (mode === 'redo') {

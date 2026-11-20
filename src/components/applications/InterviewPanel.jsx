@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Download, ListChecks, Loader2, MessageSquare, Mic, RotateCcw, Sparkles, Volume2 } from 'lucide-react';
+import { Download, ListChecks, Loader2, MessageSquare, Mic, RefreshCw, RotateCcw, Sparkles, Volume2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,6 +37,9 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
   // 26) and can be stopped or restarted from the drill panel at any time.
   const [voiceOn, setVoiceOn] = useState(false);
   const [askNonce, setAskNonce] = useState(0);
+  // A question the interviewer has been asked to put another way, kept with the
+  // turn it belongs to so it is shown and spoken instead of the original.
+  const [rephrase, setRephrase] = useState(null);
   useEffect(() => {
     if (active && !isWorkshop) setVoiceOn(true);
   }, [active?.id, isWorkshop]); // deps: a new practice session turns the voice on
@@ -60,8 +63,10 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
   const voiceQuestion = useMemo(() => {
     if (!pendingQuestion || !active?.turns) return null;
     const index = active.turns.indexOf(pendingQuestion);
-    return index >= 0 ? { index, question: pendingQuestion.question } : null;
-  }, [active?.turns, pendingQuestion]);
+    if (index < 0) return null;
+    const wording = rephrase && rephrase.index === index ? rephrase.text : pendingQuestion.question;
+    return { index, question: wording };
+  }, [active?.turns, pendingQuestion, rephrase]);
 
   // Which turn the interviewer is on right now, so its question can carry the
   // repeat control.
@@ -74,6 +79,18 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
   // more. Voice mode is switched on when it is off, because the whole point of
   // the repeat is to hear the question.
   const repeatQuestion = () => {
+    setAskNonce((n) => n + 1);
+    if (!voiceOn) setVoiceOn(true);
+  };
+
+  // The same ask in plainer words: the interviewer rewords it, the new wording
+  // replaces the question on screen and is spoken once more.
+  const rephraseQuestion = async () => {
+    if (pendingIndex < 0) return;
+    const data = await call('rephrase', { turn_index: pendingIndex });
+    const wording = String(data?.question || '').trim();
+    if (!wording) return;
+    setRephrase({ index: pendingIndex, text: wording });
     setAskNonce((n) => n + 1);
     if (!voiceOn) setVoiceOn(true);
   };
@@ -275,18 +292,43 @@ export default function InterviewPanel({ application, onApplicationUpdate, onDri
                       Interviewer
                     </span>
                     {index === pendingIndex && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 shrink-0 rounded-full px-2 text-[11.5px] text-muted-foreground hover:text-foreground"
-                        onClick={repeatQuestion}
-                      >
-                        <Volume2 className="mr-1.5 h-3.5 w-3.5" /> Repeat question
-                      </Button>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 rounded-full px-2 text-[11.5px] text-muted-foreground hover:text-foreground"
+                          onClick={repeatQuestion}
+                        >
+                          <Volume2 className="mr-1.5 h-3.5 w-3.5" /> Repeat question
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 rounded-full px-2 text-[11.5px] text-muted-foreground hover:text-foreground"
+                          onClick={rephraseQuestion}
+                          disabled={busy === 'rephrase'}
+                        >
+                          {busy === 'rephrase' ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          {busy === 'rephrase' ? 'Rephrasing…' : 'Rephrase question'}
+                        </Button>
+                      </div>
                     )}
                   </div>
                   {turn.question}
+                  {index === pendingIndex && rephrase?.index === index && (
+                    <div className="mt-2.5 rounded-lg border border-accent/40 bg-accent/5 px-3 py-2 text-[13px]">
+                      <span className="mb-0.5 block text-[10.5px] font-semibold uppercase tracking-wide text-accent">
+                        In other words
+                      </span>
+                      {rephrase.text}
+                    </div>
+                  )}
                 </div>
                 {String(turn.answer || '').trim() && (
                   <>
