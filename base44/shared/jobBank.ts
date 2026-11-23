@@ -186,6 +186,53 @@ export const fold = (value) =>
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 
+// ---- Does a posting's title belong to the role that was searched for? ----
+// Job Bank matches any of the words typed rather than the role as a whole, so a
+// search for "Warehouse Operations Manager" comes back with a welder (that posting
+// mentions a warehouse) and a software engineer (it mentions operations). Location,
+// pay and the blocklist never caught those, because the title was never checked
+// against the role. This does that check, on both search sources.
+const TITLE_NOISE = new Set([
+  'manager', 'managers', 'assistant', 'assistants', 'specialist', 'specialists',
+  'coordinator', 'coordinators', 'lead', 'leader', 'worker', 'workers', 'clerk',
+  'technician', 'technicians', 'operator', 'operators', 'supervisor', 'supervisors',
+  'associate', 'associates', 'officer', 'officers', 'agent', 'agents',
+  'representative', 'consultant', 'analyst', 'engineer', 'engineers', 'developer',
+  'developers', 'administrator', 'administrators', 'director', 'head', 'senior',
+  'junior', 'intermediate', 'entry', 'trainee', 'apprentice', 'general', 'level',
+  'full', 'part', 'time', 'and', 'the', 'for', 'with', 'from', 'remote', 'onsite',
+  'hybrid', 'job', 'position', 'role'
+]);
+
+const titleWords = (value) =>
+  fold(value)
+    .split(' ')
+    .map((word) => word.replace(/[^a-z0-9]/g, ''))
+    .filter((word) => word.length >= 3);
+
+const wordsMatch = (a, b) => {
+  if (a === b) return true;
+  // The same job is often written with a different ending: operation / operations,
+  // administrator / administrative, improvement / improvements.
+  if (a.length >= 5 && b.length >= 5 && a.slice(0, 5) === b.slice(0, 5)) return true;
+  if (a.length >= 5 && b.length >= 5 && (a.includes(b) || b.includes(a))) return true;
+  return false;
+};
+
+// True when the posting's title is about the same kind of work as the role asked
+// for. A title that shares nothing with the role is a posting for another job.
+export function titleMatchesRole(title, role) {
+  const wanted = titleWords(role);
+  if (!wanted.length) return true;
+  // Words every title carries ("manager", "lead") say nothing about the work, so
+  // only the distinctive words are required to appear - one of them is enough.
+  const distinctive = wanted.filter((word) => !TITLE_NOISE.has(word));
+  const keys = distinctive.length ? distinctive : wanted;
+  const have = titleWords(title);
+  if (!have.length) return false;
+  return keys.some((key) => have.some((word) => wordsMatch(key, word)));
+}
+
 const PROVINCE_WORD_REGEX = new RegExp(
   `\\b(${[...Object.keys(PROVINCE_NAMES), ...Object.values(PROVINCE_NAMES).map((c) => c.toLowerCase())].join('|')}|canada)\\b`,
   'gi'
@@ -576,6 +623,10 @@ export async function searchJobBank({
 
       for (const item of items) {
         if (matchedItems.length >= limit || seen.has(item.id)) continue;
+
+        // The board's own search matches any word typed, so the title has to be
+        // for the role itself before the posting is worth showing.
+        if (!titleMatchesRole(item.title, term)) continue;
 
         const locationOk = await matchesLocationFilter({
           itemPlace: item.place,

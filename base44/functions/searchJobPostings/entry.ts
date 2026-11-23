@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 import { cleanText } from '../../shared/career.ts';
-import { matchesLocationFilter, searchJobBank } from '../../shared/jobBank.ts';
+import { matchesLocationFilter, searchJobBank, titleMatchesRole } from '../../shared/jobBank.ts';
 import { detectCountry } from '../../shared/geo.ts';
 import { estimateCommutes } from '../../shared/commute.ts';
 import { filterBlocked } from '../../shared/blockedCompanies.ts';
@@ -262,7 +262,10 @@ async function searchOnce(base44, category, location, homeLocation, distanceKm, 
 
   const candidates = (Array.isArray(found?.results) ? found.results : [])
     .map(normalise)
-    .filter((item) => item.job_title && item.company && isUsablePosting(item.source_url));
+    .filter((item) => item.job_title && item.company && isUsablePosting(item.source_url))
+    // The web pass is asked for this kind of work, but it still hands back the odd
+    // posting for a completely different job: the title has to belong to the role.
+    .filter((item) => titleMatchesRole(item.job_title, category));
 
   const filtered = [];
   for (const item of candidates) {
