@@ -670,7 +670,12 @@ export default function ApplicationDetail() {
 
       <InterviewScorecard application={application} session={finishedResult} />
 
-      <JobPostingPanel description={application.job_description} sourceUrl={application.source_url} />
+      <JobPostingPanel
+        description={application.job_description}
+        sourceUrl={application.source_url}
+        jobTitle={application.job_title}
+        company={application.company}
+      />
 
       <CompanyBrief
         application={application}

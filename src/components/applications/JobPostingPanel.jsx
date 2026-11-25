@@ -156,13 +156,21 @@ function PostingBody({ blocks }) {
 }
 
 // The posting the résumé was written from, kept beside it so it can be read back later.
-export default function JobPostingPanel({ description, sourceUrl }) {
+export default function JobPostingPanel({ description, sourceUrl, jobTitle, company }) {
   const [open, setOpen] = useState(false);
   const text = (description || '').trim();
   if (!text) return null;
   const words = text.split(/\s+/).length;
   const host = hostOf(sourceUrl);
   const blocks = toBlocks(text);
+  // Not every application was captured with the employer's link (pasted text, or a
+  // posting kept before the link was stored). The original posting is still wanted,
+  // so the panel always offers a way to it: the saved link when there is one, and
+  // otherwise a search for this exact title and company.
+  const searchHref = `https://www.google.com/search?q=${encodeURIComponent(
+    [`"${jobTitle || ''}"`, company || '', 'job posting'].filter(Boolean).join(' ')
+  )}`;
+  const postingHref = sourceUrl || searchHref;
 
   return (
     <section className="mt-7 rounded-2xl border border-primary/35 bg-card p-5">
@@ -170,16 +178,15 @@ export default function JobPostingPanel({ description, sourceUrl }) {
         <div className="min-w-0">
           <p className="eyebrow">The posting you tailored for</p>
           <p className="mt-2 text-[13px] text-muted-foreground">{words} words · saved with this application</p>
-          {sourceUrl && (
-            <a
-              href={sourceUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-1.5 inline-flex items-center gap-1.5 text-[12.5px] text-primary underline-offset-4 hover:underline"
-            >
-              <ExternalLink className="h-3.5 w-3.5" /> {host || 'Open the original posting'}
-            </a>
-          )}
+          <a
+            href={postingHref}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-1.5 inline-flex items-center gap-1.5 text-[12.5px] text-primary underline-offset-4 hover:underline"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            {sourceUrl ? host || 'Open the original posting' : 'Find the original posting'}
+          </a>
         </div>
         <button
           type="button"
