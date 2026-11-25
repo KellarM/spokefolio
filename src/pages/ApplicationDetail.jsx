@@ -16,6 +16,7 @@ import useProfile from '@/hooks/useProfile';
 import StatusBadge from '@/components/applications/StatusBadge';
 import JobLocation from '@/components/applications/JobLocation';
 import JobPostingPanel from '@/components/applications/JobPostingPanel';
+import PostingSourcePill from '@/components/applications/PostingSourcePill';
 import CompanyBrief from '@/components/applications/CompanyBrief';
 import SendPackageDialog from '@/components/applications/SendPackageDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -615,10 +616,13 @@ export default function ApplicationDetail() {
             </h1>
             <StatusBadge status={application.status} />
           </div>
-          <p className="mt-1.5 text-[14px] text-muted-foreground">
-            {application.company || 'Company not named'}
-            {application.created_date ? ` · ${new Date(application.created_date).toLocaleDateString()}` : ''}
-          </p>
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            <p className="text-[14px] text-muted-foreground">
+              {application.company || 'Company not named'}
+              {application.created_date ? ` · ${new Date(application.created_date).toLocaleDateString()}` : ''}
+            </p>
+            <PostingSourcePill url={application.source_url} />
+          </div>
           <JobLocation
             address={application.work_address}
             distanceKm={application.drive_distance_km}

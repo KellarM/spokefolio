@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import postingSource from '@/lib/postingSource';
 
 const hostOf = (url) => {
   try {
@@ -185,7 +186,7 @@ export default function JobPostingPanel({ description, sourceUrl, jobTitle, comp
             className="mt-1.5 inline-flex items-center gap-1.5 text-[12.5px] text-primary underline-offset-4 hover:underline"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            {sourceUrl ? host || 'Open the original posting' : 'Find the original posting'}
+            {sourceUrl ? `Found on ${postingSource(sourceUrl) || host}` : 'Find the original posting'}
           </a>
         </div>
         <button

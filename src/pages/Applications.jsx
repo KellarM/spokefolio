@@ -15,6 +15,7 @@ import { guideLabel } from '@/content/guideLabels';
 import { applicationsGuide } from '@/content/applicationsGuide';
 import ActivityCalendar from '@/components/applications/ActivityCalendar';
 import RunScoreBadge from '@/components/applications/RunScoreBadge';
+import PostingSourcePill from '@/components/applications/PostingSourcePill';
 import { useStudioLanguage } from '@/lib/StudioLanguage';
 import useProfile from '@/hooks/useProfile';
 import { trackEvent } from '@/lib/analytics';
@@ -453,6 +454,7 @@ export default function Applications() {
                         .join(' · ')}
                     </span>
                     <SalaryPill description={application.job_description} />
+                    <PostingSourcePill url={application.source_url} />
                   </p>
                   <JobLocation
                     address={application.work_address}
