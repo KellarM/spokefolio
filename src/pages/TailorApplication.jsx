@@ -16,6 +16,21 @@ import PostingImportForm from '@/components/postings/PostingImportForm';
 import InstructionPopover from '@/components/guide/InstructionPopover';
 import DictateButton from '@/components/common/DictateButton';
 import { appendLine } from '@/hooks/useDictation';
+import postingSource from '@/lib/postingSource';
+
+// The boards people actually meet a posting on. The field stays free text, so
+// anything else — a recruiter's email, a union board — can be typed in too.
+const SOURCE_SUGGESTIONS = [
+  'Indeed',
+  'Glassdoor',
+  'LinkedIn',
+  'Job Bank',
+  'Workopolis',
+  'Eluta',
+  'ZipRecruiter',
+  'Monster',
+  'Company website'
+];
 
 const STEPS = [
   'Reading the job posting',
@@ -34,6 +49,7 @@ export default function TailorApplication() {
     company: '',
     job_title: '',
     job_description: '',
+    source: '',
     work_address: '',
     drive_distance_km: null,
     drive_minutes: null
@@ -80,6 +96,7 @@ export default function TailorApplication() {
             company: posting.company || '',
             job_title: posting.job_title || '',
             job_description: posting.job_description || '',
+            source: posting.source || postingSource(posting.source_url),
             work_address: posting.work_address || '',
             drive_distance_km: posting.drive_distance_km ?? null,
             drive_minutes: posting.drive_minutes ?? null
@@ -104,6 +121,7 @@ export default function TailorApplication() {
       company: imported.company || '',
       job_title: imported.job_title || '',
       job_description: imported.job_description || '',
+      source: postingSource(imported.source_url),
       work_address: imported.work_address || '',
       drive_distance_km: imported.drive_distance_km ?? null,
       drive_minutes: imported.drive_minutes ?? null
@@ -146,6 +164,7 @@ export default function TailorApplication() {
         job_title: form.job_title,
         job_description: form.job_description,
         source_url: sourceUrl,
+        source: form.source.trim(),
         posting_id: postingId,
         work_address: form.work_address,
         drive_distance_km: form.drive_distance_km ?? undefined,
@@ -252,7 +271,7 @@ export default function TailorApplication() {
               />
             </div>
 
-            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               <div>
                 <Label htmlFor="company" className="eyebrow">
                   Company
@@ -276,6 +295,24 @@ export default function TailorApplication() {
                   placeholder="Senior Operations Manager"
                   className="mt-2"
                 />
+              </div>
+              <div>
+                <Label htmlFor="found-on" className="eyebrow">
+                  Where it was found
+                </Label>
+                <Input
+                  id="found-on"
+                  list="posting-sources"
+                  value={form.source}
+                  onChange={(event) => setForm({ ...form, source: event.target.value })}
+                  placeholder="Indeed, Glassdoor, Job Bank…"
+                  className="mt-2"
+                />
+                <datalist id="posting-sources">
+                  {SOURCE_SUGGESTIONS.map((name) => (
+                    <option key={name} value={name} />
+                  ))}
+                </datalist>
               </div>
             </div>
 

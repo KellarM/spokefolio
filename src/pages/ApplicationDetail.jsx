@@ -621,7 +621,7 @@ export default function ApplicationDetail() {
               {application.company || 'Company not named'}
               {application.created_date ? ` · ${new Date(application.created_date).toLocaleDateString()}` : ''}
             </p>
-            <PostingSourcePill url={application.source_url} />
+            <PostingSourcePill url={application.source_url} source={application.source} />
           </div>
           <JobLocation
             address={application.work_address}
@@ -677,6 +677,7 @@ export default function ApplicationDetail() {
       <JobPostingPanel
         description={application.job_description}
         sourceUrl={application.source_url}
+        source={application.source}
         jobTitle={application.job_title}
         company={application.company}
       />

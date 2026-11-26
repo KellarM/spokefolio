@@ -4,8 +4,9 @@ import postingSource from '@/lib/postingSource';
 
 // Says where this application's posting came from — Indeed, Glassdoor, Job Bank,
 // or the employer's own careers page. Nothing is shown when no link was saved.
-export default function PostingSourcePill({ url, className = '' }) {
-  const site = postingSource(url);
+export default function PostingSourcePill({ url, source = '', className = '' }) {
+  // What the client typed wins: they know it was Indeed even when the link is gone.
+  const site = String(source || '').trim() || postingSource(url);
   if (!site) return null;
   return (
     <span

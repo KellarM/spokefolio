@@ -14,6 +14,10 @@
     "source_url": {
       "type": "string"
     },
+    "source": {
+      "type": "string",
+      "description": "Where the posting was found, in the client's own words: Indeed, Glassdoor, Job Bank, the employer's site..."
+    },
     "posting_id": {
       "type": "string"
     },

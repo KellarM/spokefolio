@@ -157,7 +157,7 @@ function PostingBody({ blocks }) {
 }
 
 // The posting the résumé was written from, kept beside it so it can be read back later.
-export default function JobPostingPanel({ description, sourceUrl, jobTitle, company }) {
+export default function JobPostingPanel({ description, sourceUrl, jobTitle, company, source = '' }) {
   const [open, setOpen] = useState(false);
   const text = (description || '').trim();
   if (!text) return null;
@@ -186,7 +186,9 @@ export default function JobPostingPanel({ description, sourceUrl, jobTitle, comp
             className="mt-1.5 inline-flex items-center gap-1.5 text-[12.5px] text-primary underline-offset-4 hover:underline"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            {sourceUrl ? `Found on ${postingSource(sourceUrl) || host}` : 'Find the original posting'}
+            {sourceUrl || source
+              ? `Found on ${source || postingSource(sourceUrl) || host}`
+              : 'Find the original posting'}
           </a>
         </div>
         <button

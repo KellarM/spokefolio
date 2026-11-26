@@ -454,7 +454,7 @@ export default function Applications() {
                         .join(' · ')}
                     </span>
                     <SalaryPill description={application.job_description} />
-                    <PostingSourcePill url={application.source_url} />
+                    <PostingSourcePill url={application.source_url} source={application.source} />
                   </p>
                   <JobLocation
                     address={application.work_address}
